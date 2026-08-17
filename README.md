@@ -70,7 +70,7 @@ git push -u origin main
 | Setting | Value |
 |---------|-------|
 | **Name** | `cloth` (or your choice) |
-| **Root Directory** | `cloth` |
+| **Root Directory** | *(leave blank)* |
 | **Environment** | `Python 3` |
 | **Build Command** | `pip install -r requirements.txt` |
 | **Start Command** | `uvicorn main:app --host 0.0.0.0 --port $PORT` |
