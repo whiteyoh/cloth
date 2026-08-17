@@ -1239,7 +1239,7 @@
 
     var keywordInput = document.getElementById('keyword-filter');
     if (keywordInput) {
-      keywordInput.addEventListener('input', applyFilterSort);
+      keywordInput.addEventListener('input', _debounce(applyFilterSort, 200));
     }
 
     // Restore filter/sort from URL params on page load
@@ -1273,6 +1273,15 @@
   // ------------------------------------------------------------------ //
   // Ajax / lazy search (WN-066)                                         //
   // ------------------------------------------------------------------ //
+
+  // WN-137: simple debounce helper
+  function _debounce(fn, delay) {
+    var timer;
+    return function () {
+      clearTimeout(timer);
+      timer = setTimeout(fn, delay);
+    };
+  }
 
   // Pure utility functions — canonical definitions live in cloth-pure.js (testable standalone).
   var escapeHtml = window.ClothPure.escapeHtml;
@@ -2565,8 +2574,9 @@
       applyFilterSort();
     }
 
-    sliderMin.addEventListener('input', onSliderInput);
-    sliderMax.addEventListener('input', onSliderInput);
+    var debouncedSlider = _debounce(onSliderInput.bind(sliderMin), 200);
+    sliderMin.addEventListener('input', debouncedSlider);
+    sliderMax.addEventListener('input', debouncedSlider);
   }
 
   function initGenderFilter() {
