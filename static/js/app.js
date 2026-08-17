@@ -1272,6 +1272,116 @@
   var escapeHtml = window.ClothPure.escapeHtml;
   var buildCacheAgeText = window.ClothPure.buildCacheAgeText;
 
+  // WN-160: generate related search chips from a query
+  var _COLOUR_SYNS = {
+    'navy': ['navy blue', 'dark blue', 'indigo'],
+    'black': ['charcoal', 'onyx'],
+    'white': ['cream', 'ivory', 'off-white'],
+    'grey': ['gray', 'charcoal', 'slate'],
+    'red': ['burgundy', 'crimson', 'scarlet'],
+    'green': ['olive', 'emerald', 'sage'],
+    'blue': ['cobalt', 'royal blue', 'denim blue'],
+    'brown': ['tan', 'camel', 'chocolate'],
+    'pink': ['blush', 'rose', 'mauve'],
+    'beige': ['nude', 'sand', 'oatmeal']
+  };
+  var _GARMENT_SYNS = {
+    'chinos': ['trousers', 'shorts', 'joggers'],
+    'jeans': ['denim trousers', 'skinny jeans', 'wide-leg jeans'],
+    'dress': ['midi dress', 'maxi dress', 'mini dress'],
+    'jacket': ['blazer', 'coat', 'cardigan'],
+    'shirt': ['blouse', 'top', 'tunic'],
+    'jumper': ['sweater', 'knitwear', 'pullover'],
+    'skirt': ['midi skirt', 'maxi skirt', 'pleated skirt'],
+    'suit': ['two-piece', 'trouser suit'],
+    'coat': ['overcoat', 'trench coat', 'mac'],
+    'boots': ['ankle boots', 'knee-high boots', 'heeled boots'],
+    'trainers': ['sneakers', 'running shoes', 'casual shoes']
+  };
+  var _GENDER_MODS = ["women's", "men's"];
+
+  function _deriveRelatedSearches(query) {
+    var q = query.toLowerCase();
+    var results = [];
+
+    // Colour synonyms
+    Object.keys(_COLOUR_SYNS).forEach(function (colour) {
+      if (q.indexOf(colour) !== -1) {
+        _COLOUR_SYNS[colour].forEach(function (syn) {
+          results.push(q.replace(colour, syn));
+        });
+      }
+    });
+
+    // Garment synonyms
+    Object.keys(_GARMENT_SYNS).forEach(function (garment) {
+      if (q.indexOf(garment) !== -1) {
+        _GARMENT_SYNS[garment].forEach(function (syn) {
+          results.push(q.replace(garment, syn));
+        });
+      }
+    });
+
+    // Gender variants
+    _GENDER_MODS.forEach(function (mod) {
+      if (q.indexOf(mod) === -1) results.push(q + ' ' + mod);
+    });
+
+    // Deduplicate and filter out the original query
+    var seen = {};
+    seen[q] = true;
+    var deduped = [];
+    results.forEach(function (r) {
+      var k = r.toLowerCase().trim();
+      if (!seen[k]) { seen[k] = true; deduped.push(k); }
+    });
+
+    return deduped.slice(0, 6);
+  }
+
+  function _initRelatedSearchChips(query) {
+    var grid = document.getElementById('product-grid');
+    if (!grid || !query) return;
+    var existing = document.getElementById('related-searches');
+    if (existing) existing.remove();
+
+    var chips = _deriveRelatedSearches(query);
+    if (!chips.length) return;
+
+    var section = document.createElement('div');
+    section.id = 'related-searches';
+    section.className = 'related-searches';
+    section.setAttribute('aria-label', 'Related searches');
+
+    var label = document.createElement('p');
+    label.className = 'related-searches-label';
+    label.textContent = 'Related searches:';
+    section.appendChild(label);
+
+    var list = document.createElement('ul');
+    list.className = 'related-chips';
+    chips.forEach(function (chip) {
+      var li = document.createElement('li');
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'related-chip';
+      btn.textContent = chip;
+      btn.addEventListener('click', function () {
+        doAjaxSearch(chip, null, false, true);
+      });
+      li.appendChild(btn);
+      list.appendChild(li);
+    });
+    section.appendChild(list);
+
+    var lmWrap = document.getElementById('load-more-wrap');
+    if (lmWrap) {
+      grid.parentNode.insertBefore(section, lmWrap);
+    } else {
+      grid.parentNode.appendChild(section);
+    }
+  }
+
   function renderResultsRegion(data) {
     var region = document.getElementById('results-region');
     if (!region) {
@@ -1424,6 +1534,9 @@
     updateSavedCount();
     updateOutfitsCount();
     _restoreFilterState(); // WN-155: re-apply saved filter state
+    if (data.products && data.products.length > 0) {
+      _initRelatedSearchChips(data.query); // WN-160
+    }
   }
 
   function setSearchButtonState(form, loading) {
