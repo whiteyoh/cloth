@@ -866,6 +866,71 @@
   // Filter and sort (WN-012)                                            //
   // ------------------------------------------------------------------ //
 
+  // WN-155: persist active filter state across AJAX searches
+  var _filterState = {sort: 'relevance', min: '', max: '', keyword: ''};
+
+  function _captureFilterState() {
+    var activeChip = document.querySelector('.filter-chip.active:not(.retailer-chip)');
+    _filterState.min = activeChip ? (activeChip.dataset.min || '') : '';
+    _filterState.max = activeChip ? (activeChip.dataset.max || '') : '';
+    _filterState.sort = (document.getElementById('sort-select') || {}).value || 'relevance';
+    _filterState.keyword = ((document.getElementById('keyword-filter') || {}).value || '').toLowerCase().trim();
+  }
+
+  function _restoreFilterState() {
+    var bar = document.getElementById('filter-sort-bar');
+    if (!bar) return;
+    if (_filterState.sort !== 'relevance') {
+      var sortSel = document.getElementById('sort-select');
+      if (sortSel) sortSel.value = _filterState.sort;
+    }
+    if (_filterState.min !== '' || _filterState.max !== '') {
+      document.querySelectorAll('.filter-chip:not(.retailer-chip)').forEach(function (c) {
+        var isMatch = (c.dataset.min || '') === _filterState.min && (c.dataset.max || '') === _filterState.max;
+        c.classList.toggle('active', isMatch);
+        c.setAttribute('aria-pressed', isMatch ? 'true' : 'false');
+      });
+    }
+    if (_filterState.keyword) {
+      var kw = document.getElementById('keyword-filter');
+      if (kw) kw.value = _filterState.keyword;
+    }
+    var hasActive = _filterState.sort !== 'relevance' || _filterState.min !== '' || _filterState.max !== '' || _filterState.keyword !== '';
+    _updateFilterBadge(hasActive);
+    if (hasActive) applyFilterSort();
+  }
+
+  function _updateFilterBadge(hasActive) {
+    var bar = document.getElementById('filter-sort-bar');
+    if (!bar) return;
+    var existing = bar.querySelector('.filter-clear-all');
+    if (hasActive && !existing) {
+      var clearBtn = document.createElement('button');
+      clearBtn.type = 'button';
+      clearBtn.className = 'filter-clear-all';
+      clearBtn.textContent = 'Clear all';
+      clearBtn.setAttribute('aria-label', 'Clear all filters');
+      clearBtn.addEventListener('click', function () {
+        _filterState = {sort: 'relevance', min: '', max: '', keyword: ''};
+        document.querySelectorAll('.filter-chip').forEach(function (c) {
+          c.classList.remove('active');
+          c.setAttribute('aria-pressed', 'false');
+        });
+        var any = document.querySelector('.filter-chip[data-min=""][data-max=""]');
+        if (any) { any.classList.add('active'); any.setAttribute('aria-pressed', 'true'); }
+        var s = document.getElementById('sort-select');
+        if (s) s.value = 'relevance';
+        var k = document.getElementById('keyword-filter');
+        if (k) k.value = '';
+        applyFilterSort();
+        clearBtn.remove();
+      });
+      bar.appendChild(clearBtn);
+    } else if (!hasActive && existing) {
+      existing.remove();
+    }
+  }
+
   function applyFilterSort() {
     var grid = document.getElementById('product-grid');
     if (!grid) return;
@@ -962,6 +1027,10 @@
     }
     var newUrl = window.location.pathname + '?' + params.toString();
     history.replaceState(history.state, '', newUrl);
+    // WN-155: capture state after applying
+    _captureFilterState();
+    var hasActive = sortVal !== 'relevance' || minVal !== '' || maxVal !== '' || keyword !== '';
+    _updateFilterBadge(hasActive);
   }
 
   function buildRetailerChips() {
@@ -1244,6 +1313,7 @@
     saveSearchToHistory(data.query);
     updateSavedCount();
     updateOutfitsCount();
+    _restoreFilterState(); // WN-155: re-apply saved filter state
   }
 
   function setSearchButtonState(form, loading) {
