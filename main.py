@@ -203,7 +203,20 @@ async def _expanded_search(
     return merged, True
 
 
-async def _call_fashn_ai(image_bytes: bytes, garment_url: str, api_key: str) -> str:
+def _infer_try_on_category(garment_name: str) -> str:
+    """Infer Fashn.ai garment category from garment name keywords.
+
+    Returns "one-piece", "bottoms", or "tops" (default).
+    """
+    name_lower = garment_name.lower()
+    if any(kw in name_lower for kw in ("dress", "skirt", "jumpsuit", "romper", "playsuit", "bodycon", "pinafore")):
+        return "one-piece"
+    if any(kw in name_lower for kw in ("trouser", "jean", "pant", "short", "legging", "chino", "jogger", "culotte")):
+        return "bottoms"
+    return "tops"
+
+
+async def _call_fashn_ai(image_bytes: bytes, garment_url: str, api_key: str, category: str = "tops") -> str:
     """Call Fashn.ai try-on API; return the result image URL.
 
     Sends the person photo as a base64 data URI and the garment as its URL.
@@ -216,7 +229,7 @@ async def _call_fashn_ai(image_bytes: bytes, garment_url: str, api_key: str) -> 
     client = _get_http_client()
     start_resp = await client.post(
         f"{_FASHN_AI_BASE}/run",
-        json={"model_image": data_uri, "garment_image": garment_url, "category": "tops"},
+        json={"model_image": data_uri, "garment_image": garment_url, "category": category},
         headers={"Authorization": f"Bearer {api_key}"},
         timeout=15.0,
     )
@@ -599,6 +612,8 @@ async def try_on(
     request: Request,
     person_image: UploadFile | None = File(default=None),  # noqa: B008
     garment_url: str = Form(default=""),  # noqa: B008
+    garment_name: str = Form(default=""),  # noqa: B008
+    category_override: str = Form(default=""),  # noqa: B008
 ):
     """Virtual try-on endpoint.
 
@@ -670,9 +685,12 @@ async def try_on(
         }
     )
 
+    _valid_categories = {"tops", "bottoms", "one-piece"}
+    category = category_override if category_override in _valid_categories else _infer_try_on_category(garment_name)
+
     start = time.monotonic()
     try:
-        result_url = await _call_fashn_ai(content, garment_url, api_key)
+        result_url = await _call_fashn_ai(content, garment_url, api_key, category=category)
         latency_ms = round((time.monotonic() - start) * 1000)
         _emit(
             {

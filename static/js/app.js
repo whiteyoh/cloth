@@ -2521,6 +2521,15 @@
       + ' <a href="/privacy" target="_blank" rel="noopener noreferrer">Privacy Notice</a>'
       + '</label>'
       + '</div>'
+      + '<div class="try-on-category">'
+      + '<label for="try-on-category-select">Garment type:</label>'
+      + '<select id="try-on-category-select" class="try-on-category-select">'
+      + '<option value="">Auto-detect</option>'
+      + '<option value="tops">Tops</option>'
+      + '<option value="bottoms">Bottoms</option>'
+      + '<option value="one-piece">One-piece / Dress</option>'
+      + '</select>'
+      + '</div>'
       + '<button type="button" id="try-on-generate" class="btn-primary try-on-generate" disabled>Generate try-on</button>'
       + '<div id="try-on-loading" class="try-on-loading" hidden>'
       + '<span class="try-on-spinner" aria-hidden="true"></span>'
@@ -2574,9 +2583,14 @@
       modal.querySelector('#try-on-error').hidden = true;
       generateBtn.disabled = true;
 
+      var categorySelect = modal.querySelector('#try-on-category-select');
       var formData = new FormData();
       formData.append('person_image', fileInput.files[0]);
       formData.append('garment_url', garmentUrl);
+      formData.append('garment_name', garmentName || '');
+      if (categorySelect && categorySelect.value) {
+        formData.append('category_override', categorySelect.value);
+      }
 
       fetch('/try-on', {method: 'POST', body: formData})
         .then(function (res) { return res.json(); })

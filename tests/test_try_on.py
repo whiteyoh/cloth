@@ -231,3 +231,51 @@ class TestCheckTryOn:
 
     def test_limit_is_three(self):
         assert rate_limit._TRY_ON_MAX_REQUESTS == 3
+
+
+# ------------------------------------------------------------------ #
+# _infer_try_on_category                                              #
+# ------------------------------------------------------------------ #
+
+
+class TestInferTryOnCategory:
+    def _infer(self, name: str) -> str:
+        from main import _infer_try_on_category
+        return _infer_try_on_category(name)
+
+    def test_dress_is_one_piece(self):
+        assert self._infer("Floral Wrap Dress") == "one-piece"
+
+    def test_skirt_is_one_piece(self):
+        assert self._infer("Pleated Midi Skirt") == "one-piece"
+
+    def test_jumpsuit_is_one_piece(self):
+        assert self._infer("Linen Jumpsuit") == "one-piece"
+
+    def test_romper_is_one_piece(self):
+        assert self._infer("Summer Romper") == "one-piece"
+
+    def test_trousers_are_bottoms(self):
+        assert self._infer("Wide Leg Trousers") == "bottoms"
+
+    def test_jeans_are_bottoms(self):
+        assert self._infer("Slim Fit Jeans") == "bottoms"
+
+    def test_shorts_are_bottoms(self):
+        assert self._infer("Denim Shorts") == "bottoms"
+
+    def test_leggings_are_bottoms(self):
+        assert self._infer("Running Leggings") == "bottoms"
+
+    def test_shirt_defaults_to_tops(self):
+        assert self._infer("Oxford Shirt") == "tops"
+
+    def test_blouse_defaults_to_tops(self):
+        assert self._infer("Silk Blouse") == "tops"
+
+    def test_empty_string_defaults_to_tops(self):
+        assert self._infer("") == "tops"
+
+    def test_case_insensitive(self):
+        assert self._infer("MIDI DRESS") == "one-piece"
+        assert self._infer("CHINO Trousers") == "bottoms"
