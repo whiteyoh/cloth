@@ -1516,9 +1516,18 @@
 
     var bodyHtml = '';
     if (data.products && data.products.length > 0) {
+      var _COLOR_SWATCH_MAP = {
+        'Black': '#222', 'White': '#f5f5f5', 'Navy': '#1a1f36', 'Grey': '#888',
+        'Red': '#c0392b', 'Green': '#27ae60', 'Blue': '#2980b9', 'Brown': '#7b4f3a', 'Cream': '#f5f0e8'
+      };
+      var _LIGHT_COLORS = ['White', 'Cream'];
       var colorNames = ['Black', 'White', 'Navy', 'Grey', 'Red', 'Green', 'Blue', 'Brown', 'Cream'];
       var colorChipsHtml = colorNames.map(function (c) {
-        return '<button type="button" class="filter-chip color-chip" data-color="' + c + '" aria-pressed="false">' + c + '</button>';
+        var hex = _COLOR_SWATCH_MAP[c] || '#ccc';
+        var border = _LIGHT_COLORS.indexOf(c) !== -1 ? ';border:1px solid #ccc' : '';
+        var swatchStyle = 'background:' + hex + border;
+        return '<button type="button" class="filter-chip color-chip" data-color="' + c + '" aria-pressed="false">'
+          + '<span class="color-swatch" style="' + swatchStyle + '" aria-hidden="true"></span>' + c + '</button>';
       }).join('');
       var genderChipsHtml = ["Women's", "Men's", 'Unisex'].map(function (g) {
         return '<button type="button" class="filter-chip gender-chip" data-gender="' + g + '" aria-pressed="false">' + g + '</button>';
