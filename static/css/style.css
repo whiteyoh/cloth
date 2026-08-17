@@ -574,7 +574,7 @@ a:hover {
 
 .product-image-wrap {
   position: relative;
-  padding-top: 75%; /* 4:3 aspect ratio */
+  padding-top: 133.33%; /* 3:4 aspect ratio (portrait fashion) */
   overflow: hidden;
   background: #f0f2f5;
 }
@@ -1518,7 +1518,7 @@ a:hover {
 
 .skeleton-image {
   width: 100%;
-  padding-top: 75%;
+  padding-top: 133.33%; /* 3:4 portrait */
   background: linear-gradient(90deg, #e8e8e8 25%, #f5f5f5 50%, #e8e8e8 75%);
   background-size: 800px 100%;
   animation: shimmer 1.4s ease infinite;
