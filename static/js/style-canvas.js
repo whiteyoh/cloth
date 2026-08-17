@@ -862,6 +862,38 @@
           canvasRedo();
           _announce('Redo');
         }
+      } else if (selectedLayerId && ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', '[', ']'].indexOf(e.key) !== -1) {
+        // WN-135: canvas keyboard navigation — only when canvas has focus and a layer is selected
+        var canvasEl = _getCanvas();
+        if (document.activeElement === canvasEl) {
+          e.preventDefault();
+          var kLayer = _layerById(selectedLayerId);
+          if (!kLayer) return;
+          var step = e.shiftKey ? 20 : 5;
+          if (e.key === 'ArrowUp') {
+            kLayer.y -= step;
+            _announce('Layer moved up');
+          } else if (e.key === 'ArrowDown') {
+            kLayer.y += step;
+            _announce('Layer moved down');
+          } else if (e.key === 'ArrowLeft') {
+            kLayer.x -= step;
+            _announce('Layer moved left');
+          } else if (e.key === 'ArrowRight') {
+            kLayer.x += step;
+            _announce('Layer moved right');
+          } else if (e.key === '[') {
+            moveLayerDown(selectedLayerId);
+            _announce('Layer moved back');
+            return;
+          } else if (e.key === ']') {
+            moveLayerUp(selectedLayerId);
+            _announce('Layer moved forward');
+            return;
+          }
+          _pushHistory();
+          renderCanvas();
+        }
       }
     });
 
