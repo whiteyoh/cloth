@@ -3478,9 +3478,37 @@ a:hover {
 }
 
 /* ------------------------------------------------------------------ */
+/* Filter bar collapse — hidden by default on all screen sizes (WN-171) */
 /* ------------------------------------------------------------------ */
-/* Mobile filter bar collapse (WN-120) + mobile sticky fix (WN-163)    */
-/* ------------------------------------------------------------------ */
+
+/* Toggle button — visible on all screen sizes */
+.mobile-filter-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.3rem 0.9rem;
+  border: 1px solid var(--colour-border);
+  border-radius: var(--radius);
+  background: var(--colour-surface);
+  color: var(--colour-text);
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  min-height: 36px;
+  white-space: nowrap;
+}
+
+/* Filters hidden by default on all screen sizes */
+#filter-sort-bar > *:not(.mobile-filter-toggle):not(.mobile-filter-summary) {
+  display: none;
+}
+
+/* Show filters when expanded */
+#filter-sort-bar.is-expanded > *:not(.mobile-filter-toggle):not(.mobile-filter-summary) {
+  display: flex;
+}
+
+/* Mobile-specific: full-width toggle, sticky override, bottom-sheet expansion */
 @media (max-width: 768px) {
   /* Override sticky — on mobile a sticky collapsing bar hogs space */
   .filter-sort-bar {
@@ -3489,12 +3517,19 @@ a:hover {
     z-index: auto;
   }
 
-  /* Results region no longer needs to be positioning context (WN-170) */
   #results-region {
     position: static;
   }
 
-  /* WN-170: bottom sheet — slides up from the bottom of the viewport */
+  .mobile-filter-toggle {
+    width: 100%;
+    min-height: 44px;
+    justify-content: center;
+    font-size: 0.9rem;
+    padding: 0.4rem 0.85rem;
+  }
+
+  /* Bottom sheet — slides up from the bottom of the viewport */
   #filter-sort-bar.is-expanded {
     position: fixed;
     bottom: 0;
@@ -3516,31 +3551,6 @@ a:hover {
   @keyframes mobileSheetIn {
     from { transform: translateY(100%); opacity: 0.5; }
     to   { transform: translateY(0);    opacity: 1; }
-  }
-
-  .mobile-filter-toggle {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.35rem;
-    padding: 0.4rem 0.85rem;
-    border: 1px solid var(--colour-border);
-    border-radius: var(--radius);
-    background: var(--colour-surface);
-    color: var(--colour-text);
-    font-size: 0.9rem;
-    font-weight: 600;
-    cursor: pointer;
-    min-height: 44px;
-    width: 100%;
-    justify-content: center;
-  }
-
-  #filter-sort-bar > *:not(.mobile-filter-toggle):not(.mobile-filter-summary) {
-    display: none;
-  }
-
-  #filter-sort-bar.is-expanded > *:not(.mobile-filter-toggle):not(.mobile-filter-summary) {
-    display: flex;
   }
 
   /* WN-169: active filter summary strip — visible when collapsed, hidden when expanded */
@@ -3582,10 +3592,7 @@ a:hover {
 }
 
 @media (min-width: 769px) {
-  .mobile-filter-toggle {
-    display: none;
-  }
-
+  /* Summary strip not needed on desktop — filter row is fully visible when expanded */
   .mobile-filter-summary {
     display: none;
   }

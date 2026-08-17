@@ -3374,13 +3374,12 @@
     }
   }
 
-  // WN-120: mobile filter bar collapse — toggle button is always in HTML; this only wires behaviour
+  // WN-171: filter bar collapse — hidden by default on all screen sizes
   function initMobileFilterToggle() {
     var bar = document.getElementById('filter-sort-bar');
     if (!bar) return;
     var toggle = bar.querySelector('#mobile-filter-toggle');
     if (!toggle) return;
-    if (!window.matchMedia('(max-width: 768px)').matches) return;
 
     function countActiveFilters() {
       var active = 0;
@@ -3411,9 +3410,11 @@
         var open = bar.classList.toggle('is-expanded');
         sessionStorage.setItem('cloth_filter_open', open ? '1' : '0');
         updateToggleLabel();
-        // WN-170: sync backdrop with panel state
+        // backdrop only shown on mobile (desktop expansion is inline, not an overlay)
         var bd = document.getElementById('filter-backdrop');
-        if (bd) bd.classList.toggle('is-visible', open);
+        if (bd && window.matchMedia('(max-width: 768px)').matches) {
+          bd.classList.toggle('is-visible', open);
+        }
       });
     }
 
