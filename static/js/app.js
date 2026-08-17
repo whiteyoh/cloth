@@ -1676,6 +1676,7 @@
     updateSavedCount();
     updateOutfitsCount();
     _restoreFilterState(); // WN-155: re-apply saved filter state
+    initMobileFilterToggle(); // WN-164: must run after every AJAX render, not just initial load
     if (data.products && data.products.length > 0) {
       _initRelatedSearchChips(data.query); // WN-160
     }
@@ -3321,9 +3322,9 @@
   // WN-120: mobile filter bar collapse
   function initMobileFilterToggle() {
     var bar = document.getElementById('filter-sort-bar');
-    if (!bar || bar._mobileToggleBound) return;
+    if (!bar) return;
     if (!window.matchMedia('(max-width: 768px)').matches) return;
-    bar._mobileToggleBound = true;
+    // No _mobileToggleBound guard — renderResultsRegion recreates the bar element each time
 
     function countActiveFilters() {
       var active = 0;
@@ -3334,6 +3335,10 @@
       if (keyword && keyword.value && keyword.value.trim()) active++;
       return active;
     }
+
+    // If a toggle already exists on this bar instance, just refresh its label
+    var existing = bar.querySelector('#mobile-filter-toggle');
+    if (existing) { existing.dispatchEvent(new Event('_refresh')); return; }
 
     var toggle = document.createElement('button');
     toggle.type = 'button';
