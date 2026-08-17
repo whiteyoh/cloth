@@ -81,6 +81,14 @@
     </div>
   </div>
 
+  <!-- Compare bar (WN-136) — moved to base.html so it works on all pages -->
+  <div class="compare-bar" id="compare-bar" role="region" aria-label="Item comparison" hidden>
+    <div class="compare-bar-inner">
+      <div class="compare-items" id="compare-items" aria-label="Items selected for comparison"></div>
+      <button type="button" class="btn-compare-clear" id="compare-clear" aria-label="Clear all items from comparison">Clear</button>
+    </div>
+  </div>
+
   <!-- Reusable inline dialog (WN-131) -->
   <dialog id="app-dialog" class="app-dialog" aria-modal="true">
     <form method="dialog" class="app-dialog-form">
