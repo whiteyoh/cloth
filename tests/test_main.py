@@ -721,22 +721,43 @@ class TestExpandParam:
 
 
 class TestImageProxy:
-    def test_valid_image_returns_bytes(self, client):
+    """Image proxy tests — uses client.stream() async context manager."""
+
+    def _make_stream_mock(self, headers: dict, chunks: list[bytes] | None = None, exc=None):
+        """Build a mock that supports `async with client.stream(...) as resp`."""
         from unittest.mock import AsyncMock, MagicMock
+        import contextlib
+
+        async def _aiter_bytes(chunk_size=65536):  # noqa: ARG001
+            if chunks:
+                for chunk in chunks:
+                    yield chunk
 
         mock_resp = MagicMock()
-        mock_resp.headers = {"content-type": "image/jpeg"}
-        mock_resp.content = b"\xff\xd8\xff\xe0" + b"\x00" * 10
+        mock_resp.headers = headers
+        mock_resp.aiter_bytes = _aiter_bytes
 
-        mock_client = AsyncMock()
-        mock_client.get = AsyncMock(return_value=mock_resp)
+        @contextlib.asynccontextmanager
+        async def _stream(*args, **kwargs):  # noqa: ARG001
+            if exc:
+                raise exc
+            yield mock_resp
 
+        mock_client = MagicMock()
+        mock_client.stream = _stream
+        return mock_client
+
+    def test_valid_image_returns_bytes(self, client):
+        image_bytes = b"\xff\xd8\xff\xe0" + b"\x00" * 10
+        mock_client = self._make_stream_mock(
+            {"content-type": "image/jpeg"},
+            chunks=[image_bytes],
+        )
         with patch("main._get_http_client", return_value=mock_client):
             r = client.get("/image-proxy?url=https://example.com/img.jpg")
-
         assert r.status_code == 200
         assert r.headers["content-type"].startswith("image/jpeg")
-        assert r.content == b"\xff\xd8\xff\xe0" + b"\x00" * 10
+        assert r.content == image_bytes
 
     def test_non_http_url_returns_400(self, client):
         r = client.get("/image-proxy?url=ftp://example.com/img.jpg")
@@ -749,45 +770,48 @@ class TestImageProxy:
         assert "Forbidden" in r.json()["error"]
 
     def test_non_image_content_type_returns_400(self, client):
-        from unittest.mock import AsyncMock, MagicMock
-
-        mock_resp = MagicMock()
-        mock_resp.headers = {"content-type": "text/html"}
-        mock_resp.content = b"<html></html>"
-
-        mock_client = AsyncMock()
-        mock_client.get = AsyncMock(return_value=mock_resp)
-
+        mock_client = self._make_stream_mock({"content-type": "text/html"}, chunks=[b"<html>"])
         with patch("main._get_http_client", return_value=mock_client):
             r = client.get("/image-proxy?url=https://example.com/page.html")
-
         assert r.status_code == 400
         assert "Not an image" in r.json()["error"]
 
     def test_timeout_returns_504(self, client):
         import httpx
-        from unittest.mock import AsyncMock
-
-        mock_client = AsyncMock()
-        mock_client.get = AsyncMock(side_effect=httpx.TimeoutException("timed out"))
-
+        mock_client = self._make_stream_mock({}, exc=httpx.TimeoutException("timed out"))
         with patch("main._get_http_client", return_value=mock_client):
             r = client.get("/image-proxy?url=https://example.com/slow.jpg")
-
         assert r.status_code == 504
         assert "timeout" in r.json()["error"].lower()
 
     def test_upstream_error_returns_502(self, client):
-        from unittest.mock import AsyncMock
-
-        mock_client = AsyncMock()
-        mock_client.get = AsyncMock(side_effect=OSError("connection refused"))
-
+        mock_client = self._make_stream_mock({}, exc=OSError("connection refused"))
         with patch("main._get_http_client", return_value=mock_client):
             r = client.get("/image-proxy?url=https://example.com/img.jpg")
-
         assert r.status_code == 502
         assert "Upstream error" in r.json()["error"]
+
+    def test_content_length_over_10mb_returns_413(self, client):
+        """Content-Length header > 10MB → 413 without streaming body."""
+        mock_client = self._make_stream_mock(
+            {"content-type": "image/jpeg", "content-length": str(11 * 1024 * 1024)},
+            chunks=[],
+        )
+        with patch("main._get_http_client", return_value=mock_client):
+            r = client.get("/image-proxy?url=https://example.com/huge.jpg")
+        assert r.status_code == 413
+        assert "too large" in r.json()["error"].lower()
+
+    def test_streaming_over_10mb_returns_413(self, client):
+        """No Content-Length but accumulated bytes > 10MB → 413."""
+        big_chunk = b"\x00" * (11 * 1024 * 1024)
+        mock_client = self._make_stream_mock(
+            {"content-type": "image/jpeg"},
+            chunks=[big_chunk],
+        )
+        with patch("main._get_http_client", return_value=mock_client):
+            r = client.get("/image-proxy?url=https://example.com/stream.jpg")
+        assert r.status_code == 413
 
 
 # ------------------------------------------------------------------ #

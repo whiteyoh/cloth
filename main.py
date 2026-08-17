@@ -729,30 +729,50 @@ async def image_proxy(url: str):
     if any(hostname == p or hostname.startswith(p) for p in _SSRF_PRIVATE):
         return JSONResponse({"error": "Forbidden"}, status_code=400)
 
+    _PROXY_MAX_BYTES = 10 * 1024 * 1024  # 10 MB
+
     url_hash = hashlib.sha256(url.encode()).hexdigest()[:16]
     start = time.monotonic()
     try:
         client = _get_http_client()
-        resp = await client.get(url, timeout=8.0, follow_redirects=True)
+        # Stream the response so we can enforce a size cap without buffering excess data
+        async with client.stream("GET", url, timeout=8.0, follow_redirects=True) as resp:
+            content_type = resp.headers.get("content-type", "")
+            if not content_type.startswith("image/"):
+                _emit({
+                    "event": "image_proxy_error",
+                    "error_type": "not_image",
+                    "url_hash": url_hash,
+                    "content_type": content_type,
+                })
+                return JSONResponse({"error": "Not an image"}, status_code=400)
+
+            # Reject immediately if Content-Length header exceeds cap
+            content_length = resp.headers.get("content-length")
+            if content_length and int(content_length) > _PROXY_MAX_BYTES:
+                _emit({"event": "image_proxy_size_exceeded", "url_hash": url_hash, "size_bytes": int(content_length)})
+                return JSONResponse({"error": "Image too large"}, status_code=413)
+
+            chunks: list[bytes] = []
+            accumulated = 0
+            async for chunk in resp.aiter_bytes(chunk_size=65536):
+                accumulated += len(chunk)
+                if accumulated > _PROXY_MAX_BYTES:
+                    _emit({"event": "image_proxy_size_exceeded", "url_hash": url_hash, "size_bytes": accumulated})
+                    return JSONResponse({"error": "Image too large"}, status_code=413)
+                chunks.append(chunk)
+
+        content = b"".join(chunks)
         latency_ms = round((time.monotonic() - start) * 1000)
-        content_type = resp.headers.get("content-type", "")
-        if not content_type.startswith("image/"):
-            _emit({
-                "event": "image_proxy_error",
-                "error_type": "not_image",
-                "url_hash": url_hash,
-                "content_type": content_type,
-            })
-            return JSONResponse({"error": "Not an image"}, status_code=400)
         _emit({
             "event": "image_proxy_fetched",
             "url_hash": url_hash,
             "content_type": content_type,
-            "size_bytes": len(resp.content),
+            "size_bytes": len(content),
             "latency_ms": latency_ms,
         })
         return Response(
-            content=resp.content,
+            content=content,
             media_type=content_type,
             headers={"Cache-Control": "public, max-age=3600"},
         )
