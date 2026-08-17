@@ -34,6 +34,55 @@
   var _pinchOrigW = 0;
   var _pinchOrigH = 0;
 
+  // Undo/redo history (WN-134)
+  var _history = [];       // array of JSON snapshots
+  var _historyIndex = -1;  // current position in history
+  var _HISTORY_MAX = 20;
+  var _historyPaused = false; // prevent pushes during undo/redo
+
+  function _snapshotLayers() {
+    return JSON.parse(JSON.stringify(canvasLayers));
+  }
+
+  function _pushHistory() {
+    if (_historyPaused) return;
+    // Truncate any future history
+    _history.splice(_historyIndex + 1);
+    _history.push(_snapshotLayers());
+    if (_history.length > _HISTORY_MAX) _history.shift();
+    _historyIndex = _history.length - 1;
+    _syncUndoRedoButtons();
+  }
+
+  function _syncUndoRedoButtons() {
+    var undoBtn = document.getElementById('style-canvas-undo');
+    var redoBtn = document.getElementById('style-canvas-redo');
+    if (undoBtn) undoBtn.disabled = _historyIndex <= 0;
+    if (redoBtn) redoBtn.disabled = _historyIndex >= _history.length - 1;
+  }
+
+  function _restoreHistory(index) {
+    if (index < 0 || index >= _history.length) return;
+    _historyPaused = true;
+    _historyIndex = index;
+    canvasLayers = JSON.parse(JSON.stringify(_history[index]));
+    // Re-load images for layers that have url saved in label (use data-url)
+    // Note: snapshots don't carry img elements; use stored URLs
+    selectedLayerId = null;
+    renderCanvas();
+    renderSidebar();
+    _syncUndoRedoButtons();
+    _historyPaused = false;
+  }
+
+  function canvasUndo() {
+    if (_historyIndex > 0) _restoreHistory(_historyIndex - 1);
+  }
+
+  function canvasRedo() {
+    if (_historyIndex < _history.length - 1) _restoreHistory(_historyIndex + 1);
+  }
+
   // Rotation state (WN-133)
   var _rotating = false;
   var _rotateLayerId = null;
@@ -269,6 +318,7 @@
     };
     canvasLayers.push(layer);
     selectedLayerId = id;
+    _pushHistory(); // WN-134: snapshot after add
     renderCanvas();
     renderSidebar();
 
@@ -313,6 +363,7 @@
         ? canvasLayers[canvasLayers.length - 1].id
         : null;
     }
+    _pushHistory(); // WN-134
     renderCanvas();
     renderSidebar();
     _announce('Layer removed');
@@ -327,6 +378,7 @@
     var tmp = above[0].zIndex;
     above[0].zIndex = layer.zIndex;
     layer.zIndex = tmp;
+    _pushHistory(); // WN-134
     renderCanvas();
     renderSidebar();
   }
@@ -340,6 +392,7 @@
     var tmp = below[0].zIndex;
     below[0].zIndex = layer.zIndex;
     layer.zIndex = tmp;
+    _pushHistory(); // WN-134
     renderCanvas();
     renderSidebar();
   }
@@ -644,6 +697,9 @@
       _pinchActive = false;
       _pinchLayerId = null;
     }
+    var wasDragging = _dragging;
+    var wasResizing = _resizing;
+    var wasRotating = _rotating;
     _dragging = false;
     _resizing = false;
     _rotating = false;
@@ -652,6 +708,8 @@
     _resizeCorner = null;
     _resizeOrigLayer = null;
     _rotateLayerId = null;
+    // Push snapshot after completing any operation (WN-134)
+    if (wasDragging || wasResizing || wasRotating) _pushHistory();
   }
 
   // ------------------------------------------------------------------ //
@@ -702,6 +760,10 @@
     _pinchActive = false;
     _pinchPointers = {};
     _nextLayerId = 1;
+    // Clear undo/redo history on fresh start (WN-134)
+    _history = [];
+    _historyIndex = -1;
+    _syncUndoRedoButtons();
 
     var baseSelector = document.getElementById('style-base-selector');
     var mainArea = document.getElementById('style-canvas-main');
@@ -783,23 +845,22 @@
       } else if (e.key === 'Tab') {
         _trapFocus(e);
       } else if (e.key === 'z' && (e.ctrlKey || e.metaKey) && !e.shiftKey) {
-        // Ctrl+Z / Cmd+Z — undo not yet available (WN-134 not done)
-        // Guard: only intercept when focus is not in a text input outside canvas
+        // Ctrl+Z / Cmd+Z — undo (WN-134)
         var active = document.activeElement;
         var isTextInput = active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA') && active.closest('#style-canvas-modal') === null;
         if (!isTextInput) {
           e.preventDefault();
-          if (typeof window.showToast === 'function') window.showToast('Undo not yet available');
-          _announce('Undo not yet available');
+          canvasUndo();
+          _announce('Undo');
         }
-      } else if (e.key === 'z' && (e.ctrlKey || e.metaKey) && e.shiftKey) {
-        // Ctrl+Shift+Z / Cmd+Shift+Z — redo not yet available
+      } else if ((e.key === 'z' && (e.ctrlKey || e.metaKey) && e.shiftKey) || (e.key === 'y' && (e.ctrlKey || e.metaKey))) {
+        // Ctrl+Shift+Z / Cmd+Shift+Z / Ctrl+Y — redo (WN-134)
         var active2 = document.activeElement;
         var isTextInput2 = active2 && (active2.tagName === 'INPUT' || active2.tagName === 'TEXTAREA') && active2.closest('#style-canvas-modal') === null;
         if (!isTextInput2) {
           e.preventDefault();
-          if (typeof window.showToast === 'function') window.showToast('Redo not yet available');
-          _announce('Redo not yet available');
+          canvasRedo();
+          _announce('Redo');
         }
       }
     });
@@ -974,6 +1035,21 @@
   window.loadCanvasSave = _loadCanvasSave;
 
   // ------------------------------------------------------------------ //
+  // Undo/Redo toolbar buttons (WN-134)                                   //
+  // ------------------------------------------------------------------ //
+  function _initUndoRedoButtons() {
+    var undoBtn = document.getElementById('style-canvas-undo');
+    var redoBtn = document.getElementById('style-canvas-redo');
+    if (undoBtn) {
+      undoBtn.addEventListener('click', function () { canvasUndo(); _announce('Undo'); });
+    }
+    if (redoBtn) {
+      redoBtn.addEventListener('click', function () { canvasRedo(); _announce('Redo'); });
+    }
+    _syncUndoRedoButtons();
+  }
+
+  // ------------------------------------------------------------------ //
   // Download button (WN-114)                                             //
   // ------------------------------------------------------------------ //
   function _initDownloadButton() {
@@ -1040,6 +1116,7 @@
   // ------------------------------------------------------------------ //
   document.addEventListener('DOMContentLoaded', function () {
     _initModalEvents();
+    _initUndoRedoButtons();
     _initDownloadButton();
     _initSaveButton();
     initStyleItButtons();
