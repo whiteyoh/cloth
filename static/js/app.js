@@ -1945,7 +1945,7 @@
     setOutfits(outfits);
   }
 
-  function buildOutfitBoardHtml(outfit) {
+  function buildOutfitBoardHtml(outfit, isFirst, isLast) {
     var itemsHtml = '';
     if (outfit.items.length) {
       itemsHtml = '<ul class="outfit-mini-grid" aria-label="Items in ' + escapeHtml(outfit.name) + '">';
@@ -1979,6 +1979,8 @@
       + '<div class="outfit-board-header">'
       + '<h2 class="outfit-board-name">' + escapeHtml(outfit.name) + '</h2>'
       + '<div class="outfit-board-controls">'
+      + '<button class="btn-outfit-move-up" data-outfit-id="' + escapeHtml(outfit.id) + '" aria-label="Move ' + escapeHtml(outfit.name) + ' up"' + (isFirst ? ' disabled' : '') + '>↑</button>'
+      + '<button class="btn-outfit-move-down" data-outfit-id="' + escapeHtml(outfit.id) + '" aria-label="Move ' + escapeHtml(outfit.name) + ' down"' + (isLast ? ' disabled' : '') + '>↓</button>'
       + '<button class="btn-rename-outfit" data-outfit-id="' + escapeHtml(outfit.id) + '" aria-label="Rename outfit ' + escapeHtml(outfit.name) + '">Rename</button>'
       + '<button class="btn-share-outfit" data-outfit-id="' + escapeHtml(outfit.id) + '" aria-label="Share outfit ' + escapeHtml(outfit.name) + '">Share</button>'
       + '<button class="btn-complete-outfit" data-outfit-id="' + escapeHtml(outfit.id) + '" aria-label="Complete outfit ' + escapeHtml(outfit.name) + '"'
@@ -2008,10 +2010,41 @@
     }
 
     var html = '';
-    outfits.forEach(function (outfit) {
-      html += buildOutfitBoardHtml(outfit);
+    outfits.forEach(function (outfit, idx) {
+      html += buildOutfitBoardHtml(outfit, idx === 0, idx === outfits.length - 1);
     });
     container.innerHTML = html;
+
+    // Wire up move-up/move-down buttons (WN-139)
+    container.querySelectorAll('.btn-outfit-move-up').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var outfitId = btn.dataset.outfitId;
+        var stored = getOutfits();
+        var idx = stored.findIndex(function (o) { return o.id === outfitId; });
+        if (idx > 0) {
+          var tmp = stored[idx - 1];
+          stored[idx - 1] = stored[idx];
+          stored[idx] = tmp;
+          setOutfits(stored);
+          renderOutfitsPage();
+        }
+      });
+    });
+
+    container.querySelectorAll('.btn-outfit-move-down').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var outfitId = btn.dataset.outfitId;
+        var stored = getOutfits();
+        var idx = stored.findIndex(function (o) { return o.id === outfitId; });
+        if (idx >= 0 && idx < stored.length - 1) {
+          var tmp = stored[idx + 1];
+          stored[idx + 1] = stored[idx];
+          stored[idx] = tmp;
+          setOutfits(stored);
+          renderOutfitsPage();
+        }
+      });
+    });
 
     // Wire up image fallbacks
     container.querySelectorAll('.outfit-mini-image img').forEach(function (img) {
