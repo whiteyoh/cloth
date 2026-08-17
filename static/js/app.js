@@ -1216,7 +1216,8 @@
     });
 
     group.appendChild(chipsDiv);
-    bar.insertBefore(group, bar.firstChild);
+    var filterToggle = bar.querySelector('#mobile-filter-toggle');
+    bar.insertBefore(group, filterToggle ? filterToggle.nextSibling : bar.firstChild);
 
     chipsDiv.querySelectorAll('.retailer-chip').forEach(function (chip) {
       chip.addEventListener('click', function () {
@@ -1564,6 +1565,7 @@
         return '<button type="button" class="filter-chip size-chip" data-size="' + s + '" aria-pressed="false">' + s + '</button>';
       }).join('');
       bodyHtml = '<div class="filter-sort-bar" id="filter-sort-bar" aria-label="Filter and sort results">'
+        + '<button type="button" class="mobile-filter-toggle" id="mobile-filter-toggle" aria-expanded="false" aria-controls="filter-sort-bar">Filters</button>'
         + '<div class="color-filter-group" role="group" aria-label="Color filter">'
         + '<span class="filter-label">Color:</span>'
         + '<div class="filter-chips color-chips">' + colorChipsHtml + '</div>'
@@ -3319,31 +3321,23 @@
     // Re-bind click on any new product images — lightbox uses delegation, nothing extra needed
   }
 
-  // WN-120: mobile filter bar collapse
+  // WN-120: mobile filter bar collapse — toggle button is always in HTML; this only wires behaviour
   function initMobileFilterToggle() {
     var bar = document.getElementById('filter-sort-bar');
     if (!bar) return;
+    var toggle = bar.querySelector('#mobile-filter-toggle');
+    if (!toggle) return;
     if (!window.matchMedia('(max-width: 768px)').matches) return;
-    // No _mobileToggleBound guard — renderResultsRegion recreates the bar element each time
 
     function countActiveFilters() {
       var active = 0;
-      bar.querySelectorAll('.filter-chip[aria-pressed="true"]:not([data-min=""]), .filter-chip.active').forEach(function (el) {
+      bar.querySelectorAll('.filter-chip[aria-pressed="true"]').forEach(function (el) {
         if (!(el.dataset.min === '' && el.dataset.max === '')) active++;
       });
       var keyword = bar.querySelector('#keyword-filter');
       if (keyword && keyword.value && keyword.value.trim()) active++;
       return active;
     }
-
-    // If a toggle already exists on this bar instance, just refresh its label
-    var existing = bar.querySelector('#mobile-filter-toggle');
-    if (existing) { existing.dispatchEvent(new Event('_refresh')); return; }
-
-    var toggle = document.createElement('button');
-    toggle.type = 'button';
-    toggle.id = 'mobile-filter-toggle';
-    toggle.className = 'mobile-filter-toggle';
 
     function updateToggleLabel() {
       var n = countActiveFilters();
@@ -3354,13 +3348,15 @@
     var savedOpen = sessionStorage.getItem('cloth_filter_open') === '1';
     if (savedOpen) bar.classList.add('is-expanded');
 
-    toggle.addEventListener('click', function () {
-      var open = bar.classList.toggle('is-expanded');
-      sessionStorage.setItem('cloth_filter_open', open ? '1' : '0');
-      updateToggleLabel();
-    });
+    if (!toggle._filterBound) {
+      toggle._filterBound = true;
+      toggle.addEventListener('click', function () {
+        var open = bar.classList.toggle('is-expanded');
+        sessionStorage.setItem('cloth_filter_open', open ? '1' : '0');
+        updateToggleLabel();
+      });
+    }
 
-    bar.insertBefore(toggle, bar.firstChild);
     updateToggleLabel();
   }
 
