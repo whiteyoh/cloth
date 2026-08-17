@@ -2787,3 +2787,89 @@ a:hover {
   background: #e2e3e5;
   color: #383d41;
 }
+
+/* ------------------------------------------------------------------ */
+/* Canvas saves section (WN-148)                                        */
+/* ------------------------------------------------------------------ */
+.canvas-saves-section {
+  margin-top: var(--space-xl);
+  border-top: 1px solid var(--colour-border);
+  padding-top: var(--space-lg);
+}
+
+.canvas-saves-heading {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--colour-navy);
+  margin-bottom: var(--space-md);
+}
+
+.canvas-saves-list {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-md);
+  padding: 0;
+  margin: 0;
+}
+
+.canvas-save-card {
+  background: var(--colour-surface);
+  border: 1px solid var(--colour-border);
+  border-radius: var(--radius);
+  padding: var(--space-sm);
+  width: 160px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  box-shadow: var(--shadow);
+}
+
+.canvas-save-thumb {
+  width: 100%;
+  height: 120px;
+  object-fit: contain;
+  border-radius: calc(var(--radius) - 2px);
+  background: #f0f0f0;
+}
+
+.canvas-save-thumb-placeholder {
+  width: 100%;
+  height: 120px;
+  background: #e0e0e0;
+  border-radius: calc(var(--radius) - 2px);
+}
+
+.canvas-save-name {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--colour-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.canvas-save-date {
+  font-size: 0.75rem;
+  color: var(--colour-text-muted);
+}
+
+.btn-delete-canvas-save {
+  font-size: 0.75rem;
+  color: var(--colour-text-muted);
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  text-align: left;
+  text-decoration: underline;
+}
+
+.btn-delete-canvas-save:hover {
+  color: var(--colour-accent);
+}
+
+.canvas-saves-empty {
+  color: var(--colour-text-muted);
+  font-size: 0.9rem;
+}

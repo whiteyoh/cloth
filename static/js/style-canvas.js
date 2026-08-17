@@ -716,6 +716,138 @@
   }
 
   // ------------------------------------------------------------------ //
+  // Canvas save / load (WN-148)                                         //
+  // ------------------------------------------------------------------ //
+  var CANVAS_SAVES_KEY = 'cloth_canvas_saves';
+
+  function _getCanvasSaves() {
+    try { return JSON.parse(localStorage.getItem(CANVAS_SAVES_KEY) || '[]'); } catch (e) { return []; }
+  }
+  function _setCanvasSaves(saves) {
+    try { localStorage.setItem(CANVAS_SAVES_KEY, JSON.stringify(saves)); } catch (e) { /* ignore */ }
+  }
+
+  function _saveCanvas() {
+    var canvas = _getCanvas();
+    if (!canvas) return;
+    if (!canvasLayers.length && !baseImage) {
+      _announce('Nothing to save — add a layer first');
+      return;
+    }
+    var name = window.prompt('Name this canvas save:', 'My canvas');
+    if (!name || !name.trim()) return;
+
+    var serialisedLayers = canvasLayers.map(function (l) {
+      return {id: l.id, src: l.img ? l.img.src : '', x: l.x, y: l.y, w: l.w, h: l.h, zIndex: l.zIndex, label: l.label, placeholderColor: l.placeholderColor};
+    });
+    var baseSrc = baseImage ? baseImage.src : null;
+    var thumbnail = '';
+    try { thumbnail = canvas.toDataURL('image/png'); } catch (e) { /* cross-origin */ }
+
+    var save = {
+      id: Date.now().toString(36) + Math.random().toString(36).slice(2, 5),
+      name: name.trim(),
+      savedAt: new Date().toISOString(),
+      baseSrc: baseSrc,
+      layers: serialisedLayers,
+      thumbnail: thumbnail
+    };
+    var saves = _getCanvasSaves();
+    saves.unshift(save);
+    saves = saves.slice(0, 20); // keep last 20
+    _setCanvasSaves(saves);
+    _announce('Canvas saved');
+    if (typeof window.renderCanvasSaves === 'function') window.renderCanvasSaves();
+    if (typeof window.showToast === 'function') window.showToast('Canvas saved');
+  }
+
+  function _loadCanvasSave(save) {
+    if (!save) return;
+    _openModal('', '');
+
+    // Restore base image then layers
+    var doRestore = function () {
+      save.layers.forEach(function (layerData) {
+        var img = new Image();
+        img.onload = function () {
+          canvasLayers.push({
+            id: _nextLayerId++,
+            img: img,
+            x: layerData.x, y: layerData.y,
+            w: layerData.w, h: layerData.h,
+            zIndex: layerData.zIndex,
+            label: layerData.label || '',
+            placeholderColor: layerData.placeholderColor || '#f0c0c0'
+          });
+          renderCanvas();
+          renderSidebar();
+        };
+        img.onerror = function () {
+          // Placeholder layer without image
+          canvasLayers.push({
+            id: _nextLayerId++,
+            img: null,
+            x: layerData.x, y: layerData.y,
+            w: layerData.w, h: layerData.h,
+            zIndex: layerData.zIndex,
+            label: layerData.label || '',
+            placeholderColor: layerData.placeholderColor || '#f0c0c0'
+          });
+          renderCanvas();
+          renderSidebar();
+        };
+        if (layerData.src) { img.src = layerData.src; } else { img.dispatchEvent(new Event('error')); }
+      });
+    };
+
+    var baseSelector = document.getElementById('style-base-selector');
+    var mainArea = document.getElementById('style-canvas-main');
+
+    if (save.baseSrc) {
+      var baseImg = new Image();
+      baseImg.onload = function () {
+        baseImage = baseImg;
+        if (baseSelector) baseSelector.style.display = 'none';
+        if (mainArea) mainArea.style.display = '';
+        renderSidebar();
+        renderCanvas();
+        doRestore();
+      };
+      baseImg.onerror = function () {
+        if (baseSelector) baseSelector.style.display = 'none';
+        if (mainArea) mainArea.style.display = '';
+        renderSidebar();
+        doRestore();
+      };
+      baseImg.src = save.baseSrc;
+    } else {
+      if (baseSelector) baseSelector.style.display = 'none';
+      if (mainArea) mainArea.style.display = '';
+      renderSidebar();
+      doRestore();
+    }
+  }
+
+  function _initSaveButton() {
+    var actions = document.querySelector('.style-canvas-actions');
+    if (!actions || actions._saveBtnBound) return;
+    actions._saveBtnBound = true;
+    var btn = document.createElement('button');
+    btn.type = 'button';
+    btn.id = 'style-canvas-save';
+    btn.className = 'btn-secondary';
+    btn.textContent = 'Save canvas';
+    btn.addEventListener('click', _saveCanvas);
+    // Insert after the download button
+    var dlBtn = document.getElementById('style-canvas-download');
+    if (dlBtn) dlBtn.insertAdjacentElement('afterend', btn);
+    else actions.appendChild(btn);
+  }
+
+  // Expose load function for app.js to call
+  window.loadCanvasSave = _loadCanvasSave;
+
+  // ------------------------------------------------------------------ //
   // Download button (WN-114)                                             //
   // ------------------------------------------------------------------ //
   function _initDownloadButton() {
@@ -783,6 +915,7 @@
   document.addEventListener('DOMContentLoaded', function () {
     _initModalEvents();
     _initDownloadButton();
+    _initSaveButton();
     initStyleItButtons();
   });
 

@@ -1667,6 +1667,67 @@
     });
   }
 
+  // ------------------------------------------------------------------ //
+  // Canvas saves section on outfits page (WN-148)                      //
+  // ------------------------------------------------------------------ //
+  var CANVAS_SAVES_KEY = 'cloth_canvas_saves';
+
+  function _getCanvasSaves() {
+    try { return JSON.parse(localStorage.getItem(CANVAS_SAVES_KEY) || '[]'); } catch (e) { return []; }
+  }
+  function _setCanvasSaves(saves) {
+    try { localStorage.setItem(CANVAS_SAVES_KEY, JSON.stringify(saves)); } catch (e) { /* ignore */ }
+  }
+
+  function renderCanvasSaves() {
+    var container = document.getElementById('canvas-saves-container');
+    if (!container) return;
+    var saves = _getCanvasSaves();
+    if (!saves.length) {
+      container.innerHTML = '<p class="canvas-saves-empty">No saved canvases yet. Build a canvas in the style tool and click "Save canvas".</p>';
+      return;
+    }
+    var html = '<ul class="canvas-saves-list" aria-label="Saved canvases">';
+    saves.forEach(function (save) {
+      var date = '';
+      try { date = new Date(save.savedAt).toLocaleDateString(); } catch (e) { /* ignore */ }
+      var thumbHtml = save.thumbnail
+        ? '<img class="canvas-save-thumb" src="' + escapeHtml(save.thumbnail) + '" alt="' + escapeHtml(save.name) + ' preview">'
+        : '<div class="canvas-save-thumb-placeholder" aria-hidden="true"></div>';
+      html += '<li class="canvas-save-card">'
+        + thumbHtml
+        + '<p class="canvas-save-name">' + escapeHtml(save.name) + '</p>'
+        + '<p class="canvas-save-date">' + escapeHtml(date) + '</p>'
+        + '<button class="btn-open-canvas-save btn-secondary" data-save-id="' + escapeHtml(save.id) + '" aria-label="Open ' + escapeHtml(save.name) + '">Open</button>'
+        + '<button class="btn-delete-canvas-save" data-save-id="' + escapeHtml(save.id) + '" aria-label="Delete ' + escapeHtml(save.name) + '">Remove</button>'
+        + '</li>';
+    });
+    html += '</ul>';
+    container.innerHTML = html;
+
+    container.querySelectorAll('.btn-open-canvas-save').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var id = btn.dataset.saveId;
+        var saves = _getCanvasSaves();
+        var save = null;
+        for (var i = 0; i < saves.length; i++) { if (saves[i].id === id) { save = saves[i]; break; } }
+        if (save && typeof window.loadCanvasSave === 'function') window.loadCanvasSave(save);
+      });
+    });
+
+    container.querySelectorAll('.btn-delete-canvas-save').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var id = btn.dataset.saveId;
+        var saves = _getCanvasSaves().filter(function (s) { return s.id !== id; });
+        _setCanvasSaves(saves);
+        renderCanvasSaves();
+      });
+    });
+  }
+
+  // Expose so style-canvas.js can call it after saving
+  window.renderCanvasSaves = renderCanvasSaves;
+
   function initOutfitsPage() {
     var newBtn = document.getElementById('new-outfit-btn');
     if (!newBtn) return;
@@ -1692,6 +1753,7 @@
     }
 
     renderOutfitsPage();
+    renderCanvasSaves();
   }
 
   function renderSharedOutfit(shared) {
