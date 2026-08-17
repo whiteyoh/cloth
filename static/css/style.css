@@ -3069,6 +3069,44 @@ a:hover {
 }
 
 /* ------------------------------------------------------------------ */
+/* Back-to-top button (WN-158)                                          */
+/* ------------------------------------------------------------------ */
+.btn-back-to-top {
+  position: fixed;
+  bottom: var(--space-xl);
+  right: var(--space-xl);
+  z-index: 500;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--colour-navy);
+  color: #fff;
+  border: none;
+  font-size: 1.2rem;
+  cursor: pointer;
+  box-shadow: var(--shadow-hover);
+  transition: opacity 0.2s, transform 0.2s, background 0.15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-back-to-top:hover,
+.btn-back-to-top:focus-visible {
+  background: var(--colour-accent);
+  transform: translateY(-2px);
+  outline: 2px solid var(--colour-accent);
+  outline-offset: 3px;
+}
+
+@media (max-width: 600px) {
+  .btn-back-to-top {
+    bottom: 72px; /* above mobile bottom nav */
+    right: var(--space-md);
+  }
+}
+
+/* ------------------------------------------------------------------ */
 /* Mobile bottom navigation (WN-157)                                    */
 /* ------------------------------------------------------------------ */
 .mobile-bottom-nav {

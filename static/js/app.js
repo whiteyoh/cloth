@@ -2807,6 +2807,28 @@
     }
   }
 
+  // WN-158: back-to-top button
+  function initBackToTop() {
+    if (window._backToTopBound) return;
+    window._backToTopBound = true;
+
+    var btn = document.createElement('button');
+    btn.id = 'back-to-top';
+    btn.className = 'btn-back-to-top';
+    btn.setAttribute('aria-label', 'Back to top');
+    btn.textContent = '↑';
+    btn.style.display = 'none';
+    document.body.appendChild(btn);
+
+    btn.addEventListener('click', function () {
+      window.scrollTo({top: 0, behavior: 'smooth'});
+    });
+
+    window.addEventListener('scroll', function () {
+      btn.style.display = window.scrollY > 400 ? '' : 'none';
+    }, {passive: true});
+  }
+
   // WN-157: mobile bottom navigation
   function initMobileNav() {
     if (window._mobileNavBound) return;
@@ -2843,6 +2865,7 @@
     initSearchAutocomplete();
     initImageLightbox(); // WN-156
     initMobileNav(); // WN-157
+    initBackToTop(); // WN-158
 
     // Per-page init
     initPage();
