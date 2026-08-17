@@ -574,6 +574,12 @@ async def outfits(request: Request):
     return templates.TemplateResponse(request, "outfits.html")
 
 
+@app.get("/list", response_class=HTMLResponse)
+async def curated_list(request: Request, v: str = ""):
+    """Render a shareable curated list page. Items are encoded as base64 JSON in ?v=."""
+    return templates.TemplateResponse(request, "list.html", {"v": v})
+
+
 class _OutfitItem(BaseModel):
     name: str
 

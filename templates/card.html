@@ -83,6 +83,15 @@
               data-url="{{ product.purchase_url }}"
               aria-label="Compare {{ product.name }}"
               aria-pressed="false">Compare</button>
+      <button class="btn-add-to-list"
+              data-id="{{ product.id }}"
+              data-name="{{ product.name|e }}"
+              data-price="{{ product.price_display or '' }}"
+              data-retailer="{{ product.retailer_name }}"
+              data-image="{{ product.image_url or '' }}"
+              data-url="{{ product.purchase_url }}"
+              aria-label="Add {{ product.name }} to curated list"
+              aria-pressed="false">+ List</button>
     </div>
   </div>
 </li>

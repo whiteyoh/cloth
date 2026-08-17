@@ -966,3 +966,27 @@ class TestSearchRefine:
         assert resp.status_code == 200
         called_refinement = mock_refine.call_args[0][1]
         assert len(called_refinement) <= 200
+
+
+# ------------------------------------------------------------------ #
+# GET /list (WN-046)                                                   #
+# ------------------------------------------------------------------ #
+
+
+class TestCuratedList:
+    def test_list_page_renders(self, client):
+        r = client.get("/list")
+        assert r.status_code == 200
+
+    def test_list_page_with_v_param(self, client):
+        import base64, json
+        items = [{"id": "1", "name": "Test Shirt", "price": "£30", "retailer": "ASOS", "image": "", "url": "https://example.com"}]
+        encoded = base64.b64encode(json.dumps(items).encode()).decode()
+        r = client.get(f"/list?v={encoded}")
+        assert r.status_code == 200
+        assert "curated-list-page" in r.text
+
+    def test_list_page_empty_v_shows_empty(self, client):
+        r = client.get("/list?v=")
+        assert r.status_code == 200
+        assert "curated-list-empty" in r.text
