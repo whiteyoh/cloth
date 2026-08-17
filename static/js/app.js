@@ -2807,11 +2807,42 @@
     }
   }
 
+  // WN-157: mobile bottom navigation
+  function initMobileNav() {
+    if (window._mobileNavBound) return;
+    window._mobileNavBound = true;
+
+    var nav = document.querySelector('.mobile-bottom-nav');
+    if (!nav) return;
+
+    // Search tab focuses the header search input
+    var searchTab = nav.querySelector('[data-nav="search"]');
+    if (searchTab) {
+      searchTab.addEventListener('click', function () {
+        var input = document.querySelector('.header-search input[name="q"]');
+        if (input) { input.focus(); input.select(); }
+      });
+    }
+
+    // Set active tab based on current path
+    var path = window.location.pathname;
+    nav.querySelectorAll('.mobile-nav-tab[href]').forEach(function (tab) {
+      var href = tab.getAttribute('href');
+      var isActive = href === '/' ? path === '/' : path.startsWith(href);
+      if (isActive) {
+        tab.setAttribute('aria-current', 'page');
+      } else {
+        tab.removeAttribute('aria-current');
+      }
+    });
+  }
+
   document.addEventListener('DOMContentLoaded', function () {
     // One-time init that should not repeat on SPA page swaps
     initThemeToggle();
     initSearchAutocomplete();
     initImageLightbox(); // WN-156
+    initMobileNav(); // WN-157
 
     // Per-page init
     initPage();

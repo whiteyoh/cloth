@@ -3067,3 +3067,66 @@ a:hover {
   color: var(--colour-text-muted);
   font-size: 0.9rem;
 }
+
+/* ------------------------------------------------------------------ */
+/* Mobile bottom navigation (WN-157)                                    */
+/* ------------------------------------------------------------------ */
+.mobile-bottom-nav {
+  display: none; /* hidden above 600px */
+}
+
+@media (max-width: 600px) {
+  .mobile-bottom-nav {
+    display: flex;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 200;
+    background: var(--colour-navy);
+    border-top: 1px solid rgba(255, 255, 255, 0.12);
+    padding-bottom: env(safe-area-inset-bottom, 0);
+  }
+
+  .mobile-nav-tab {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 0.5rem 0.25rem;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.7rem;
+    font-weight: 500;
+    text-decoration: none;
+    border: none;
+    background: none;
+    cursor: pointer;
+    min-height: 52px;
+    transition: color 0.15s;
+  }
+
+  .mobile-nav-tab:hover,
+  .mobile-nav-tab:focus-visible,
+  .mobile-nav-tab[aria-current="page"] {
+    color: #ffffff;
+    outline: none;
+  }
+
+  .mobile-nav-tab[aria-current="page"] {
+    background: rgba(255, 255, 255, 0.08);
+    border-top: 2px solid var(--colour-accent);
+  }
+
+  /* Add padding so content is not hidden behind bottom nav */
+  body {
+    padding-bottom: 64px;
+  }
+
+  /* Hide header nav links on mobile — bottom nav replaces them */
+  .site-header-top .outfits-link,
+  .site-header-top .saved-link,
+  .site-header-top .btn-theme-toggle {
+    display: none;
+  }
+}
