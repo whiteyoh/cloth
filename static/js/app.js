@@ -1343,8 +1343,15 @@
       .then(function (res) { return res.json(); })
       .then(function (data) {
         clearTimers();
+
+        // Retry on server-side timeout errors (e.g. Render.com cold-start first request)
+        if (data.error_message && !_isRetry) {
+          setTimeout(function () { doAjaxSearch(query, form, true, _skipPhase2); }, 800);
+          return;
+        }
+
         if (form) setSearchButtonState(form, false);
-        history.pushState({query: data.query}, '', '/search?q=' + encodeURIComponent(data.query));
+        history.pushState({query: data.query, type: 'search'}, '', '/search?q=' + encodeURIComponent(data.query));
         var headerInput = document.querySelector('.header-search input[name="q"]');
         if (headerInput) headerInput.value = data.query;
         renderResultsRegion(data);
@@ -1359,7 +1366,7 @@
         if (form) setSearchButtonState(form, false);
         if (!_isRetry) {
           // Retry once — handles cold-start failures before falling back to full nav
-          setTimeout(function () { doAjaxSearch(query, form, true, _skipPhase2); }, 500);
+          setTimeout(function () { doAjaxSearch(query, form, true, _skipPhase2); }, 800);
         } else {
           window.location.href = '/search?q=' + encodeURIComponent(query);
         }

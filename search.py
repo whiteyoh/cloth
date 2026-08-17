@@ -31,7 +31,7 @@ def _get_http_client() -> httpx.AsyncClient:
     """Return the module-level AsyncClient singleton, creating it if necessary."""
     global _http_client
     if _http_client is None:
-        _http_client = httpx.AsyncClient(timeout=10.0)
+        _http_client = httpx.AsyncClient(timeout=28.0)
     return _http_client
 
 
