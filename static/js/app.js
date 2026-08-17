@@ -3263,6 +3263,7 @@
     if (typeof window.initStyleItButtons === 'function') window.initStyleItButtons();
     initStickyFilterBar();
     initMobileFilterToggle();
+    initMobileBottomSearch(); // WN-168
 
     // One-time document-level setup
     _initSpaNavigation();
@@ -3319,6 +3320,22 @@
   function initImageLightbox() {
     _initLightbox();
     // Re-bind click on any new product images — lightbox uses delegation, nothing extra needed
+  }
+
+  // WN-168: mobile persistent bottom search bar — shows on results page only
+  function initMobileBottomSearch() {
+    var bar = document.getElementById('mobile-search-bar');
+    if (!bar) return;
+    if (!window.matchMedia('(max-width: 768px)').matches) {
+      bar.setAttribute('hidden', '');
+      return;
+    }
+    var onResults = !!document.querySelector('.results-header');
+    if (onResults) {
+      bar.removeAttribute('hidden');
+    } else {
+      bar.setAttribute('hidden', '');
+    }
   }
 
   // WN-120: mobile filter bar collapse — toggle button is always in HTML; this only wires behaviour

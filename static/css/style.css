@@ -3595,6 +3595,66 @@ a:hover {
 }
 
 /* ------------------------------------------------------------------ */
+/* Mobile bottom search bar (WN-168)                                    */
+/* ------------------------------------------------------------------ */
+.mobile-search-bar {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .mobile-search-bar {
+    display: flex;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 100;
+    background: var(--colour-bg);
+    border-top: 1px solid var(--colour-border);
+    padding: 0.5rem 0.75rem;
+    padding-bottom: calc(0.5rem + env(safe-area-inset-bottom));
+    gap: 0.5rem;
+    box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.08);
+  }
+
+  .mobile-search-bar[hidden] {
+    display: none !important;
+  }
+
+  .mobile-search-form {
+    display: flex;
+    flex: 1;
+    gap: 0.5rem;
+  }
+
+  .mobile-search-input {
+    flex: 1;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid var(--colour-border);
+    border-radius: var(--radius);
+    font-size: 1rem;
+    background: var(--colour-surface);
+    color: var(--colour-text);
+  }
+
+  .mobile-search-submit {
+    padding: 0.5rem 0.75rem;
+    min-width: 44px;
+    min-height: 44px;
+    border: none;
+    border-radius: var(--radius);
+    background: var(--colour-accent);
+    color: #fff;
+    font-size: 1.1rem;
+    cursor: pointer;
+  }
+
+  body:has(.mobile-search-bar:not([hidden])) main {
+    padding-bottom: 80px;
+  }
+}
+
+/* ------------------------------------------------------------------ */
 /* prefers-reduced-motion (WN-126)                                      */
 /* Disable all transitions and animations for users who request it.     */
 /* ------------------------------------------------------------------ */
