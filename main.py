@@ -462,7 +462,7 @@ async def get_search(request: Request, q: str = "", fresh: bool = False, format:
 
     # When no results, ask Claude for alternative query suggestions (degrades gracefully)
     llm_suggestions: list[str] = []
-    if not products and not want_json and os.environ.get("ANTHROPIC_API_KEY"):
+    if not products and os.environ.get("ANTHROPIC_API_KEY"):
         try:
             llm_suggestions = await suggest_alternatives(q_stripped)
         except (LLMError, LLMNotConfiguredError):
@@ -482,6 +482,7 @@ async def get_search(request: Request, q: str = "", fresh: bool = False, format:
             "expand_available": bool(os.environ.get("ANTHROPIC_API_KEY")),
             "start": start,
             "has_more": result_count == 10,
+            "llm_suggestions": llm_suggestions,
         })
 
     return templates.TemplateResponse(

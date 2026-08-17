@@ -1489,12 +1489,18 @@
           + '</div>';
       }
     } else if (!data.error_message) {
+      var suggestions = (data.llm_suggestions && data.llm_suggestions.length)
+        ? data.llm_suggestions
+        : ['navy chinos', 'floral midi dress', 'oversized cream jumper', 'wool coat', 'white trainers', 'smart casual shirt'];
+      var suggestionLabel = (data.llm_suggestions && data.llm_suggestions.length)
+        ? '<p>Claude suggests trying:</p>'
+        : '<p>Try one of these searches:</p>';
       bodyHtml = '<section class="empty-state">'
         + '<h2>No results found</h2>'
         + '<p>We couldn\'t find any matching items for <em>' + escapeHtml(data.query) + '</em>.</p>'
-        + '<p>Try one of these searches:</p>'
-        + '<ul class="example-searches" aria-label="Example searches">'
-        + ['navy chinos', 'floral midi dress', 'oversized cream jumper', 'wool coat', 'white trainers', 'smart casual shirt'].map(function (ex) {
+        + suggestionLabel
+        + '<ul class="example-searches" aria-label="Suggested searches">'
+        + suggestions.map(function (ex) {
           return '<li><a href="/search?q=' + encodeURIComponent(ex) + '" class="example-chip">' + escapeHtml(ex) + '</a></li>';
         }).join('')
         + '</ul></section>';
