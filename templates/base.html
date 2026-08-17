@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Cloth{% endblock %}</title>
+  <meta name="try-on-enabled" content="{{ 'true' if try_on_enabled else 'false' }}">
+  <link rel="stylesheet" href="/static/css/style.css">
+  <script src="/static/js/theme-init.js"></script>
+</head>
+<body>
+  <header class="site-header">
+    <div class="container">
+      <div class="site-header-top">
+        <a href="/" class="logo">Cloth</a>
+        <a href="/outfits" class="outfits-link" aria-label="Outfit boards">Outfits (<span id="outfits-count">0</span>)</a>
+        <a href="/saved" class="saved-link" id="saved-link" aria-label="Saved items">Saved (<span id="saved-count">0</span>)</a>
+        <button type="button" id="theme-toggle" class="btn-theme-toggle" aria-label="Toggle dark mode" aria-pressed="false">&#9788;</button>
+      </div>
+      <form class="header-search" method="get" action="/search">
+        <input type="text" name="q" placeholder="Describe a clothing item…"
+               value="{{ query|default('') }}" maxlength="500" aria-label="Search clothing"
+               list="cloth-autocomplete-header" autocomplete="off">
+        <datalist id="cloth-autocomplete-header"></datalist>
+        <button type="submit">Search</button>
+      </form>
+    </div>
+  </header>
+  <main class="container">
+    {% block content %}{% endblock %}
+  </main>
+  <footer class="site-footer">
+    <div class="container">
+      <p><a href="/privacy">Privacy Notice</a> &middot; Prices are indicative. Check the retailer for current price and availability.</p>
+    </div>
+  </footer>
+  <script src="/static/js/cloth-pure.js"></script>
+  <script src="/static/js/app.js"></script>
+  <script src="/static/js/style-canvas.js"></script>
+
+  <!-- Style canvas modal (WN-112) -->
+  <div id="style-canvas-modal" role="dialog" aria-modal="true" aria-label="Style canvas" style="display:none">
+    <div class="style-canvas-inner">
+      <button class="style-canvas-close" aria-label="Close style canvas">&#215;</button>
+      <div class="style-canvas-base-selector" id="style-base-selector">
+        <p>Choose a base:</p>
+        <button class="base-option" data-silhouette="/static/img/silhouettes/neutral.svg" aria-label="Neutral silhouette">Neutral</button>
+        <button class="base-option" data-silhouette="/static/img/silhouettes/feminine.svg" aria-label="Feminine silhouette">Feminine</button>
+        <button class="base-option" data-silhouette="/static/img/silhouettes/masculine.svg" aria-label="Masculine silhouette">Masculine</button>
+        <label class="base-option-upload">Upload photo<input type="file" id="base-photo-upload" accept="image/jpeg,image/png" style="display:none"></label>
+      </div>
+      <div id="style-canvas-main" style="display:none">
+        <div class="style-canvas-actions">
+          <button type="button" id="style-canvas-download" class="btn-secondary">Download PNG</button>
+        </div>
+        <div class="style-canvas-editor">
+          <canvas id="style-canvas" width="500" height="700"></canvas>
+          <div class="style-canvas-sidebar" id="style-canvas-sidebar" aria-label="Layer controls"></div>
+        </div>
+      </div>
+      <div id="style-canvas-live" aria-live="polite" class="sr-only"></div>
+    </div>
+  </div>
+</body>
+</html>

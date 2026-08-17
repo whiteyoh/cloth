@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}Saved items — Cloth{% endblock %}
+{% block content %}
+<section class="saved-page">
+  <div class="saved-page-header">
+    <h1>Saved items</h1>
+    <button id="share-saved-btn" class="btn-share-saved" style="display:none" aria-label="Share saved list">Share list</button>
+  </div>
+  <div id="shared-saved-panel" style="display:none" aria-live="polite"></div>
+  <div class="collections-bar" id="collections-bar" aria-label="Collections">
+    <div class="collections-chips" id="collections-chips" role="tablist">
+      <button type="button" class="collection-chip active" role="tab" aria-selected="true" data-collection-id="">All</button>
+    </div>
+    <button type="button" class="btn-new-collection" id="btn-new-collection" aria-label="Create new collection">+ New collection</button>
+  </div>
+  <div id="saved-items-container">
+    <p class="saved-empty">No saved items yet. Browse and tap &#9825; to save items.</p>
+  </div>
+  <button id="clear-saved-btn" class="btn-clear-saved" style="display:none">Clear all saved items</button>
+</section>
+{% endblock %}

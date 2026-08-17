@@ -1,0 +1,186 @@
+{% extends "base.html" %}
+{% block title %}{{ query }} — Cloth{% endblock %}
+{% block content %}
+<div id="results-region">
+<section class="results-header" data-query="{{ query|e }}">
+  <h1>
+    {% if result_count is defined and result_count is not none %}
+      {{ result_count }} result{% if result_count != 1 %}s{% endif %} for <em>{{ query }}</em>
+    {% else %}
+      Results for <em>{{ query }}</em>
+    {% endif %}
+  </h1>
+  {% if cache_age_minutes is defined and cache_age_minutes is not none %}
+  <p class="meta">
+    {% if cache_age_minutes == 0 %}
+      Just fetched &middot;
+    {% elif cache_age_minutes == 1 %}
+      Results from 1 minute ago &middot;
+    {% elif cache_age_minutes < 60 %}
+      Results from {{ cache_age_minutes }} minutes ago &middot;
+    {% elif cache_age_minutes < 1440 %}
+      Results from {{ (cache_age_minutes // 60) }} hour{% if (cache_age_minutes // 60) != 1 %}s{% endif %} ago &middot;
+    {% else %}
+      Results from earlier today &middot;
+    {% endif %}
+    <a href="/search?q={{ query|urlencode }}&amp;fresh=true">Refresh</a>
+  </p>
+  {% elif retrieved_at %}
+  <p class="meta">Retrieved {{ retrieved_at.strftime('%d %b %Y, %H:%M') }} UTC &middot;
+    <a href="/search?q={{ query|urlencode }}&amp;fresh=true">Refresh</a>
+  </p>
+  {% endif %}
+  {% if llm_used is defined and llm_used %}
+  <p class="meta">AI-expanded search &middot; <a href="/search?q={{ query|urlencode }}&amp;expand=false">Search without AI</a></p>
+  {% endif %}
+  {% if error_message %}
+  <p class="error-message" role="alert">{{ error_message }}</p>
+  {% endif %}
+</section>
+
+{% if refine_enabled and products %}
+<div class="refine-bar" id="refine-bar" aria-label="Refine your search">
+  <label for="refine-input" class="filter-label">Refine:</label>
+  <input type="text" id="refine-input" class="refine-input"
+         placeholder="e.g. only under £50, in navy, from a UK brand"
+         aria-label="Refine search results" maxlength="200">
+  <button type="button" id="refine-btn" class="btn-secondary">Refine</button>
+  <span class="refine-status" id="refine-status" aria-live="polite"></span>
+</div>
+{% endif %}
+{% if products %}
+<div class="filter-sort-bar" id="filter-sort-bar" aria-label="Filter and sort results">
+  <div class="color-filter-group" role="group" aria-label="Color filter">
+    <span class="filter-label">Color:</span>
+    <div class="filter-chips color-chips">
+      <button type="button" class="filter-chip color-chip" data-color="Black" aria-pressed="false">Black</button>
+      <button type="button" class="filter-chip color-chip" data-color="White" aria-pressed="false">White</button>
+      <button type="button" class="filter-chip color-chip" data-color="Navy" aria-pressed="false">Navy</button>
+      <button type="button" class="filter-chip color-chip" data-color="Grey" aria-pressed="false">Grey</button>
+      <button type="button" class="filter-chip color-chip" data-color="Red" aria-pressed="false">Red</button>
+      <button type="button" class="filter-chip color-chip" data-color="Green" aria-pressed="false">Green</button>
+      <button type="button" class="filter-chip color-chip" data-color="Blue" aria-pressed="false">Blue</button>
+      <button type="button" class="filter-chip color-chip" data-color="Brown" aria-pressed="false">Brown</button>
+      <button type="button" class="filter-chip color-chip" data-color="Cream" aria-pressed="false">Cream</button>
+    </div>
+  </div>
+  <div class="gender-filter-group" role="group" aria-label="Gender filter">
+    <span class="filter-label">For:</span>
+    <div class="filter-chips gender-chips">
+      <button type="button" class="filter-chip gender-chip" data-gender="Women's" aria-pressed="false">Women's</button>
+      <button type="button" class="filter-chip gender-chip" data-gender="Men's" aria-pressed="false">Men's</button>
+      <button type="button" class="filter-chip gender-chip" data-gender="Unisex" aria-pressed="false">Unisex</button>
+    </div>
+  </div>
+  <div class="category-filter-group" role="group" aria-label="Category filter">
+    <span class="filter-label">Category:</span>
+    <div class="filter-chips category-chips">
+      <button type="button" class="filter-chip category-chip" data-category="Tops" aria-pressed="false">Tops</button>
+      <button type="button" class="filter-chip category-chip" data-category="Bottoms" aria-pressed="false">Bottoms</button>
+      <button type="button" class="filter-chip category-chip" data-category="Outerwear" aria-pressed="false">Outerwear</button>
+      <button type="button" class="filter-chip category-chip" data-category="Footwear" aria-pressed="false">Footwear</button>
+      <button type="button" class="filter-chip category-chip" data-category="Accessories" aria-pressed="false">Accessories</button>
+    </div>
+  </div>
+  <div class="size-filter-group" role="group" aria-label="Size filter">
+    <span class="filter-label">Size:</span>
+    <div class="filter-chips size-chips">
+      <button type="button" class="filter-chip size-chip" data-size="XS" aria-pressed="false">XS</button>
+      <button type="button" class="filter-chip size-chip" data-size="S" aria-pressed="false">S</button>
+      <button type="button" class="filter-chip size-chip" data-size="M" aria-pressed="false">M</button>
+      <button type="button" class="filter-chip size-chip" data-size="L" aria-pressed="false">L</button>
+      <button type="button" class="filter-chip size-chip" data-size="XL" aria-pressed="false">XL</button>
+      <button type="button" class="filter-chip size-chip" data-size="XXL" aria-pressed="false">XXL</button>
+      <button type="button" class="filter-chip size-chip" data-size="UK 6" aria-pressed="false">UK 6</button>
+      <button type="button" class="filter-chip size-chip" data-size="UK 8" aria-pressed="false">UK 8</button>
+      <button type="button" class="filter-chip size-chip" data-size="UK 10" aria-pressed="false">UK 10</button>
+      <button type="button" class="filter-chip size-chip" data-size="UK 12" aria-pressed="false">UK 12</button>
+      <button type="button" class="filter-chip size-chip" data-size="UK 14" aria-pressed="false">UK 14</button>
+      <button type="button" class="filter-chip size-chip" data-size="UK 16" aria-pressed="false">UK 16</button>
+      <button type="button" class="filter-chip size-chip" data-size="UK 18" aria-pressed="false">UK 18</button>
+      <button type="button" class="filter-chip size-chip" data-size="UK 20" aria-pressed="false">UK 20</button>
+    </div>
+  </div>
+  <div class="filter-group">
+    <span class="filter-label" id="price-filter-label">Price:</span>
+    <div class="filter-chips" role="group" aria-labelledby="price-filter-label">
+      <button type="button" class="filter-chip active" data-min="" data-max="" aria-pressed="true">Any price</button>
+      <button type="button" class="filter-chip" data-min="0" data-max="50" aria-pressed="false">Under £50</button>
+      <button type="button" class="filter-chip" data-min="50" data-max="100" aria-pressed="false">£50–£100</button>
+      <button type="button" class="filter-chip" data-min="100" data-max="200" aria-pressed="false">£100–£200</button>
+      <button type="button" class="filter-chip" data-min="200" data-max="" aria-pressed="false">£200+</button>
+    </div>
+  </div>
+  <div class="price-slider-group" id="price-slider-group" style="display:none">
+    <span class="filter-label">Range:</span>
+    <div class="price-slider-wrap">
+      <input type="range" id="price-range-min" class="price-range" min="0" max="500" value="0" step="1" aria-label="Minimum price">
+      <input type="range" id="price-range-max" class="price-range" min="0" max="500" value="500" step="1" aria-label="Maximum price">
+    </div>
+    <span class="price-slider-display" id="price-slider-display">£0 – £500</span>
+  </div>
+  <div class="sort-group">
+    <label for="sort-select" class="filter-label">Sort:</label>
+    <select id="sort-select" class="sort-select">
+      <option value="relevance">Relevance</option>
+      <option value="price_asc">Price: Low–High</option>
+      <option value="price_desc">Price: High–Low</option>
+      <option value="retailer_asc">Retailer: A–Z</option>
+      <option value="retailer_desc">Retailer: Z–A</option>
+    </select>
+  </div>
+  <div class="keyword-group">
+    <label for="keyword-filter" class="filter-label">Filter:</label>
+    <input type="text" id="keyword-filter" class="keyword-filter" placeholder="e.g. linen" aria-label="Filter results by keyword">
+  </div>
+  <div class="density-toggle" role="group" aria-label="Grid density">
+    <button type="button" class="density-btn" data-density="compact" aria-label="Compact grid" title="Compact">&#9638;</button>
+    <button type="button" class="density-btn" data-density="comfortable" aria-label="Comfortable grid" title="Comfortable">&#9636;</button>
+    <button type="button" class="density-btn" data-density="large" aria-label="Large grid" title="Large">&#9634;</button>
+  </div>
+</div>
+<ul class="product-grid" id="product-grid" aria-label="Search results">
+  {% for product in products %}
+  {% set position = loop.index0 %}
+  {% include "card.html" %}
+  {% endfor %}
+</ul>
+{% if result_count == 10 %}
+<div class="load-more-wrap" id="load-more-wrap">
+  <button type="button" class="btn-load-more" id="btn-load-more"
+          data-query="{{ query|e }}" data-next-start="10">Load more results</button>
+</div>
+{% endif %}
+{% elif not error_message %}
+<section class="empty-state">
+  <h2>No results found</h2>
+  <p>We couldn't find any matching items for <em>{{ query }}</em>.</p>
+  {% if llm_suggestions is defined and llm_suggestions %}
+  <p>Try one of these AI-suggested searches:</p>
+  <ul class="example-searches" aria-label="AI-suggested searches">
+    {% for suggestion in llm_suggestions %}
+    <li><a href="/search?q={{ suggestion|urlencode }}" class="example-chip">{{ suggestion }}</a></li>
+    {% endfor %}
+  </ul>
+  {% else %}
+  <p>Try one of these searches:</p>
+  <ul class="example-searches" aria-label="Example searches">
+    <li><a href="/search?q=navy+chinos" class="example-chip">navy chinos</a></li>
+    <li><a href="/search?q=floral+midi+dress" class="example-chip">floral midi dress</a></li>
+    <li><a href="/search?q=oversized+cream+jumper" class="example-chip">oversized cream jumper</a></li>
+    <li><a href="/search?q=wool+coat" class="example-chip">wool coat</a></li>
+    <li><a href="/search?q=white+trainers" class="example-chip">white trainers</a></li>
+    <li><a href="/search?q=smart+casual+shirt" class="example-chip">smart casual shirt</a></li>
+  </ul>
+  {% endif %}
+</section>
+{% endif %}
+</div>
+
+<div class="compare-bar" id="compare-bar" role="region" aria-label="Item comparison" hidden>
+  <div class="compare-bar-inner">
+    <div class="compare-items" id="compare-items" aria-label="Items selected for comparison"></div>
+    <button type="button" class="btn-compare-clear" id="compare-clear" aria-label="Clear all items from comparison">Clear</button>
+  </div>
+</div>
+{% endblock %}

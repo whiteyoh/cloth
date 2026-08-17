@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 600" width="300" height="600" aria-label="Masculine body silhouette">
+  <title>Masculine body silhouette</title>
+  <!-- Head — slightly larger, squarer -->
+  <ellipse cx="150" cy="58" rx="40" ry="38" fill="none" stroke="#555" stroke-width="3"/>
+  <!-- Neck — broader -->
+  <line x1="136" y1="95" x2="134" y2="118" stroke="#555" stroke-width="3.5" stroke-linecap="round"/>
+  <line x1="164" y1="95" x2="166" y2="118" stroke="#555" stroke-width="3.5" stroke-linecap="round"/>
+  <!-- Broad shoulders / V-torso -->
+  <path d="M 134 118 Q 92 122 78 146 L 72 220 Q 72 238 84 244 L 100 248 L 108 310 L 192 310 L 200 248 L 216 244 Q 228 238 228 220 L 222 146 Q 208 122 166 118 Z"
+        fill="none" stroke="#555" stroke-width="3" stroke-linejoin="round"/>
+  <!-- Left arm — muscular -->
+  <path d="M 80 150 Q 56 178 50 234 Q 48 256 58 266 Q 68 276 78 266 Q 86 256 88 238 L 96 180"
+        fill="none" stroke="#555" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- Right arm — muscular -->
+  <path d="M 220 150 Q 244 178 250 234 Q 252 256 242 266 Q 232 276 222 266 Q 214 256 212 238 L 204 180"
+        fill="none" stroke="#555" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- Left leg — broader -->
+  <path d="M 108 310 L 96 400 L 88 492 Q 86 512 98 518 Q 110 524 116 512 L 124 420 L 134 310"
+        fill="none" stroke="#555" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- Right leg — broader -->
+  <path d="M 192 310 L 204 400 L 212 492 Q 214 512 202 518 Q 190 524 184 512 L 176 420 L 166 310"
+        fill="none" stroke="#555" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- Left foot — wider -->
+  <path d="M 98 518 Q 86 526 80 532 Q 76 542 88 546 L 118 546 Q 128 546 126 534 L 116 512"
+        fill="none" stroke="#555" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- Right foot — wider -->
+  <path d="M 202 518 Q 214 526 220 532 Q 224 542 212 546 L 182 546 Q 172 546 174 534 L 184 512"
+        fill="none" stroke="#555" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

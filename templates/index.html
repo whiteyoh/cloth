@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Cloth — Find clothing from across the web{% endblock %}
+{% block content %}
+<section class="hero">
+  <h1>Find clothing from across the web</h1>
+  <p>Describe what you're looking for and we'll find it.</p>
+  <form class="search-form" method="get" action="/search">
+    <div class="search-field">
+      <label for="q" class="sr-only">Describe a clothing item</label>
+      <input type="text" id="q" name="q" placeholder="e.g. blue linen shirt with collar"
+             maxlength="500" autocomplete="off" aria-describedby="search-hint"
+             list="cloth-autocomplete-hero"
+             value="{{ query|default('') }}">
+      <datalist id="cloth-autocomplete-hero"></datalist>
+      <button type="submit" class="btn-primary">Search</button>
+    </div>
+    <p id="search-hint" class="search-hint">Try "navy chinos", "floral midi dress" or "oversized cream jumper"</p>
+    {% if error %}
+    <p class="inline-error" role="alert">{{ error }}</p>
+    {% endif %}
+  </form>
+</section>
+{% endblock %}

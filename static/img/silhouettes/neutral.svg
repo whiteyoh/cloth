@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 600" width="300" height="600" aria-label="Neutral body silhouette">
+  <title>Neutral body silhouette</title>
+  <!-- Head -->
+  <circle cx="150" cy="60" r="38" fill="none" stroke="#555" stroke-width="3"/>
+  <!-- Neck -->
+  <line x1="138" y1="97" x2="136" y2="118" stroke="#555" stroke-width="3" stroke-linecap="round"/>
+  <line x1="162" y1="97" x2="164" y2="118" stroke="#555" stroke-width="3" stroke-linecap="round"/>
+  <!-- Shoulders / torso outline -->
+  <path d="M 136 118 Q 100 125 88 145 L 82 240 Q 82 260 98 262 L 112 262 L 116 320 L 184 320 L 188 262 L 202 262 Q 218 260 218 240 L 212 145 Q 200 125 164 118 Z"
+        fill="none" stroke="#555" stroke-width="3" stroke-linejoin="round"/>
+  <!-- Left arm -->
+  <path d="M 88 148 Q 68 175 62 230 Q 60 248 68 256 Q 76 264 84 256 Q 90 248 90 232 L 96 178"
+        fill="none" stroke="#555" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- Right arm -->
+  <path d="M 212 148 Q 232 175 238 230 Q 240 248 232 256 Q 224 264 216 256 Q 210 248 210 232 L 204 178"
+        fill="none" stroke="#555" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- Left leg -->
+  <path d="M 116 320 L 108 400 L 100 490 Q 98 510 108 516 Q 118 522 124 510 L 132 430 L 136 320"
+        fill="none" stroke="#555" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- Right leg -->
+  <path d="M 184 320 L 192 400 L 200 490 Q 202 510 192 516 Q 182 522 176 510 L 168 430 L 164 320"
+        fill="none" stroke="#555" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- Left foot -->
+  <path d="M 108 516 Q 100 524 96 528 Q 92 536 100 540 L 124 540 Q 132 540 130 530 L 124 510"
+        fill="none" stroke="#555" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- Right foot -->
+  <path d="M 192 516 Q 200 524 204 528 Q 208 536 200 540 L 176 540 Q 168 540 170 530 L 176 510"
+        fill="none" stroke="#555" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

@@ -1,0 +1,86 @@
+{# card.html — single product card partial.
+   Context variables: product, position (int, 0-based), try_on_enabled (bool).
+   Used by results.html ({% include %}) and rendered server-side for AJAX responses. #}
+<li class="product-card"
+    data-product-id="{{ product.id|e }}"
+    data-price-value="{{ product.price_value if product.price_value is not none else '' }}"
+    data-position="{{ position }}"
+    data-name="{{ product.name|lower|e }}"
+    data-retailer="{{ product.retailer_name|lower|e }}">
+  <div class="product-image-wrap">
+    {% if product.image_url %}
+    <img src="{{ product.image_url }}"
+         alt="{{ product.name }}"
+         title="{{ product.name }}"
+         loading="lazy">
+    {% endif %}
+    <div class="image-fallback" {% if product.image_url %}style="display:none"{% endif %}>
+      <span>{{ product.retailer_name }}</span>
+    </div>
+  </div>
+  <div class="product-info">
+    <h2 class="product-name" title="{{ product.name }}">{{ product.name }}</h2>
+    <p class="product-price">
+      {% if product.price_display %}{{ product.price_display }}{% else %}<span class="price-unavailable">Price not available</span>{% endif %}
+    </p>
+    <p class="product-retailer">{{ product.retailer_name }}</p>
+    {% if product.in_stock is not none %}
+    <span class="stock-badge {% if product.in_stock %}stock-badge--in{% else %}stock-badge--out{% endif %}">
+      {% if product.in_stock %}In stock{% else %}Check availability{% endif %}
+    </span>
+    {% endif %}
+    <a href="{{ product.purchase_url }}"
+       class="btn-view"
+       rel="noopener noreferrer"
+       target="_blank"
+       data-rv-id="{{ product.id|e }}"
+       data-rv-name="{{ product.name|e }}"
+       data-rv-price="{{ product.price_display|default('')|e }}"
+       data-rv-retailer="{{ product.retailer_name|e }}"
+       data-rv-image="{{ product.image_url|default('')|e }}"
+       data-rv-url="{{ product.purchase_url|e }}"
+       aria-label="View {{ product.name }} at {{ product.retailer_name }}">View item</a>
+    <button class="btn-copy-link"
+            data-url="{{ product.purchase_url }}"
+            aria-label="Copy link to {{ product.name }}">Copy link</button>
+    <button class="btn-save"
+            data-id="{{ product.id }}"
+            data-name="{{ product.name|e }}"
+            data-price="{{ product.price_display or '' }}"
+            data-retailer="{{ product.retailer_name }}"
+            data-image="{{ product.image_url or '' }}"
+            data-url="{{ product.purchase_url }}"
+            aria-label="Save {{ product.name }}"
+            aria-pressed="false">&#9825;</button>
+    <button class="btn-add-to-outfit"
+            data-id="{{ product.id }}"
+            data-name="{{ product.name|e }}"
+            data-price="{{ product.price_display or '' }}"
+            data-retailer="{{ product.retailer_name }}"
+            data-image="{{ product.image_url or '' }}"
+            data-url="{{ product.purchase_url }}"
+            aria-label="Add {{ product.name }} to outfit">+ Outfit</button>
+    <a href="/search?q={{ product.name|truncate(60, True, '')|urlencode }}"
+       class="btn-find-similar"
+       aria-label="Find items similar to {{ product.name }}">Find similar</a>
+    {% if try_on_enabled %}
+    <button class="btn-try-on"
+            data-garment-url="{{ product.image_url|default('')|e }}"
+            data-garment-name="{{ product.name|e }}"
+            aria-label="Try on {{ product.name }}">Try on</button>
+    {% endif %}
+    <button class="btn-style-it"
+            data-garment-url="{{ product.image_url|default('')|e }}"
+            data-garment-name="{{ product.name|e }}"
+            aria-label="Style {{ product.name }} on canvas">Style it</button>
+    <button class="btn-compare"
+            data-id="{{ product.id }}"
+            data-name="{{ product.name|e }}"
+            data-price="{{ product.price_display or '' }}"
+            data-retailer="{{ product.retailer_name }}"
+            data-image="{{ product.image_url or '' }}"
+            data-url="{{ product.purchase_url }}"
+            aria-label="Compare {{ product.name }}"
+            aria-pressed="false">Compare</button>
+  </div>
+</li>
