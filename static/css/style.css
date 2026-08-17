@@ -3393,3 +3393,19 @@ a:hover {
   align-items: center;
   justify-content: center;
 }
+
+/* ------------------------------------------------------------------ */
+/* prefers-reduced-motion (WN-126)                                      */
+/* Disable all transitions and animations for users who request it.     */
+/* ------------------------------------------------------------------ */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    transition-delay: 0ms !important;
+    scroll-behavior: auto !important;
+  }
+}
