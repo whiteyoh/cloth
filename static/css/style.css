@@ -3314,3 +3314,33 @@ a:hover {
   gap: var(--space-sm);
   justify-content: flex-end;
 }
+
+/* ------------------------------------------------------------------ */
+/* Touch target minimum 44px (WN-118)                                   */
+/* WCAG 2.5.5 — all interactive controls must be at least 44×44px.     */
+/* ------------------------------------------------------------------ */
+.btn-theme-toggle,
+.history-chip,
+.example-chip,
+.btn-copy-link,
+.btn-add-to-outfit,
+.btn-find-similar,
+.btn-try-on,
+.btn-style-it,
+.btn-compare,
+.outfit-control-btn,
+.canvas-layer-btn,
+.canvas-layer-item,
+.btn-rename-outfit,
+.btn-delete-outfit,
+.btn-share-outfit,
+.btn-complete-outfit,
+.btn-shop-all-outfit,
+.outfit-picker-new,
+.outfit-picker-close {
+  min-height: 44px;
+  min-width: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
