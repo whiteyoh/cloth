@@ -3527,17 +3527,58 @@ a:hover {
     justify-content: center;
   }
 
-  #filter-sort-bar > *:not(.mobile-filter-toggle) {
+  #filter-sort-bar > *:not(.mobile-filter-toggle):not(.mobile-filter-summary) {
     display: none;
   }
 
-  #filter-sort-bar.is-expanded > *:not(.mobile-filter-toggle) {
+  #filter-sort-bar.is-expanded > *:not(.mobile-filter-toggle):not(.mobile-filter-summary) {
     display: flex;
+  }
+
+  /* WN-169: active filter summary strip — visible when collapsed, hidden when expanded */
+  .mobile-filter-summary {
+    display: flex;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    gap: 0.3rem;
+    width: 100%;
+    padding: 0.25rem 0;
+    scrollbar-width: none;
+  }
+
+  .mobile-filter-summary::-webkit-scrollbar {
+    display: none;
+  }
+
+  .mobile-filter-summary[hidden] {
+    display: none !important;
+  }
+
+  #filter-sort-bar.is-expanded > .mobile-filter-summary {
+    display: none !important;
+  }
+
+  .filter-summary-chip {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    padding: 0.2rem 0.6rem;
+    background: var(--colour-accent);
+    color: #fff;
+    border-radius: 999px;
+    font-size: 0.78rem;
+    font-weight: 500;
+    white-space: nowrap;
   }
 }
 
 @media (min-width: 769px) {
   .mobile-filter-toggle {
+    display: none;
+  }
+
+  .mobile-filter-summary {
     display: none;
   }
 }

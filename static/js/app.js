@@ -1161,6 +1161,12 @@
         countEl.textContent = '';
       }
     }
+
+    // WN-169: refresh filter summary on mobile after any filter change
+    if (window.matchMedia('(max-width: 768px)').matches) {
+      var _bar169 = document.getElementById('filter-sort-bar');
+      if (_bar169) _updateFilterSummary(_bar169, document.getElementById('mobile-filter-toggle'));
+    }
   }
 
   function buildRetailerChips() {
@@ -3322,6 +3328,36 @@
     // Re-bind click on any new product images — lightbox uses delegation, nothing extra needed
   }
 
+  // WN-169: build/refresh active filter summary strip below toggle button
+  function _updateFilterSummary(bar, toggle) {
+    var summary = document.getElementById('mobile-filter-summary');
+    if (!summary) {
+      summary = document.createElement('div');
+      summary.id = 'mobile-filter-summary';
+      summary.className = 'mobile-filter-summary';
+      bar.insertBefore(summary, toggle ? toggle.nextSibling : bar.firstChild);
+    }
+    var labels = [];
+    bar.querySelectorAll('.filter-chip[aria-pressed="true"]').forEach(function(chip) {
+      if (chip.dataset.min === '' && chip.dataset.max === '') return;
+      var text = chip.textContent.trim();
+      if (text) labels.push(text);
+    });
+    if (labels.length === 0) {
+      summary.setAttribute('hidden', '');
+      summary.innerHTML = '';
+      return;
+    }
+    summary.removeAttribute('hidden');
+    summary.innerHTML = '';
+    labels.forEach(function(label) {
+      var span = document.createElement('span');
+      span.className = 'filter-summary-chip';
+      span.textContent = label;
+      summary.appendChild(span);
+    });
+  }
+
   // WN-168: mobile persistent bottom search bar — shows on results page only
   function initMobileBottomSearch() {
     var bar = document.getElementById('mobile-search-bar');
@@ -3392,9 +3428,13 @@
           if (t) t.setAttribute('aria-expanded', 'false');
           var grid = document.getElementById('product-grid');
           if (grid) grid.scrollIntoView({behavior: 'smooth', block: 'nearest'});
+          _updateFilterSummary(b, document.getElementById('mobile-filter-toggle'));
         }, 150);
       });
     }
+
+    // WN-169: initial filter summary render
+    _updateFilterSummary(bar, toggle);
   }
 
   // WN-152: sticky filter bar — set --header-h and detect stuck state
