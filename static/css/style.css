@@ -2416,6 +2416,22 @@ a:hover {
   .saved-page h1 {
     font-size: 1.4rem;
   }
+
+  /* WN-167: card action buttons scroll horizontally rather than wrapping */
+  .product-card-actions {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    gap: 0.3rem;
+    padding-bottom: 4px;
+  }
+
+  .product-card-actions > * {
+    flex: 0 0 auto;
+    min-width: 44px;
+    font-size: 0.75rem;
+    padding: 0.35rem 0.5rem;
+  }
 }
 
 /* ------------------------------------------------------------------ */
