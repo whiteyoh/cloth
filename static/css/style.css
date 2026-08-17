@@ -527,6 +527,44 @@ a:hover {
   box-shadow: var(--shadow-hover);
 }
 
+/* WN-150: card action hover overlay */
+.product-card {
+  position: relative;
+}
+
+.product-card-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  margin-top: 0.3rem;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .product-card-actions {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: rgba(255, 255, 255, 0.92);
+    padding: var(--space-sm);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.15s ease, visibility 0.15s ease;
+    border-top: 1px solid var(--colour-border);
+    border-radius: 0 0 var(--radius) var(--radius);
+  }
+
+  .product-card:hover .product-card-actions,
+  .product-card:focus-within .product-card-actions {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  [data-theme="dark"] .product-card-actions {
+    background: rgba(30, 35, 50, 0.93);
+  }
+}
+
 .product-image-wrap {
   position: relative;
   padding-top: 75%; /* 4:3 aspect ratio */
