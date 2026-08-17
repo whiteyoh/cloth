@@ -85,7 +85,6 @@
   }
 
   function initSearchAutocomplete() {
-    var datalistIds = ['cloth-autocomplete-hero', 'cloth-autocomplete-header'];
     var history = [];
     try {
       history = JSON.parse(localStorage.getItem('cloth_search_history') || '[]');
@@ -97,13 +96,124 @@
       })
     );
 
-    datalistIds.forEach(function (id) {
+    // Legacy datalist fill (fallback if JS custom listbox not supported)
+    ['cloth-autocomplete-hero', 'cloth-autocomplete-header'].forEach(function (id) {
       var dl = document.getElementById(id);
       if (!dl) return;
       combined.forEach(function (term) {
         var opt = document.createElement('option');
         opt.value = term;
         dl.appendChild(opt);
+      });
+    });
+
+    // WN-159: custom keyboard-navigable listbox for each search input
+    document.querySelectorAll('input[list="cloth-autocomplete-hero"], input[list="cloth-autocomplete-header"]').forEach(function (input) {
+      if (input._acBound) return;
+      input._acBound = true;
+
+      var listboxId = 'ac-listbox-' + Math.random().toString(36).slice(2, 7);
+      var activeId = null;
+
+      var lb = document.createElement('ul');
+      lb.id = listboxId;
+      lb.className = 'ac-listbox';
+      lb.setAttribute('role', 'listbox');
+      lb.style.display = 'none';
+      input.parentNode.style.position = 'relative';
+      input.parentNode.appendChild(lb);
+
+      input.setAttribute('role', 'combobox');
+      input.setAttribute('aria-autocomplete', 'list');
+      input.setAttribute('aria-expanded', 'false');
+      input.setAttribute('aria-owns', listboxId);
+      input.setAttribute('autocomplete', 'off');
+
+      var liveRegion = document.createElement('span');
+      liveRegion.className = 'sr-only';
+      liveRegion.setAttribute('aria-live', 'polite');
+      liveRegion.setAttribute('aria-atomic', 'true');
+      input.parentNode.appendChild(liveRegion);
+
+      function getMatches(val) {
+        if (!val) return combined.slice(0, 8);
+        var lv = val.toLowerCase();
+        return combined.filter(function (s) { return s.toLowerCase().indexOf(lv) !== -1; }).slice(0, 8);
+      }
+
+      function renderListbox(matches) {
+        lb.innerHTML = '';
+        activeId = null;
+        input.removeAttribute('aria-activedescendant');
+        if (!matches.length) { closeLb(); return; }
+        matches.forEach(function (s, i) {
+          var li = document.createElement('li');
+          li.className = 'ac-option';
+          li.setAttribute('role', 'option');
+          li.setAttribute('id', listboxId + '-' + i);
+          li.setAttribute('aria-selected', 'false');
+          li.textContent = s;
+          li.addEventListener('mousedown', function (e) {
+            e.preventDefault(); // prevent blur
+            selectOption(s);
+          });
+          lb.appendChild(li);
+        });
+        lb.style.display = '';
+        input.setAttribute('aria-expanded', 'true');
+        liveRegion.textContent = matches.length + ' suggestion' + (matches.length !== 1 ? 's' : '') + ' available';
+      }
+
+      function closeLb() {
+        lb.style.display = 'none';
+        input.setAttribute('aria-expanded', 'false');
+        input.removeAttribute('aria-activedescendant');
+        activeId = null;
+      }
+
+      function selectOption(val) {
+        input.value = val;
+        closeLb();
+        var form = input.closest('form');
+        if (form) form.dispatchEvent(new Event('submit', {bubbles: true, cancelable: true}));
+      }
+
+      function moveActive(dir) {
+        var opts = Array.prototype.slice.call(lb.querySelectorAll('.ac-option'));
+        if (!opts.length) return;
+        var currentIdx = opts.findIndex(function (o) { return o.id === activeId; });
+        var nextIdx = currentIdx + dir;
+        if (nextIdx < 0) nextIdx = opts.length - 1;
+        if (nextIdx >= opts.length) nextIdx = 0;
+        opts.forEach(function (o) { o.setAttribute('aria-selected', 'false'); o.classList.remove('is-active'); });
+        opts[nextIdx].setAttribute('aria-selected', 'true');
+        opts[nextIdx].classList.add('is-active');
+        activeId = opts[nextIdx].id;
+        input.setAttribute('aria-activedescendant', activeId);
+        opts[nextIdx].scrollIntoView({block: 'nearest'});
+      }
+
+      input.addEventListener('input', function () {
+        renderListbox(getMatches(input.value));
+      });
+
+      input.addEventListener('focus', function () {
+        if (input.value) renderListbox(getMatches(input.value));
+      });
+
+      input.addEventListener('blur', function () {
+        setTimeout(closeLb, 150); // allow mousedown to fire first
+      });
+
+      input.addEventListener('keydown', function (e) {
+        if (lb.style.display === 'none') return;
+        if (e.key === 'ArrowDown') { e.preventDefault(); moveActive(1); }
+        else if (e.key === 'ArrowUp') { e.preventDefault(); moveActive(-1); }
+        else if (e.key === 'Enter' && activeId) {
+          var active = document.getElementById(activeId);
+          if (active) { e.preventDefault(); selectOption(active.textContent); }
+        }
+        else if (e.key === 'Escape') { closeLb(); }
       });
     });
   }

@@ -1336,6 +1336,38 @@ a:hover {
   cursor: wait;
 }
 
+/* WN-159: custom autocomplete listbox */
+.ac-listbox {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 100%;
+  z-index: 1000;
+  background: var(--colour-surface);
+  border: 1.5px solid var(--colour-border);
+  border-top: none;
+  border-radius: 0 0 var(--radius) var(--radius);
+  box-shadow: var(--shadow-hover);
+  list-style: none;
+  margin: 0;
+  padding: 0.25rem 0;
+  max-height: 260px;
+  overflow-y: auto;
+}
+
+.ac-option {
+  padding: 0.5rem var(--space-md);
+  font-size: 0.9rem;
+  cursor: pointer;
+  color: var(--colour-text);
+}
+
+.ac-option:hover,
+.ac-option.is-active {
+  background: rgba(79, 110, 247, 0.08);
+  color: var(--colour-accent);
+}
+
 /* WN-156: image lightbox */
 .img-lightbox {
   position: fixed;
