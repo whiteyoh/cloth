@@ -1322,9 +1322,42 @@
       });
   }
 
+  // WN-153: skeleton cards during phase-1 fetch
+  function _showSkeletons(query) {
+    var region = document.getElementById('results-region');
+    if (!region) {
+      var main = document.querySelector('main');
+      if (!main) return;
+      region = document.createElement('div');
+      region.id = 'results-region';
+      main.innerHTML = '';
+      main.appendChild(region);
+    }
+    var skeletonItems = '';
+    for (var i = 0; i < 6; i++) {
+      skeletonItems += '<li class="product-card skeleton-card" aria-hidden="true">'
+        + '<div class="skeleton-image"></div>'
+        + '<div class="skeleton-body">'
+        + '<div class="skeleton-line skeleton-line--title"></div>'
+        + '<div class="skeleton-line skeleton-line--price"></div>'
+        + '<div class="skeleton-line skeleton-line--retailer"></div>'
+        + '</div>'
+        + '</li>';
+    }
+    region.innerHTML = '<section class="results-header" data-query="' + escapeHtml(query) + '">'
+      + '<h1>Searching for <em>' + escapeHtml(query) + '</em>…</h1>'
+      + '</section>'
+      + '<ul class="product-grid skeleton-grid" id="product-grid" aria-label="Loading results" aria-busy="true">'
+      + skeletonItems
+      + '</ul>';
+  }
+
   // _skipPhase2: pass true for chip-augmented searches where the term is already explicit
   function doAjaxSearch(query, form, _isRetry, _skipPhase2) {
     _cancelPhase2(); // abort any previous phase-2 in flight
+
+    // Show skeleton cards immediately (WN-153)
+    if (!_isRetry) _showSkeletons(query);
 
     // Phase 1: direct search without LLM expansion — fast first render
     var url = '/search?q=' + encodeURIComponent(query) + '&format=json&expand=false';

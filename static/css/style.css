@@ -1336,6 +1336,50 @@ a:hover {
   cursor: wait;
 }
 
+/* WN-153: skeleton loading cards */
+@keyframes shimmer {
+  0% { background-position: -400px 0; }
+  100% { background-position: 400px 0; }
+}
+
+.skeleton-card {
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.skeleton-image {
+  width: 100%;
+  padding-top: 75%;
+  background: linear-gradient(90deg, #e8e8e8 25%, #f5f5f5 50%, #e8e8e8 75%);
+  background-size: 800px 100%;
+  animation: shimmer 1.4s ease infinite;
+}
+
+.skeleton-body {
+  padding: var(--space-md);
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.skeleton-line {
+  height: 12px;
+  border-radius: 4px;
+  background: linear-gradient(90deg, #e8e8e8 25%, #f5f5f5 50%, #e8e8e8 75%);
+  background-size: 800px 100%;
+  animation: shimmer 1.4s ease infinite;
+}
+
+.skeleton-line--title { width: 85%; height: 14px; }
+.skeleton-line--price { width: 40%; }
+.skeleton-line--retailer { width: 55%; }
+
+[data-theme="dark"] .skeleton-image,
+[data-theme="dark"] .skeleton-line {
+  background: linear-gradient(90deg, #2a2d3a 25%, #363a4a 50%, #2a2d3a 75%);
+  background-size: 800px 100%;
+}
+
 /* WN-151: infinite scroll sentinel */
 .lm-sentinel {
   height: 40px;
