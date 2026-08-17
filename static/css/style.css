@@ -26,6 +26,13 @@
   --shadow-hover: 0 6px 20px rgba(0, 0, 0, 0.14);
   --font-body: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   --transition: 0.18s ease;
+  /* Semantic aliases used by later-sprint components */
+  --border-color: var(--colour-border);
+  --input-bg: var(--colour-surface);
+  --text-color: var(--colour-text);
+  --surface-color: var(--colour-surface);
+  --card-bg: var(--colour-surface);
+  --meta-color: var(--colour-text-muted);
 }
 
 /* Dark mode overrides */
