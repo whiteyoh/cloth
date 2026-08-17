@@ -1147,6 +1147,20 @@
     _captureFilterState();
     var hasActive = sortVal !== 'relevance' || minVal !== '' || maxVal !== '' || keyword !== '';
     _updateFilterBadge(hasActive);
+
+    // WN-138: update visible count
+    var visibleCount = cards.filter(function (c) { return !c.hidden; }).length;
+    var totalCount = cards.length;
+    var countEl = document.getElementById('visible-count');
+    if (countEl) {
+      if (hasActive && visibleCount !== totalCount) {
+        countEl.textContent = 'Showing ' + visibleCount + ' of ' + totalCount + ' results';
+        countEl.hidden = false;
+      } else {
+        countEl.hidden = true;
+        countEl.textContent = '';
+      }
+    }
   }
 
   function buildRetailerChips() {
@@ -1508,7 +1522,8 @@
 
     var countLabel = (data.result_count === 1) ? '1 result' : (data.result_count + ' results');
     var headerHtml = '<section class="results-header" data-query="' + escapeHtml(data.query) + '">'
-      + '<h1>' + countLabel + ' for <em>' + escapeHtml(data.query) + '</em></h1>';
+      + '<h1>' + countLabel + ' for <em>' + escapeHtml(data.query) + '</em></h1>'
+      + '<span id="visible-count" class="visible-count" aria-live="polite" hidden></span>';
 
     if (data.cache_age_minutes !== null && data.cache_age_minutes !== undefined && !data.error_message) {
       headerHtml += '<p class="meta">'

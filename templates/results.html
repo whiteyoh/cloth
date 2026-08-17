@@ -10,6 +10,7 @@
       Results for <em>{{ query }}</em>
     {% endif %}
   </h1>
+  <span id="visible-count" class="visible-count" aria-live="polite" hidden></span>
   {% if cache_age_minutes is defined and cache_age_minutes is not none %}
   <p class="meta">
     {% if cache_age_minutes == 0 %}
