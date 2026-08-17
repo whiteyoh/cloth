@@ -3489,25 +3489,33 @@ a:hover {
     z-index: auto;
   }
 
-  /* Expanded panel overlays results instead of pushing them down */
+  /* Results region no longer needs to be positioning context (WN-170) */
   #results-region {
-    position: relative;
+    position: static;
   }
 
+  /* WN-170: bottom sheet — slides up from the bottom of the viewport */
   #filter-sort-bar.is-expanded {
-    position: absolute;
+    position: fixed;
+    bottom: 0;
     left: 0;
     right: 0;
-    z-index: 50;
+    z-index: 200;
     background: var(--colour-bg);
-    border: 1px solid var(--colour-border);
-    border-radius: 0 0 var(--radius-md) var(--radius-md);
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.14);
+    border-top: 2px solid var(--colour-accent);
+    border-radius: 0.75rem 0.75rem 0 0;
+    box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.18);
     padding: var(--space-sm);
-    max-height: 70vh;
+    max-height: 75vh;
     overflow-y: auto;
     flex-direction: column;
     align-items: flex-start;
+    animation: mobileSheetIn 0.22s ease-out;
+  }
+
+  @keyframes mobileSheetIn {
+    from { transform: translateY(100%); opacity: 0.5; }
+    to   { transform: translateY(0);    opacity: 1; }
   }
 
   .mobile-filter-toggle {
@@ -3581,6 +3589,19 @@ a:hover {
   .mobile-filter-summary {
     display: none;
   }
+}
+
+/* WN-170: backdrop for bottom-sheet filter panel */
+.filter-backdrop {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  z-index: 199;
+}
+
+.filter-backdrop.is-visible {
+  display: block;
 }
 
 /* ------------------------------------------------------------------ */

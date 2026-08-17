@@ -3399,7 +3399,11 @@
     }
 
     var savedOpen = sessionStorage.getItem('cloth_filter_open') === '1';
-    if (savedOpen) bar.classList.add('is-expanded');
+    if (savedOpen) {
+      bar.classList.add('is-expanded');
+      var bdRestore = document.getElementById('filter-backdrop');
+      if (bdRestore) bdRestore.classList.add('is-visible');
+    }
 
     if (!toggle._filterBound) {
       toggle._filterBound = true;
@@ -3407,6 +3411,34 @@
         var open = bar.classList.toggle('is-expanded');
         sessionStorage.setItem('cloth_filter_open', open ? '1' : '0');
         updateToggleLabel();
+        // WN-170: sync backdrop with panel state
+        var bd = document.getElementById('filter-backdrop');
+        if (bd) bd.classList.toggle('is-visible', open);
+      });
+    }
+
+    // WN-170: create backdrop once and wire its click to collapse the panel
+    if (!document.getElementById('filter-backdrop')) {
+      var backdrop = document.createElement('div');
+      backdrop.id = 'filter-backdrop';
+      backdrop.className = 'filter-backdrop';
+      document.body.appendChild(backdrop);
+      backdrop.addEventListener('click', function() {
+        var b = document.getElementById('filter-sort-bar');
+        var t = document.getElementById('mobile-filter-toggle');
+        if (!b) return;
+        b.classList.remove('is-expanded');
+        sessionStorage.setItem('cloth_filter_open', '0');
+        backdrop.classList.remove('is-visible');
+        if (t) {
+          var count = 0;
+          b.querySelectorAll('.filter-chip[aria-pressed="true"]').forEach(function(el) {
+            if (!(el.dataset.min === '' && el.dataset.max === '')) count++;
+          });
+          t.textContent = count > 0 ? 'Filters (' + count + ')' : 'Filters';
+          t.setAttribute('aria-expanded', 'false');
+        }
+        _updateFilterSummary(b, t);
       });
     }
 
@@ -3426,9 +3458,11 @@
           sessionStorage.setItem('cloth_filter_open', '0');
           var t = document.getElementById('mobile-filter-toggle');
           if (t) t.setAttribute('aria-expanded', 'false');
+          var bd = document.getElementById('filter-backdrop');
+          if (bd) bd.classList.remove('is-visible');
           var grid = document.getElementById('product-grid');
           if (grid) grid.scrollIntoView({behavior: 'smooth', block: 'nearest'});
-          _updateFilterSummary(b, document.getElementById('mobile-filter-toggle'));
+          _updateFilterSummary(b, t);
         }, 150);
       });
     }
