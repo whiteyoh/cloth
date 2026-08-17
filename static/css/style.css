@@ -3316,6 +3316,42 @@ a:hover {
 }
 
 /* ------------------------------------------------------------------ */
+/* ------------------------------------------------------------------ */
+/* Mobile filter bar collapse (WN-120)                                  */
+/* ------------------------------------------------------------------ */
+@media (max-width: 768px) {
+  .mobile-filter-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.4rem 0.85rem;
+    border: 1px solid var(--colour-border);
+    border-radius: var(--radius);
+    background: var(--colour-surface);
+    color: var(--colour-text);
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    min-height: 44px;
+    width: 100%;
+    justify-content: center;
+  }
+
+  #filter-sort-bar > *:not(.mobile-filter-toggle) {
+    display: none;
+  }
+
+  #filter-sort-bar.is-expanded > *:not(.mobile-filter-toggle) {
+    display: flex;
+  }
+}
+
+@media (min-width: 769px) {
+  .mobile-filter-toggle {
+    display: none;
+  }
+}
+
 /* Touch target minimum 44px (WN-118)                                   */
 /* WCAG 2.5.5 — all interactive controls must be at least 44×44px.     */
 /* ------------------------------------------------------------------ */

@@ -3099,6 +3099,7 @@
     _syncCompareButtons();
     if (typeof window.initStyleItButtons === 'function') window.initStyleItButtons();
     initStickyFilterBar();
+    initMobileFilterToggle();
 
     // One-time document-level setup
     _initSpaNavigation();
@@ -3155,6 +3156,47 @@
   function initImageLightbox() {
     _initLightbox();
     // Re-bind click on any new product images — lightbox uses delegation, nothing extra needed
+  }
+
+  // WN-120: mobile filter bar collapse
+  function initMobileFilterToggle() {
+    var bar = document.getElementById('filter-sort-bar');
+    if (!bar || bar._mobileToggleBound) return;
+    if (!window.matchMedia('(max-width: 768px)').matches) return;
+    bar._mobileToggleBound = true;
+
+    function countActiveFilters() {
+      var active = 0;
+      bar.querySelectorAll('.filter-chip[aria-pressed="true"]:not([data-min=""]), .filter-chip.active').forEach(function (el) {
+        if (!(el.dataset.min === '' && el.dataset.max === '')) active++;
+      });
+      var keyword = bar.querySelector('#keyword-filter');
+      if (keyword && keyword.value && keyword.value.trim()) active++;
+      return active;
+    }
+
+    var toggle = document.createElement('button');
+    toggle.type = 'button';
+    toggle.id = 'mobile-filter-toggle';
+    toggle.className = 'mobile-filter-toggle';
+
+    function updateToggleLabel() {
+      var n = countActiveFilters();
+      toggle.textContent = n > 0 ? 'Filters (' + n + ')' : 'Filters';
+      toggle.setAttribute('aria-expanded', bar.classList.contains('is-expanded') ? 'true' : 'false');
+    }
+
+    var savedOpen = sessionStorage.getItem('cloth_filter_open') === '1';
+    if (savedOpen) bar.classList.add('is-expanded');
+
+    toggle.addEventListener('click', function () {
+      var open = bar.classList.toggle('is-expanded');
+      sessionStorage.setItem('cloth_filter_open', open ? '1' : '0');
+      updateToggleLabel();
+    });
+
+    bar.insertBefore(toggle, bar.firstChild);
+    updateToggleLabel();
   }
 
   // WN-152: sticky filter bar — set --header-h and detect stuck state
