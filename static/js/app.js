@@ -303,10 +303,13 @@
     setSavedItems(items);
     updateSaveButtons(data.id, idx === -1);
     updateSavedCount();
+    showToast(idx === -1 ? 'Saved ♥' : 'Removed');
   }
 
   function initSaveButtons() {
     document.querySelectorAll('.btn-save').forEach(function (btn) {
+      if (btn._saveBound) return;
+      btn._saveBound = true;
       var id = btn.dataset.id;
       var saved = isItemSaved(id);
       btn.setAttribute('aria-pressed', saved ? 'true' : 'false');
@@ -329,6 +332,8 @@
 
   function initCopyLinkButtons() {
     document.querySelectorAll('.btn-copy-link').forEach(function (btn) {
+      if (btn._copyBound) return;
+      btn._copyBound = true;
       btn.addEventListener('click', function () {
         var url = btn.dataset.url;
         if (!url || !navigator.clipboard) return;
@@ -336,6 +341,7 @@
           var original = btn.textContent;
           btn.textContent = 'Copied!';
           btn.classList.add('is-copied');
+          showToast('Copied!');
           setTimeout(function () {
             btn.textContent = original;
             btn.classList.remove('is-copied');
@@ -1896,8 +1902,11 @@
     toast.setAttribute('aria-live', 'polite');
     toast.textContent = message;
     document.body.appendChild(toast);
-    setTimeout(function () { toast.remove(); }, 2000);
+    setTimeout(function () { toast.remove(); }, 2500);
   }
+
+  // Expose so style-canvas.js can call it
+  window.showToast = showToast;
 
   function initAddToOutfitButtons() {
     document.querySelectorAll('.btn-add-to-outfit').forEach(function (btn) {
