@@ -1956,54 +1956,93 @@
     });
   }
 
+  var _lmObserver = null;
+
+  function _doLoadMore(query, nextStart, wrap, onDone) {
+    var url = '/search?q=' + encodeURIComponent(query) + '&format=json&start=' + nextStart;
+    fetch(url)
+      .then(function (res) { return res.json(); })
+      .then(function (data) {
+        if (!data.products || !data.products.length) {
+          if (wrap) wrap.remove();
+          if (onDone) onDone(false, nextStart);
+          return;
+        }
+        var grid = document.getElementById('product-grid');
+        if (!grid) { if (onDone) onDone(false, nextStart); return; }
+        var tmp = document.createElement('ul');
+        tmp.innerHTML = data.cards_html || '';
+        while (tmp.firstElementChild) { grid.appendChild(tmp.firstElementChild); }
+        initSaveButtons();
+        initCopyLinkButtons();
+        initAddToOutfitButtons();
+        initTryOnButtons();
+        if (typeof window.initStyleItButtons === 'function') window.initStyleItButtons();
+        initRecentlyViewedTracking();
+        updateSavedCount();
+        if (onDone) onDone(data.has_more, nextStart + 10);
+        if (!data.has_more && wrap) wrap.remove();
+      })
+      .catch(function () {
+        if (onDone) onDone(false, nextStart);
+      });
+  }
+
   function initLoadMore() {
+    // Disconnect any previous observer
+    if (_lmObserver) { _lmObserver.disconnect(); _lmObserver = null; }
+
+    var wrap = document.getElementById('load-more-wrap');
     var btn = document.getElementById('btn-load-more');
     if (!btn || btn.dataset.lmBound) return;
     btn.dataset.lmBound = '1';
 
-    btn.addEventListener('click', function () {
-      var query = btn.dataset.query;
-      var nextStart = parseInt(btn.dataset.nextStart, 10) || 10;
-      var url = '/search?q=' + encodeURIComponent(query) + '&format=json&start=' + nextStart;
+    var query = btn.dataset.query;
+    var nextStart = parseInt(btn.dataset.nextStart, 10) || 10;
 
+    // IntersectionObserver path — auto load-more (WN-151)
+    if ('IntersectionObserver' in window) {
+      // Replace visible button with a sentinel spinner
+      var sentinel = document.createElement('div');
+      sentinel.id = 'lm-sentinel';
+      sentinel.className = 'lm-sentinel';
+      sentinel.setAttribute('aria-hidden', 'true');
+      if (wrap) {
+        btn.style.display = 'none'; // keep as fallback but hidden
+        wrap.appendChild(sentinel);
+      }
+
+      var _loading = false;
+      _lmObserver = new IntersectionObserver(function (entries) {
+        if (!entries[0].isIntersecting || _loading) return;
+        _loading = true;
+        sentinel.classList.add('is-loading');
+        _doLoadMore(query, nextStart, wrap, function (hasMore, newStart) {
+          _loading = false;
+          nextStart = newStart;
+          sentinel.classList.remove('is-loading');
+          if (!hasMore) {
+            _lmObserver.disconnect();
+            _lmObserver = null;
+            sentinel.remove();
+          }
+        });
+      }, {rootMargin: '300px'});
+      _lmObserver.observe(sentinel);
+      return;
+    }
+
+    // Fallback: click button (browsers without IntersectionObserver)
+    btn.addEventListener('click', function () {
       btn.disabled = true;
       btn.textContent = 'Loading…';
-
-      fetch(url)
-        .then(function (res) { return res.json(); })
-        .then(function (data) {
-          if (!data.products || !data.products.length) {
-            btn.parentElement.remove();
-            return;
-          }
-          var grid = document.getElementById('product-grid');
-          if (!grid) return;
-          var tmp = document.createElement('ul');
-          tmp.innerHTML = data.cards_html || '';
-          while (tmp.firstElementChild) {
-            grid.appendChild(tmp.firstElementChild);
-          }
-          initSaveButtons();
-          initCopyLinkButtons();
-          initAddToOutfitButtons();
-          initTryOnButtons();
-          if (typeof window.initStyleItButtons === 'function') window.initStyleItButtons();
-          initRecentlyViewedTracking();
-          updateSavedCount();
-
-          var wrap = document.getElementById('load-more-wrap');
-          if (data.has_more) {
-            btn.dataset.nextStart = String(nextStart + 10);
-            btn.disabled = false;
-            btn.textContent = 'Load more results';
-          } else if (wrap) {
-            wrap.remove();
-          }
-        })
-        .catch(function () {
+      _doLoadMore(query, nextStart, wrap, function (hasMore, newStart) {
+        nextStart = newStart;
+        if (hasMore) {
           btn.disabled = false;
           btn.textContent = 'Load more results';
-        });
+        }
+      });
     });
   }
 
