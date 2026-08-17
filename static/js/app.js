@@ -3358,6 +3358,26 @@
     }
 
     updateToggleLabel();
+
+    // WN-166: auto-close filter panel after chip tap on mobile
+    if (!window._filterAutoCloseBound) {
+      window._filterAutoCloseBound = true;
+      document.addEventListener('click', function(e) {
+        if (!window.matchMedia('(max-width: 768px)').matches) return;
+        var b = document.getElementById('filter-sort-bar');
+        if (!b || !b.classList.contains('is-expanded')) return;
+        if (!e.target.closest('.filter-chip')) return;
+        if (!b.contains(e.target)) return;
+        setTimeout(function() {
+          b.classList.remove('is-expanded');
+          sessionStorage.setItem('cloth_filter_open', '0');
+          var t = document.getElementById('mobile-filter-toggle');
+          if (t) t.setAttribute('aria-expanded', 'false');
+          var grid = document.getElementById('product-grid');
+          if (grid) grid.scrollIntoView({behavior: 'smooth', block: 'nearest'});
+        }, 150);
+      });
+    }
   }
 
   // WN-152: sticky filter bar — set --header-h and detect stuck state
