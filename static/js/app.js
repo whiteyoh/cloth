@@ -2,9 +2,9 @@
 (function () {
   'use strict';
 
-  // Auto-focus search input on home page
+  // Auto-focus search input on home page — only on pointer:fine devices (WN-119)
   var heroInput = document.querySelector('.hero input[name="q"]');
-  if (heroInput) {
+  if (heroInput && window.matchMedia('(pointer: fine)').matches) {
     heroInput.focus();
   }
 
