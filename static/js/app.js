@@ -2622,9 +2622,33 @@
     initCompare();
     _syncCompareButtons();
     if (typeof window.initStyleItButtons === 'function') window.initStyleItButtons();
+    initStickyFilterBar();
 
     // One-time document-level setup
     _initSpaNavigation();
+  }
+
+  // WN-152: sticky filter bar — set --header-h and detect stuck state
+  function initStickyFilterBar() {
+    var header = document.querySelector('.site-header');
+    if (header) {
+      document.documentElement.style.setProperty('--header-h', header.offsetHeight + 'px');
+    }
+
+    var bar = document.getElementById('filter-sort-bar');
+    if (!bar || bar._stickyBound) return;
+    bar._stickyBound = true;
+
+    if ('IntersectionObserver' in window) {
+      // Sentinel placed 1px above the bar's sticky position
+      var sentinel = document.createElement('div');
+      sentinel.style.cssText = 'position: absolute; top: -1px; height: 1px; width: 100%; pointer-events: none;';
+      bar.parentNode.insertBefore(sentinel, bar);
+      var obs = new IntersectionObserver(function (entries) {
+        bar.classList.toggle('is-stuck', !entries[0].isIntersecting);
+      }, {threshold: [0], rootMargin: '-' + (header ? header.offsetHeight : 0) + 'px 0px 0px 0px'});
+      obs.observe(sentinel);
+    }
   }
 
   document.addEventListener('DOMContentLoaded', function () {
