@@ -667,7 +667,7 @@
       if (e.target === modal) _closeModal();
     });
 
-    // Keyboard: Escape closes; Tab stays trapped inside
+    // Keyboard: Escape closes; Tab stays trapped; Ctrl+Z / Ctrl+Shift+Z undo (WN-161)
     document.addEventListener('keydown', function (e) {
       var m = document.getElementById('style-canvas-modal');
       if (!m || m.style.display === 'none') return;
@@ -675,6 +675,25 @@
         _closeModal();
       } else if (e.key === 'Tab') {
         _trapFocus(e);
+      } else if (e.key === 'z' && (e.ctrlKey || e.metaKey) && !e.shiftKey) {
+        // Ctrl+Z / Cmd+Z — undo not yet available (WN-134 not done)
+        // Guard: only intercept when focus is not in a text input outside canvas
+        var active = document.activeElement;
+        var isTextInput = active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA') && active.closest('#style-canvas-modal') === null;
+        if (!isTextInput) {
+          e.preventDefault();
+          if (typeof window.showToast === 'function') window.showToast('Undo not yet available');
+          _announce('Undo not yet available');
+        }
+      } else if (e.key === 'z' && (e.ctrlKey || e.metaKey) && e.shiftKey) {
+        // Ctrl+Shift+Z / Cmd+Shift+Z — redo not yet available
+        var active2 = document.activeElement;
+        var isTextInput2 = active2 && (active2.tagName === 'INPUT' || active2.tagName === 'TEXTAREA') && active2.closest('#style-canvas-modal') === null;
+        if (!isTextInput2) {
+          e.preventDefault();
+          if (typeof window.showToast === 'function') window.showToast('Redo not yet available');
+          _announce('Redo not yet available');
+        }
       }
     });
 
