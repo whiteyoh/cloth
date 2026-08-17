@@ -34,6 +34,14 @@
   var _pinchOrigW = 0;
   var _pinchOrigH = 0;
 
+  // Rotation state (WN-133)
+  var _rotating = false;
+  var _rotateLayerId = null;
+  var _rotateCenterX = 0;
+  var _rotateCenterY = 0;
+  var _rotatePointerStartAngle = 0;
+  var _rotateLayerStartAngle = 0;
+
   var HANDLE_SIZE = 8;
   // WN-121: larger hit-test radius on touch devices (visual handles remain 8px)
   var _HIT_RADIUS = navigator.maxTouchPoints > 0 ? 20 : HANDLE_SIZE;
@@ -69,25 +77,36 @@
     var sorted = canvasLayers.slice().sort(function (a, b) { return b.zIndex - a.zIndex; });
     for (var i = 0; i < sorted.length; i++) {
       var l = sorted[i];
-      if (px >= l.x && px <= l.x + l.w && py >= l.y && py <= l.y + l.h) return l.id;
+      // Transform pointer into layer's local space to handle rotation
+      var local = _toLayerLocal(l, px, py);
+      if (local.x >= l.x && local.x <= l.x + l.w && local.y >= l.y && local.y <= l.y + l.h) return l.id;
     }
     return null;
   }
 
   function _hitTestCorner(layer, px, py) {
     var h = _HIT_RADIUS;
-    var corners = {
+    var c = _layerCenter(layer);
+    var rad = (layer.rotation || 0) * Math.PI / 180;
+    // Corners in local (top-left based) space, rotate to canvas space for hit test
+    var cornersLocal = {
       tl: { x: layer.x, y: layer.y },
       tr: { x: layer.x + layer.w, y: layer.y },
       bl: { x: layer.x, y: layer.y + layer.h },
       br: { x: layer.x + layer.w, y: layer.y + layer.h }
     };
-    for (var k in corners) {
-      if (!Object.prototype.hasOwnProperty.call(corners, k)) continue;
-      var c = corners[k];
-      if (Math.abs(px - c.x) <= h && Math.abs(py - c.y) <= h) return k;
+    for (var k in cornersLocal) {
+      if (!Object.prototype.hasOwnProperty.call(cornersLocal, k)) continue;
+      var local = cornersLocal[k];
+      var canvas = _rotatePoint(c.x, c.y, local.x, local.y, rad);
+      if (Math.abs(px - canvas.x) <= h && Math.abs(py - canvas.y) <= h) return k;
     }
     return null;
+  }
+
+  function _hitTestRotateHandle(layer, px, py) {
+    var hp = _rotateHandlePos(layer);
+    return Math.abs(px - hp.x) <= _HIT_RADIUS && Math.abs(py - hp.y) <= _HIT_RADIUS;
   }
 
   function _randomColor() {
@@ -103,6 +122,38 @@
     var dx = a.x - b.x;
     var dy = a.y - b.y;
     return Math.sqrt(dx * dx + dy * dy);
+  }
+
+  // WN-133: rotation geometry helpers
+  function _layerCenter(layer) {
+    return { x: layer.x + layer.w / 2, y: layer.y + layer.h / 2 };
+  }
+
+  // Rotate point (px, py) around center (cx, cy) by rad radians
+  function _rotatePoint(cx, cy, px, py, rad) {
+    var dx = px - cx;
+    var dy = py - cy;
+    return {
+      x: cx + dx * Math.cos(rad) - dy * Math.sin(rad),
+      y: cy + dx * Math.sin(rad) + dy * Math.cos(rad)
+    };
+  }
+
+  // Transform canvas-space pointer to layer-local space (inverse rotation)
+  function _toLayerLocal(layer, px, py) {
+    var c = _layerCenter(layer);
+    var rad = -((layer.rotation || 0) * Math.PI / 180);
+    return _rotatePoint(c.x, c.y, px, py, rad);
+  }
+
+  // Get rotation handle position in canvas space
+  function _rotateHandlePos(layer) {
+    var c = _layerCenter(layer);
+    var rad = (layer.rotation || 0) * Math.PI / 180;
+    // Handle is 24px above the top-center in local space
+    var topCenterX = layer.x + layer.w / 2;
+    var topCenterY = layer.y - 24;
+    return _rotatePoint(c.x, c.y, topCenterX, topCenterY, rad);
   }
 
   // ------------------------------------------------------------------ //
@@ -130,32 +181,37 @@
     // Draw layers in ascending z-order
     var sorted = canvasLayers.slice().sort(function (a, b) { return a.zIndex - b.zIndex; });
     sorted.forEach(function (layer) {
+      var c = _layerCenter(layer);
+      var rad = (layer.rotation || 0) * Math.PI / 180;
+
+      ctx.save();
+      ctx.translate(c.x, c.y);
+      ctx.rotate(rad);
+
       if (layer.img) {
-        ctx.drawImage(layer.img, layer.x, layer.y, layer.w, layer.h);
+        ctx.drawImage(layer.img, -layer.w / 2, -layer.h / 2, layer.w, layer.h);
       } else {
         ctx.fillStyle = layer.placeholderColor || '#cccccc';
-        ctx.fillRect(layer.x, layer.y, layer.w, layer.h);
+        ctx.fillRect(-layer.w / 2, -layer.h / 2, layer.w, layer.h);
         ctx.fillStyle = '#333333';
         ctx.font = '11px system-ui, sans-serif';
-        ctx.fillText(layer.label || 'Loading…', layer.x + 4, layer.y + 14);
+        ctx.fillText(layer.label || 'Loading…', -layer.w / 2 + 4, -layer.h / 2 + 14);
       }
 
-      // Selection indicator + corner handles
+      // Selection indicator + corner handles (in local rotated space)
       if (layer.id === selectedLayerId) {
-        ctx.save();
         ctx.strokeStyle = '#3a55e0';
         ctx.lineWidth = 2;
         ctx.setLineDash([4, 3]);
-        ctx.strokeRect(layer.x, layer.y, layer.w, layer.h);
+        ctx.strokeRect(-layer.w / 2, -layer.h / 2, layer.w, layer.h);
         ctx.setLineDash([]);
-        ctx.restore();
 
         var h = HANDLE_SIZE;
         [
-          { x: layer.x, y: layer.y },
-          { x: layer.x + layer.w, y: layer.y },
-          { x: layer.x, y: layer.y + layer.h },
-          { x: layer.x + layer.w, y: layer.y + layer.h }
+          { x: -layer.w / 2, y: -layer.h / 2 },
+          { x:  layer.w / 2, y: -layer.h / 2 },
+          { x: -layer.w / 2, y:  layer.h / 2 },
+          { x:  layer.w / 2, y:  layer.h / 2 }
         ].forEach(function (corner) {
           ctx.fillStyle = '#ffffff';
           ctx.fillRect(corner.x - h / 2, corner.y - h / 2, h, h);
@@ -163,7 +219,26 @@
           ctx.lineWidth = 1;
           ctx.strokeRect(corner.x - h / 2, corner.y - h / 2, h, h);
         });
+
+        // Rotation handle — circle 24px above top-center
+        ctx.beginPath();
+        ctx.arc(0, -layer.h / 2 - 24, 6, 0, Math.PI * 2);
+        ctx.fillStyle = '#3a55e0';
+        ctx.fill();
+        ctx.strokeStyle = '#fff';
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+
+        // Line from top-center to rotation handle
+        ctx.beginPath();
+        ctx.moveTo(0, -layer.h / 2);
+        ctx.lineTo(0, -layer.h / 2 - 18);
+        ctx.strokeStyle = '#3a55e0';
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
       }
+
+      ctx.restore();
     });
   }
 
@@ -189,7 +264,8 @@
       h: defaultW,
       zIndex: maxZ + 1,
       label: label || '',
-      placeholderColor: _randomColor()
+      placeholderColor: _randomColor(),
+      rotation: 0
     };
     canvasLayers.push(layer);
     selectedLayerId = id;
@@ -436,10 +512,23 @@
 
     var pos = _pointerPos(e);
 
-    // Check resize handles on selected layer first
+    // Check rotation/resize handles on selected layer first
     if (selectedLayerId) {
       var sel = _layerById(selectedLayerId);
       if (sel) {
+        // Check rotation handle first
+        if (_hitTestRotateHandle(sel, pos.x, pos.y)) {
+          var c2 = _layerCenter(sel);
+          _rotating = true;
+          _rotateLayerId = selectedLayerId;
+          _rotateCenterX = c2.x;
+          _rotateCenterY = c2.y;
+          _rotatePointerStartAngle = Math.atan2(pos.y - c2.y, pos.x - c2.x);
+          _rotateLayerStartAngle = sel.rotation || 0;
+          canvas.setPointerCapture(e.pointerId);
+          return;
+        }
+
         var corner = _hitTestCorner(sel, pos.x, pos.y);
         if (corner) {
           _resizing = true;
@@ -493,6 +582,20 @@
       return;
     }
 
+    // Rotation (WN-133)
+    if (_rotating && _rotateLayerId) {
+      e.preventDefault();
+      var rpos = _pointerPos(e);
+      var rotLayer = _layerById(_rotateLayerId);
+      if (rotLayer) {
+        var currentAngle = Math.atan2(rpos.y - _rotateCenterY, rpos.x - _rotateCenterX);
+        var deltaDeg = (currentAngle - _rotatePointerStartAngle) * 180 / Math.PI;
+        rotLayer.rotation = (_rotateLayerStartAngle + deltaDeg) % 360;
+        renderCanvas();
+      }
+      return;
+    }
+
     if (!_dragging && !_resizing) return;
     e.preventDefault();
     var pos = _pointerPos(e);
@@ -543,10 +646,12 @@
     }
     _dragging = false;
     _resizing = false;
+    _rotating = false;
     _dragLayerId = null;
     _resizeLayerId = null;
     _resizeCorner = null;
     _resizeOrigLayer = null;
+    _rotateLayerId = null;
   }
 
   // ------------------------------------------------------------------ //
