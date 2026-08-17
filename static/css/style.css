@@ -179,6 +179,66 @@ a:hover {
 /* ------------------------------------------------------------------ */
 /* Hero section                                                         */
 /* ------------------------------------------------------------------ */
+/* ------------------------------------------------------------------ */
+/* Onboarding banner (WN-141)                                          */
+/* ------------------------------------------------------------------ */
+.onboarding-banner {
+  background: var(--colour-accent);
+  color: #fff;
+  border-radius: var(--radius-md);
+  margin-block: var(--space-lg);
+  padding: var(--space-lg);
+}
+
+.onboarding-banner-inner {
+  max-width: 640px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.onboarding-banner-title {
+  font-size: 1.3rem;
+  font-weight: 700;
+  margin-bottom: var(--space-sm);
+  color: #fff;
+}
+
+.onboarding-feature-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 var(--space-md);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  text-align: left;
+  font-size: 0.95rem;
+}
+
+.onboarding-feature-list li::before {
+  content: '\2713\00a0';
+}
+
+.onboarding-dismiss-btn {
+  background: #fff;
+  color: var(--colour-accent);
+  border: none;
+  padding: var(--space-sm) var(--space-lg);
+  border-radius: var(--radius-sm);
+  font-weight: 600;
+  cursor: pointer;
+  min-height: 44px;
+}
+
+.onboarding-dismiss-btn:hover {
+  background: var(--colour-offwhite);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .onboarding-banner {
+    transition: none;
+  }
+}
+
 .hero {
   text-align: center;
   padding-block: var(--space-2xl);

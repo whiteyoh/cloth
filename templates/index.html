@@ -1,6 +1,18 @@
 {% extends "base.html" %}
 {% block title %}Cloth — Find clothing from across the web{% endblock %}
 {% block content %}
+<div id="onboarding-banner" class="onboarding-banner" role="region" aria-label="Feature discovery" hidden>
+  <div class="onboarding-banner-inner">
+    <h2 class="onboarding-banner-title">Welcome to Cloth</h2>
+    <ul class="onboarding-feature-list" aria-label="Key features">
+      <li>Search across the web for any clothing item using plain English</li>
+      <li>Save favourites and organise them into outfit boards</li>
+      <li>Virtually try on items with your own photo</li>
+      <li>Build outfit collages on the style canvas</li>
+    </ul>
+    <button type="button" id="onboarding-dismiss" class="btn-primary onboarding-dismiss-btn" aria-label="Dismiss welcome banner">Got it</button>
+  </div>
+</div>
 <section class="hero">
   <h1>Find clothing from across the web</h1>
   <p>Describe what you're looking for and we'll find it.</p>

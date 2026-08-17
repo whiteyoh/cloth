@@ -3341,6 +3341,25 @@
     });
   }
 
+  // ------------------------------------------------------------------ //
+  // Onboarding banner (WN-141)                                         //
+  // ------------------------------------------------------------------ //
+  function initOnboardingBanner() {
+    var banner = document.getElementById('onboarding-banner');
+    if (!banner) return;
+    if (localStorage.getItem('cloth_onboarded')) return;
+
+    banner.removeAttribute('hidden');
+
+    var dismissBtn = document.getElementById('onboarding-dismiss');
+    if (dismissBtn) {
+      dismissBtn.addEventListener('click', function () {
+        localStorage.setItem('cloth_onboarded', '1');
+        banner.setAttribute('hidden', '');
+      });
+    }
+  }
+
   document.addEventListener('DOMContentLoaded', function () {
     // One-time init that should not repeat on SPA page swaps
     initThemeToggle();
@@ -3348,6 +3367,7 @@
     initImageLightbox(); // WN-156
     initMobileNav(); // WN-157
     initBackToTop(); // WN-158
+    initOnboardingBanner(); // WN-141
 
     // Per-page init
     initPage();
