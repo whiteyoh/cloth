@@ -78,5 +78,18 @@
       <div id="style-canvas-live" aria-live="polite" class="sr-only"></div>
     </div>
   </div>
+
+  <!-- Reusable inline dialog (WN-131) -->
+  <dialog id="app-dialog" class="app-dialog" aria-modal="true">
+    <form method="dialog" class="app-dialog-form">
+      <h2 id="app-dialog-title" class="app-dialog-title"></h2>
+      <p id="app-dialog-message" class="app-dialog-message" hidden></p>
+      <input id="app-dialog-input" class="app-dialog-input" type="text" autocomplete="off">
+      <div class="app-dialog-actions">
+        <button type="button" id="app-dialog-cancel" class="btn-secondary">Cancel</button>
+        <button type="submit" id="app-dialog-ok" class="btn-primary">OK</button>
+      </div>
+    </form>
+  </dialog>
 </body>
 </html>

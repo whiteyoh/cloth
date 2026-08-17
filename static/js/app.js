@@ -540,16 +540,17 @@
         (function (capturedCol) {
           renameBtn.addEventListener('click', function (e) {
             e.stopPropagation();
-            var newName = window.prompt('Rename collection:', capturedCol.name);
-            if (newName && newName.trim()) {
-              var cols2 = getCollections();
-              cols2 = cols2.map(function (c) {
-                if (c.id === capturedCol.id) { c.name = newName.trim(); }
-                return c;
-              });
-              setCollections(cols2);
-              renderCollectionChips();
-            }
+            showDialog('Rename collection:', capturedCol.name).then(function (newName) {
+              if (newName && newName.trim()) {
+                var cols2 = getCollections();
+                cols2 = cols2.map(function (c) {
+                  if (c.id === capturedCol.id) { c.name = newName.trim(); }
+                  return c;
+                });
+                setCollections(cols2);
+                renderCollectionChips();
+              }
+            });
           });
         }(col));
 
@@ -561,12 +562,14 @@
         (function (capturedCol) {
           deleteBtn.addEventListener('click', function (e) {
             e.stopPropagation();
-            if (!window.confirm('Delete collection "' + capturedCol.name + '"?')) return;
-            var cols2 = getCollections().filter(function (c) { return c.id !== capturedCol.id; });
-            setCollections(cols2);
-            if (activeCollectionId === capturedCol.id) { activeCollectionId = ''; }
-            renderCollectionChips();
-            renderFilteredItems();
+            showConfirm('Delete collection "' + capturedCol.name + '"?').then(function (ok) {
+              if (!ok) return;
+              var cols2 = getCollections().filter(function (c) { return c.id !== capturedCol.id; });
+              setCollections(cols2);
+              if (activeCollectionId === capturedCol.id) { activeCollectionId = ''; }
+              renderCollectionChips();
+              renderFilteredItems();
+            });
           });
         }(col));
 
@@ -614,12 +617,13 @@
             assignBtn.addEventListener('click', function () {
               var cols = getCollections();
               if (!cols.length) {
-                var name = window.prompt('Create a collection:');
-                if (!name || !name.trim()) return;
-                var newCol = {id: generateCollectionId(), name: name.trim(), itemIds: [capturedItemId]};
-                cols.push(newCol);
-                setCollections(cols);
-                renderCollectionChips();
+                showDialog('Create a collection:', '').then(function (name) {
+                  if (!name || !name.trim()) return;
+                  var newCol = {id: generateCollectionId(), name: name.trim(), itemIds: [capturedItemId]};
+                  cols.push(newCol);
+                  setCollections(cols);
+                  renderCollectionChips();
+                });
                 return;
               }
               var menu = assignBtn.nextSibling;
@@ -659,14 +663,15 @@
               newOpt.className = 'collection-menu-item collection-menu-new';
               newOpt.textContent = '+ New collection';
               newOpt.addEventListener('click', function () {
-                var name = window.prompt('New collection name:');
-                if (!name || !name.trim()) return;
-                var newCol = {id: generateCollectionId(), name: name.trim(), itemIds: [capturedItemId]};
-                var cols2 = getCollections();
-                cols2.push(newCol);
-                setCollections(cols2);
-                renderCollectionChips();
-                colMenu.remove();
+                showDialog('New collection name:', '').then(function (name) {
+                  if (!name || !name.trim()) return;
+                  var newCol = {id: generateCollectionId(), name: name.trim(), itemIds: [capturedItemId]};
+                  var cols2 = getCollections();
+                  cols2.push(newCol);
+                  setCollections(cols2);
+                  renderCollectionChips();
+                  colMenu.remove();
+                });
               });
               colMenu.appendChild(newOpt);
               assignBtn.insertAdjacentElement('afterend', colMenu);
@@ -679,12 +684,13 @@
     }
 
     newBtn.addEventListener('click', function () {
-      var name = window.prompt('New collection name:');
-      if (!name || !name.trim()) return;
-      var cols = getCollections();
-      cols.push({id: generateCollectionId(), name: name.trim(), itemIds: []});
-      setCollections(cols);
-      renderCollectionChips();
+      showDialog('New collection name:', '').then(function (name) {
+        if (!name || !name.trim()) return;
+        var cols = getCollections();
+        cols.push({id: generateCollectionId(), name: name.trim(), itemIds: []});
+        setCollections(cols);
+        renderCollectionChips();
+      });
     });
 
     renderCollectionChips();
@@ -874,7 +880,7 @@
           setTimeout(function () { shareBtn.textContent = 'Share list'; }, 2000);
         });
       } else {
-        window.prompt('Copy this link to share your saved list:', url);
+        showDialog('Copy this link to share your saved list:', url);
       }
     });
 
@@ -1271,6 +1277,103 @@
   // Pure utility functions — canonical definitions live in cloth-pure.js (testable standalone).
   var escapeHtml = window.ClothPure.escapeHtml;
   var buildCacheAgeText = window.ClothPure.buildCacheAgeText;
+
+  // ------------------------------------------------------------------ //
+  // Inline dialog helpers (WN-131)                                       //
+  // ------------------------------------------------------------------ //
+
+  function _getAppDialog() {
+    return document.getElementById('app-dialog');
+  }
+
+  // showDialog(title, defaultValue) → Promise<string|null>
+  // Resolves with the input value on OK, null on Cancel/Escape.
+  function showDialog(title, defaultValue) {
+    return new Promise(function (resolve) {
+      var dlg = _getAppDialog();
+      if (!dlg) { resolve(window.prompt(title, defaultValue)); return; }
+
+      var titleEl = dlg.querySelector('#app-dialog-title');
+      var msgEl = dlg.querySelector('#app-dialog-message');
+      var inputEl = dlg.querySelector('#app-dialog-input');
+      var cancelBtn = dlg.querySelector('#app-dialog-cancel');
+      var okBtn = dlg.querySelector('#app-dialog-ok');
+
+      titleEl.textContent = title;
+      msgEl.hidden = true;
+      inputEl.hidden = false;
+      inputEl.value = defaultValue || '';
+      okBtn.textContent = 'OK';
+
+      var resolved = false;
+      function done(val) {
+        if (resolved) return;
+        resolved = true;
+        dlg.close();
+        resolve(val);
+      }
+
+      function onCancel() { done(null); }
+      function onOk(e) {
+        e.preventDefault();
+        done(inputEl.value.trim() || null);
+      }
+      function onKeydown(e) {
+        if (e.key === 'Escape') { done(null); }
+      }
+      function onClose() { if (!resolved) done(null); }
+
+      cancelBtn.addEventListener('click', onCancel, {once: true});
+      dlg.querySelector('.app-dialog-form').addEventListener('submit', onOk, {once: true});
+      dlg.addEventListener('keydown', onKeydown, {once: true});
+      dlg.addEventListener('close', onClose, {once: true});
+
+      dlg.showModal();
+      inputEl.focus();
+      inputEl.select();
+    });
+  }
+
+  // showConfirm(message) → Promise<boolean>
+  // Resolves true on OK, false on Cancel/Escape.
+  function showConfirm(message) {
+    return new Promise(function (resolve) {
+      var dlg = _getAppDialog();
+      if (!dlg) { resolve(window.confirm(message)); return; }
+
+      var titleEl = dlg.querySelector('#app-dialog-title');
+      var msgEl = dlg.querySelector('#app-dialog-message');
+      var inputEl = dlg.querySelector('#app-dialog-input');
+      var cancelBtn = dlg.querySelector('#app-dialog-cancel');
+      var okBtn = dlg.querySelector('#app-dialog-ok');
+
+      titleEl.textContent = message;
+      msgEl.hidden = true;
+      inputEl.hidden = true;
+      okBtn.textContent = 'Confirm';
+
+      var resolved = false;
+      function done(val) {
+        if (resolved) return;
+        resolved = true;
+        dlg.close();
+        resolve(val);
+      }
+
+      function onCancel() { done(false); }
+      function onOk(e) { e.preventDefault(); done(true); }
+      function onKeydown(e) { if (e.key === 'Escape') done(false); }
+      function onClose() { if (!resolved) done(false); }
+
+      cancelBtn.addEventListener('click', onCancel, {once: true});
+      dlg.querySelector('.app-dialog-form').addEventListener('submit', onOk, {once: true});
+      dlg.addEventListener('keydown', onKeydown, {once: true});
+      dlg.addEventListener('close', onClose, {once: true});
+
+      dlg.showModal();
+      okBtn.focus();
+    });
+  }
 
   // WN-160: generate related search chips from a query
   var _COLOUR_SYNS = {
@@ -1901,11 +2004,12 @@
         var board = btn.closest('.outfit-board');
         var nameEl = board ? board.querySelector('.outfit-board-name') : null;
         var currentName = nameEl ? nameEl.textContent : '';
-        var newName = window.prompt('Rename outfit:', currentName);
-        if (newName && newName.trim()) {
-          renameOutfit(btn.dataset.outfitId, newName.trim());
-          renderOutfitsPage();
-        }
+        showDialog('Rename outfit:', currentName).then(function (newName) {
+          if (newName && newName.trim()) {
+            renameOutfit(btn.dataset.outfitId, newName.trim());
+            renderOutfitsPage();
+          }
+        });
       });
     });
 
@@ -1915,10 +2019,12 @@
         var board = btn.closest('.outfit-board');
         var nameEl = board ? board.querySelector('.outfit-board-name') : null;
         var name = nameEl ? nameEl.textContent : 'this outfit';
-        if (window.confirm('Delete "' + name + '"?')) {
-          deleteOutfit(btn.dataset.outfitId);
-          renderOutfitsPage();
-        }
+        showConfirm('Delete "' + name + '"?').then(function (ok) {
+          if (ok) {
+            deleteOutfit(btn.dataset.outfitId);
+            renderOutfitsPage();
+          }
+        });
       });
     });
 
@@ -1982,7 +2088,10 @@
         var urls = outfit.items.map(function (i) { return i.url; }).filter(Boolean);
         if (!urls.length) return;
         if (urls.length > 5) {
-          if (!window.confirm('Open ' + urls.length + ' tabs for "' + outfit.name + '"?')) return;
+          showConfirm('Open ' + urls.length + ' tabs for "' + outfit.name + '"?').then(function (ok) {
+            if (ok) urls.forEach(function (url) { window.open(url, '_blank', 'noopener noreferrer'); });
+          });
+          return;
         }
         urls.forEach(function (url) { window.open(url, '_blank', 'noopener noreferrer'); });
       });
@@ -2015,10 +2124,10 @@
               }, 2000);
             });
           } else {
-            window.prompt('Copy this link:', shareUrl);
+            showDialog('Copy this link:', shareUrl);
           }
         } catch (e) {
-          window.alert('Could not generate share link.');
+          showDialog('Could not copy automatically. Share this link:', shareUrl);
         }
       });
     });
@@ -2090,11 +2199,12 @@
     if (!newBtn) return;
 
     newBtn.addEventListener('click', function () {
-      var name = window.prompt('Outfit board name:', 'My outfit');
-      if (name && name.trim()) {
-        createOutfit(name.trim());
-        renderOutfitsPage();
-      }
+      showDialog('Outfit board name:', 'My outfit').then(function (name) {
+        if (name && name.trim()) {
+          createOutfit(name.trim());
+          renderOutfitsPage();
+        }
+      });
     });
 
     // Handle shared outfit fragment (WN-102)
@@ -2210,13 +2320,14 @@
     newBtn.textContent = '+ New outfit';
     newBtn.addEventListener('click', function () {
       picker.remove();
-      var name = window.prompt('Outfit board name:', 'My outfit');
-      if (name && name.trim()) {
-        var newOutfit = createOutfit(name.trim());
-        addItemToOutfit(newOutfit.id, itemData);
-        showToast('Added to "' + newOutfit.name + '"');
-        updateOutfitsCount();
-      }
+      showDialog('Outfit board name:', 'My outfit').then(function (name) {
+        if (name && name.trim()) {
+          var newOutfit = createOutfit(name.trim());
+          addItemToOutfit(newOutfit.id, itemData);
+          showToast('Added to "' + newOutfit.name + '"');
+          updateOutfitsCount();
+        }
+      });
     });
     picker.appendChild(newBtn);
 
