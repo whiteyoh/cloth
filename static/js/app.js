@@ -1685,6 +1685,7 @@
     updateOutfitsCount();
     _restoreFilterState(); // WN-155: re-apply saved filter state
     initMobileFilterToggle(); // WN-164: must run after every AJAX render, not just initial load
+    initCardMoreButtons(); // WN-173
     if (data.products && data.products.length > 0) {
       _initRelatedSearchChips(data.query); // WN-160
     }
@@ -3270,6 +3271,7 @@
     initStickyFilterBar();
     initMobileFilterToggle();
     initMobileBottomSearch(); // WN-168
+    initCardMoreButtons(); // WN-173
 
     // One-time document-level setup
     _initSpaNavigation();
@@ -3372,6 +3374,73 @@
     } else {
       bar.setAttribute('hidden', '');
     }
+  }
+
+  // WN-173: card action sheet — secondary actions on mobile
+  function _openCardActionSheet(card) {
+    var sheet = document.getElementById('card-action-sheet');
+    if (!sheet) return;
+
+    var title = document.getElementById('card-action-sheet-title');
+    if (title) title.textContent = (card.dataset.name || '').replace(/\b\w/g, function(c) { return c.toUpperCase(); });
+
+    var actionsDiv = document.getElementById('card-action-sheet-actions');
+    if (!actionsDiv) return;
+    actionsDiv.innerHTML = '';
+
+    var selectors = [
+      '.btn-save',
+      '.btn-add-to-outfit',
+      '.btn-try-on',
+      '.btn-find-similar',
+      '.btn-style-it',
+      '.btn-compare',
+      '.btn-copy-link',
+      '.btn-add-to-list'
+    ];
+
+    selectors.forEach(function(sel) {
+      var original = card.querySelector(sel);
+      if (!original) return;
+      var clone = original.cloneNode(true);
+      clone.style.cssText = '';
+      clone.addEventListener('click', function() {
+        setTimeout(_closeCardActionSheet, 200);
+      });
+      actionsDiv.appendChild(clone);
+    });
+
+    sheet.removeAttribute('hidden');
+    document.body.style.overflow = 'hidden';
+    var closeBtn = sheet.querySelector('.card-action-sheet-close');
+    if (closeBtn) closeBtn.focus();
+  }
+
+  function _closeCardActionSheet() {
+    var sheet = document.getElementById('card-action-sheet');
+    if (!sheet) return;
+    sheet.setAttribute('hidden', '');
+    document.body.style.overflow = '';
+  }
+
+  function initCardMoreButtons() {
+    if (window._cardMoreBound) return;
+    window._cardMoreBound = true;
+
+    document.addEventListener('click', function(e) {
+      if (e.target.closest('.btn-card-more')) {
+        var card = e.target.closest('.product-card');
+        if (card) _openCardActionSheet(card);
+        return;
+      }
+      if (e.target.id === 'card-action-sheet-backdrop' || e.target.closest('.card-action-sheet-close')) {
+        _closeCardActionSheet();
+      }
+    });
+
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') _closeCardActionSheet();
+    });
   }
 
   // WN-171: filter bar collapse — hidden by default on all screen sizes

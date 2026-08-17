@@ -41,6 +41,9 @@
        data-rv-url="{{ product.purchase_url|e }}"
        aria-label="View {{ product.name }} at {{ product.retailer_name }}">View item</a>
     <div class="product-card-actions">
+      <button class="btn-card-more"
+              aria-label="More options for {{ product.name|e }}"
+              title="More options">&#8943;</button>
       <button class="btn-copy-link"
               data-url="{{ product.purchase_url }}"
               aria-label="Copy link to {{ product.name }}">Copy link</button>

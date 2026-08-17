@@ -2238,9 +2238,39 @@ a:hover {
     padding-inline: var(--space-md);
   }
 
-  .product-grid {
+  /* WN-172: max 2 cols on mobile — override density variants too */
+  .product-grid,
+  .product-grid[data-density="compact"],
+  .product-grid[data-density="comfortable"],
+  .product-grid[data-density="large"] {
     grid-template-columns: repeat(2, 1fr);
     gap: var(--space-md);
+  }
+
+  /* WN-173: hide secondary actions on mobile — shown in action sheet */
+  .btn-copy-link,
+  .btn-add-to-outfit,
+  .btn-find-similar,
+  .btn-try-on,
+  .btn-style-it,
+  .btn-compare,
+  .btn-add-to-list {
+    display: none;
+  }
+
+  .btn-card-more {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 40px;
+    min-height: 36px;
+    border: 1px solid var(--colour-border);
+    border-radius: var(--radius);
+    background: var(--colour-surface);
+    color: var(--colour-text);
+    font-size: 1.25rem;
+    cursor: pointer;
+    letter-spacing: 0.05em;
   }
 
   .hero h1 {
@@ -2354,10 +2384,13 @@ a:hover {
     font-size: 1rem;
   }
 
-  /* Results */
-  .product-grid {
-    grid-template-columns: 1fr;
-    gap: var(--space-md);
+  /* Results — keep 2 cols on small mobile (WN-172) */
+  .product-grid,
+  .product-grid[data-density="compact"],
+  .product-grid[data-density="comfortable"],
+  .product-grid[data-density="large"] {
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-sm);
   }
 
   .results-header {
@@ -2417,21 +2450,6 @@ a:hover {
     font-size: 1.4rem;
   }
 
-  /* WN-167: card action buttons scroll horizontally rather than wrapping */
-  .product-card-actions {
-    flex-wrap: nowrap;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    gap: 0.3rem;
-    padding-bottom: 4px;
-  }
-
-  .product-card-actions > * {
-    flex: 0 0 auto;
-    min-width: 44px;
-    font-size: 0.75rem;
-    padding: 0.35rem 0.5rem;
-  }
 }
 
 /* ------------------------------------------------------------------ */
@@ -3609,6 +3627,105 @@ a:hover {
 
 .filter-backdrop.is-visible {
   display: block;
+}
+
+/* ------------------------------------------------------------------ */
+/* WN-173: card action sheet (mobile)                                   */
+/* ------------------------------------------------------------------ */
+.btn-card-more {
+  display: none;
+}
+
+.card-action-sheet {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .card-action-sheet {
+    display: flex;
+    position: fixed;
+    inset: 0;
+    z-index: 300;
+    align-items: flex-end;
+  }
+
+  .card-action-sheet[hidden] {
+    display: none !important;
+  }
+
+  .card-action-sheet-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+  }
+
+  .card-action-sheet-panel {
+    position: relative;
+    width: 100%;
+    background: var(--colour-bg);
+    border-radius: 1rem 1rem 0 0;
+    padding: 1rem;
+    max-height: 70vh;
+    overflow-y: auto;
+    box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.18);
+  }
+
+  .card-action-sheet-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.9rem;
+    gap: 0.5rem;
+  }
+
+  .card-action-sheet-title {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--colour-text);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    flex: 1;
+  }
+
+  .card-action-sheet-close {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: var(--colour-text-muted);
+    padding: 0;
+    min-width: 36px;
+    min-height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .card-action-sheet-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
+  }
+
+  .card-action-sheet-actions > * {
+    min-height: 52px;
+    border-radius: var(--radius);
+    font-size: 0.875rem;
+    font-weight: 500;
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    text-decoration: none;
+    cursor: pointer;
+    padding: 0.5rem 0.3rem;
+    border: 1px solid var(--colour-border);
+    background: var(--colour-surface);
+    color: var(--colour-text);
+    width: 100%;
+  }
 }
 
 /* ------------------------------------------------------------------ */

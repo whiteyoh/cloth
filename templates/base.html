@@ -110,6 +110,17 @@
       </div>
     </form>
   </dialog>
+  <!-- WN-173: card action sheet (mobile) -->
+  <div id="card-action-sheet" class="card-action-sheet" hidden>
+    <div class="card-action-sheet-backdrop" id="card-action-sheet-backdrop"></div>
+    <div class="card-action-sheet-panel" role="dialog" aria-modal="true" aria-labelledby="card-action-sheet-title">
+      <div class="card-action-sheet-header">
+        <span class="card-action-sheet-title" id="card-action-sheet-title"></span>
+        <button type="button" class="card-action-sheet-close" aria-label="Close options panel">&#215;</button>
+      </div>
+      <div class="card-action-sheet-actions" id="card-action-sheet-actions"></div>
+    </div>
+  </div>
   <!-- Mobile bottom search bar (WN-168) -->
   <div id="mobile-search-bar" class="mobile-search-bar" hidden>
     <form class="mobile-search-form" action="/search" method="get" role="search" aria-label="Quick search">
