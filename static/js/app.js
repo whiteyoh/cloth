@@ -2731,6 +2731,59 @@
     _initSpaNavigation();
   }
 
+  // ------------------------------------------------------------------ //
+  // Image lightbox (WN-156)                                             //
+  // ------------------------------------------------------------------ //
+  function _initLightbox() {
+    if (window._lightboxBound) return;
+    window._lightboxBound = true;
+
+    var lightbox = document.getElementById('img-lightbox');
+    var lbImg = document.getElementById('img-lightbox-img');
+    if (!lightbox || !lbImg) return;
+
+    function openLightbox(src, alt) {
+      lbImg.src = src;
+      lbImg.alt = alt || '';
+      lightbox.style.display = '';
+      var closeBtn = lightbox.querySelector('.img-lightbox-close');
+      if (closeBtn) closeBtn.focus();
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeLightbox() {
+      lightbox.style.display = 'none';
+      lbImg.src = '';
+      document.body.style.overflow = '';
+    }
+
+    var closeBtn = lightbox.querySelector('.img-lightbox-close');
+    if (closeBtn) closeBtn.addEventListener('click', closeLightbox);
+
+    var backdrop = lightbox.querySelector('.img-lightbox-backdrop');
+    if (backdrop) backdrop.addEventListener('click', closeLightbox);
+
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && lightbox.style.display !== 'none') {
+        closeLightbox();
+      }
+    });
+
+    // Delegate click on product images to open lightbox
+    document.addEventListener('click', function (e) {
+      var wrap = e.target.closest('.product-image-wrap');
+      if (!wrap) return;
+      var img = wrap.querySelector('img');
+      if (!img || !img.src) return;
+      openLightbox(img.src, img.alt);
+    });
+  }
+
+  function initImageLightbox() {
+    _initLightbox();
+    // Re-bind click on any new product images — lightbox uses delegation, nothing extra needed
+  }
+
   // WN-152: sticky filter bar — set --header-h and detect stuck state
   function initStickyFilterBar() {
     var header = document.querySelector('.site-header');
@@ -2758,6 +2811,7 @@
     // One-time init that should not repeat on SPA page swaps
     initThemeToggle();
     initSearchAutocomplete();
+    initImageLightbox(); // WN-156
 
     // Per-page init
     initPage();

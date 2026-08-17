@@ -38,6 +38,15 @@
   <script src="/static/js/app.js"></script>
   <script src="/static/js/style-canvas.js"></script>
 
+  <!-- Image lightbox (WN-156) -->
+  <div id="img-lightbox" class="img-lightbox" role="dialog" aria-modal="true" aria-label="Product image" style="display:none">
+    <div class="img-lightbox-backdrop"></div>
+    <div class="img-lightbox-inner">
+      <button class="img-lightbox-close" aria-label="Close image">&times;</button>
+      <img id="img-lightbox-img" src="" alt="" class="img-lightbox-img">
+    </div>
+  </div>
+
   <!-- Style canvas modal (WN-112) -->
   <div id="style-canvas-modal" role="dialog" aria-modal="true" aria-label="Style canvas" style="display:none">
     <div class="style-canvas-inner">
