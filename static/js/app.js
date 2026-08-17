@@ -1845,6 +1845,8 @@
       + 'aria-label="Open ' + escapeHtml(outfit.name) + ' in style canvas"'
       + (outfit.items.length === 0 ? ' disabled' : '') + '>Open in canvas</button>'
       + '<button class="btn-delete-outfit" data-outfit-id="' + escapeHtml(outfit.id) + '" aria-label="Delete outfit ' + escapeHtml(outfit.name) + '">Delete</button>'
+      + '<button class="btn-shop-all-outfit" data-outfit-id="' + escapeHtml(outfit.id) + '" aria-label="Shop the outfit ' + escapeHtml(outfit.name) + ' — open all items"'
+      + (outfit.items.length === 0 ? ' disabled' : '') + '>Shop all</button>'
       + '</div>'
       + '</div>'
       + itemsHtml
@@ -1960,6 +1962,23 @@
             suggestionsEl.innerHTML = '<p class="outfit-suggestions-empty">Could not get suggestions. Please try again.</p>';
             suggestionsEl.hidden = false;
           });
+      });
+    });
+
+    // Wire up "Shop all" buttons (WN-162)
+    container.querySelectorAll('.btn-shop-all-outfit').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var outfitId = btn.dataset.outfitId;
+        var outfits = getOutfits();
+        var outfit = null;
+        outfits.forEach(function (o) { if (o.id === outfitId) outfit = o; });
+        if (!outfit || !outfit.items.length) return;
+        var urls = outfit.items.map(function (i) { return i.url; }).filter(Boolean);
+        if (!urls.length) return;
+        if (urls.length > 5) {
+          if (!window.confirm('Open ' + urls.length + ' tabs for "' + outfit.name + '"?')) return;
+        }
+        urls.forEach(function (url) { window.open(url, '_blank', 'noopener noreferrer'); });
       });
     });
 
