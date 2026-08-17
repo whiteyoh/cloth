@@ -35,6 +35,8 @@
   var _pinchOrigH = 0;
 
   var HANDLE_SIZE = 8;
+  // WN-121: larger hit-test radius on touch devices (visual handles remain 8px)
+  var _HIT_RADIUS = navigator.maxTouchPoints > 0 ? 20 : HANDLE_SIZE;
 
   // ------------------------------------------------------------------ //
   // Helpers                                                              //
@@ -73,7 +75,7 @@
   }
 
   function _hitTestCorner(layer, px, py) {
-    var h = HANDLE_SIZE;
+    var h = _HIT_RADIUS;
     var corners = {
       tl: { x: layer.x, y: layer.y },
       tr: { x: layer.x + layer.w, y: layer.y },
