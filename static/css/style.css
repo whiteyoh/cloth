@@ -3377,9 +3377,37 @@ a:hover {
 
 /* ------------------------------------------------------------------ */
 /* ------------------------------------------------------------------ */
-/* Mobile filter bar collapse (WN-120)                                  */
+/* Mobile filter bar collapse (WN-120) + mobile sticky fix (WN-163)    */
 /* ------------------------------------------------------------------ */
 @media (max-width: 768px) {
+  /* Override sticky — on mobile a sticky collapsing bar hogs space */
+  .filter-sort-bar {
+    position: relative;
+    top: auto;
+    z-index: auto;
+  }
+
+  /* Expanded panel overlays results instead of pushing them down */
+  #results-region {
+    position: relative;
+  }
+
+  #filter-sort-bar.is-expanded {
+    position: absolute;
+    left: 0;
+    right: 0;
+    z-index: 50;
+    background: var(--colour-bg);
+    border: 1px solid var(--colour-border);
+    border-radius: 0 0 var(--radius-md) var(--radius-md);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.14);
+    padding: var(--space-sm);
+    max-height: 70vh;
+    overflow-y: auto;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
   .mobile-filter-toggle {
     display: inline-flex;
     align-items: center;
