@@ -1,4 +1,4 @@
-"""Claude API integration for natural language query expansion."""
+"""OpenAI ChatGPT integration for natural language query expansion and outfit generation."""
 from __future__ import annotations
 
 import json
@@ -6,11 +6,11 @@ import os
 import time
 from datetime import datetime, timezone
 
-import anthropic
+import openai
 
 from utils import _emit
 
-_MODEL = "claude-haiku-4-5-20251001"
+_MODEL = "gpt-4o-mini"
 
 _SYSTEM_PROMPT = (
     "You are a clothing search assistant. When given a natural language clothing description, "
@@ -26,7 +26,7 @@ _SYSTEM_PROMPT = (
 
 
 class LLMError(Exception):
-    """Raised when Claude API call fails in a non-recoverable way."""
+    """Raised when OpenAI API call fails in a non-recoverable way."""
 
     def __init__(self, message: str = "", error_type: str = "unknown") -> None:
         super().__init__(message)
@@ -34,17 +34,47 @@ class LLMError(Exception):
 
 
 class LLMNotConfiguredError(LLMError):
-    """Raised when ANTHROPIC_API_KEY is not set."""
+    """Raised when OPENAI_API_KEY is not set."""
 
 
-_client: anthropic.AsyncAnthropic | None = None
+_client: openai.AsyncOpenAI | None = None
 
 
-def _get_client(api_key: str) -> anthropic.AsyncAnthropic:
+def _get_client(api_key: str) -> openai.AsyncOpenAI:
     global _client
     if _client is None:
-        _client = anthropic.AsyncAnthropic(api_key=api_key)
+        _client = openai.AsyncOpenAI(api_key=api_key)
     return _client
+
+
+def _get_api_key() -> str:
+    key = os.environ.get("OPENAI_API_KEY", "")
+    if not key:
+        raise LLMNotConfiguredError(
+            "OPENAI_API_KEY is not configured",
+            error_type="not_configured",
+        )
+    return key
+
+
+async def _chat(system: str, user: str, max_tokens: int = 256) -> str:
+    """Make a single ChatGPT call. Returns the response text."""
+    api_key = _get_api_key()
+    client = _get_client(api_key)
+    response = await client.chat.completions.create(
+        model=_MODEL,
+        max_tokens=max_tokens,
+        messages=[
+            {"role": "system", "content": system},
+            {"role": "user", "content": user},
+        ],
+    )
+    if not response.choices:
+        raise LLMError("Empty response from OpenAI", error_type="schema_error")
+    content = response.choices[0].message.content
+    if not content:
+        raise LLMError("Empty content from OpenAI", error_type="schema_error")
+    return content
 
 
 _SUGGEST_SYSTEM_PROMPT = (
@@ -61,60 +91,35 @@ _SUGGEST_SYSTEM_PROMPT = (
 
 
 async def suggest_alternatives(query: str) -> list[str]:
-    """Suggest 3–4 alternative search queries when no results were found.
-
-    Returns a list of alternative query strings.
-    Raises LLMNotConfiguredError if ANTHROPIC_API_KEY is absent.
-    Raises LLMError on API or parse failures.
-    """
-    api_key = os.environ.get("ANTHROPIC_API_KEY", "")
-    if not api_key:
-        raise LLMNotConfiguredError(
-            "ANTHROPIC_API_KEY is not configured",
-            error_type="not_configured",
-        )
-
+    """Suggest 3–4 alternative search queries when no results were found."""
+    _get_api_key()  # raises LLMNotConfiguredError if absent
     start = time.monotonic()
 
     try:
-        client = _get_client(api_key)
-        message = await client.messages.create(
-            model=_MODEL,
-            max_tokens=256,
-            system=_SUGGEST_SYSTEM_PROMPT,
-            messages=[{"role": "user", "content": query}],
-        )
+        text = await _chat(_SUGGEST_SYSTEM_PROMPT, query)
         elapsed_ms = round((time.monotonic() - start) * 1000)
 
-        if not message.content:
-            raise LLMError("Empty response from Claude", error_type="schema_error")
-
-        response_text = message.content[0].text
-        suggestions = json.loads(response_text)
-
+        suggestions = json.loads(text)
         if not isinstance(suggestions, list) or not all(isinstance(s, str) for s in suggestions):
-            raise LLMError("Unexpected response format from Claude", error_type="schema_error")
+            raise LLMError("Unexpected response format from OpenAI", error_type="schema_error")
 
         suggestions = [s.strip() for s in suggestions if s.strip()][:4]
 
-        _emit(
-            {
-                "event": "llm_no_results_suggested",
-                "query_length": len(query),
-                "suggestion_count": len(suggestions),
-                "llm_latency_ms": elapsed_ms,
-                "model": _MODEL,
-                "timestamp_utc": datetime.now(timezone.utc).isoformat(),
-            }
-        )
+        _emit({
+            "event": "llm_no_results_suggested",
+            "query_length": len(query),
+            "suggestion_count": len(suggestions),
+            "llm_latency_ms": elapsed_ms,
+            "model": _MODEL,
+            "timestamp_utc": datetime.now(timezone.utc).isoformat(),
+        })
 
         return suggestions
 
     except json.JSONDecodeError as exc:
-        raise LLMError("Claude returned non-JSON response", error_type="json_parse_error") from exc
-
-    except anthropic.APIError as exc:
-        raise LLMError(f"Claude API error: {exc}", error_type="api_error") from exc
+        raise LLMError("OpenAI returned non-JSON response", error_type="json_parse_error") from exc
+    except openai.APIError as exc:
+        raise LLMError(f"OpenAI API error: {exc}", error_type="api_error") from exc
 
 
 _OUTFIT_COMPLETE_SYSTEM_PROMPT = (
@@ -131,61 +136,36 @@ _OUTFIT_COMPLETE_SYSTEM_PROMPT = (
 
 
 async def suggest_outfit_completion(item_names: list[str]) -> list[str]:
-    """Suggest items to complete an outfit given existing item names.
-
-    Returns a list of item description strings.
-    Raises LLMNotConfiguredError if ANTHROPIC_API_KEY is absent.
-    Raises LLMError on API or parse failures.
-    """
-    api_key = os.environ.get("ANTHROPIC_API_KEY", "")
-    if not api_key:
-        raise LLMNotConfiguredError(
-            "ANTHROPIC_API_KEY is not configured",
-            error_type="not_configured",
-        )
-
+    """Suggest items to complete an outfit given existing item names."""
+    _get_api_key()
     start = time.monotonic()
     user_content = "Outfit items: " + ", ".join(item_names)
 
     try:
-        client = _get_client(api_key)
-        message = await client.messages.create(
-            model=_MODEL,
-            max_tokens=256,
-            system=_OUTFIT_COMPLETE_SYSTEM_PROMPT,
-            messages=[{"role": "user", "content": user_content}],
-        )
+        text = await _chat(_OUTFIT_COMPLETE_SYSTEM_PROMPT, user_content)
         elapsed_ms = round((time.monotonic() - start) * 1000)
 
-        if not message.content:
-            raise LLMError("Empty response from Claude", error_type="schema_error")
-
-        response_text = message.content[0].text
-        suggestions = json.loads(response_text)
-
+        suggestions = json.loads(text)
         if not isinstance(suggestions, list) or not all(isinstance(s, str) for s in suggestions):
-            raise LLMError("Unexpected response format from Claude", error_type="schema_error")
+            raise LLMError("Unexpected response format from OpenAI", error_type="schema_error")
 
         suggestions = [s.strip() for s in suggestions if s.strip()][:5]
 
-        _emit(
-            {
-                "event": "llm_outfit_completion",
-                "item_count": len(item_names),
-                "suggestion_count": len(suggestions),
-                "llm_latency_ms": elapsed_ms,
-                "model": _MODEL,
-                "timestamp_utc": datetime.now(timezone.utc).isoformat(),
-            }
-        )
+        _emit({
+            "event": "llm_outfit_completion",
+            "item_count": len(item_names),
+            "suggestion_count": len(suggestions),
+            "llm_latency_ms": elapsed_ms,
+            "model": _MODEL,
+            "timestamp_utc": datetime.now(timezone.utc).isoformat(),
+        })
 
         return suggestions
 
     except json.JSONDecodeError as exc:
-        raise LLMError("Claude returned non-JSON response", error_type="json_parse_error") from exc
-
-    except anthropic.APIError as exc:
-        raise LLMError(f"Claude API error: {exc}", error_type="api_error") from exc
+        raise LLMError("OpenAI returned non-JSON response", error_type="json_parse_error") from exc
+    except openai.APIError as exc:
+        raise LLMError(f"OpenAI API error: {exc}", error_type="api_error") from exc
 
 
 _REFINE_SYSTEM_PROMPT = (
@@ -201,55 +181,33 @@ _REFINE_SYSTEM_PROMPT = (
 
 
 async def refine_query(original_query: str, refinement: str) -> str:
-    """Combine an original query with a natural-language refinement into a new search term.
-
-    Returns the refined query string.
-    Raises LLMNotConfiguredError if ANTHROPIC_API_KEY is absent.
-    Raises LLMError on API or parse failures.
-    """
-    api_key = os.environ.get("ANTHROPIC_API_KEY", "")
-    if not api_key:
-        raise LLMNotConfiguredError(
-            "ANTHROPIC_API_KEY is not configured",
-            error_type="not_configured",
-        )
-
+    """Combine an original query with a natural-language refinement into a new search term."""
+    _get_api_key()
     start = time.monotonic()
     user_content = f'Original search: "{original_query}"\nRefinement: "{refinement}"'
 
     try:
-        client = _get_client(api_key)
-        message = await client.messages.create(
-            model=_MODEL,
-            max_tokens=128,
-            system=_REFINE_SYSTEM_PROMPT,
-            messages=[{"role": "user", "content": user_content}],
-        )
+        text = await _chat(_REFINE_SYSTEM_PROMPT, user_content, max_tokens=128)
         elapsed_ms = round((time.monotonic() - start) * 1000)
 
-        if not message.content:
-            raise LLMError("Empty response from Claude", error_type="schema_error")
-
-        new_query = message.content[0].text.strip().strip('"').strip("'")
+        new_query = text.strip().strip('"').strip("'")
         if not new_query:
-            raise LLMError("Claude returned empty query", error_type="schema_error")
+            raise LLMError("OpenAI returned empty query", error_type="schema_error")
 
-        _emit(
-            {
-                "event": "llm_query_refined",
-                "original_length": len(original_query),
-                "refinement_length": len(refinement),
-                "result_length": len(new_query),
-                "llm_latency_ms": elapsed_ms,
-                "model": _MODEL,
-                "timestamp_utc": datetime.now(timezone.utc).isoformat(),
-            }
-        )
+        _emit({
+            "event": "llm_query_refined",
+            "original_length": len(original_query),
+            "refinement_length": len(refinement),
+            "result_length": len(new_query),
+            "llm_latency_ms": elapsed_ms,
+            "model": _MODEL,
+            "timestamp_utc": datetime.now(timezone.utc).isoformat(),
+        })
 
         return new_query
 
-    except anthropic.APIError as exc:
-        raise LLMError(f"Claude API error: {exc}", error_type="api_error") from exc
+    except openai.APIError as exc:
+        raise LLMError(f"OpenAI API error: {exc}", error_type="api_error") from exc
 
 
 _OUTFIT_GENERATE_SYSTEM_PROMPT = (
@@ -268,147 +226,84 @@ _OUTFIT_CATEGORIES = ("shoes", "pants", "accessory", "shirt", "jacket", "headwea
 
 
 async def generate_outfit_queries(description: str) -> dict[str, str]:
-    """Generate 6 category-specific Google Shopping search phrases for a style description.
-
-    Returns a dict with keys: shoes, pants, accessory, shirt, jacket, headwear.
-    Raises LLMNotConfiguredError if ANTHROPIC_API_KEY is absent.
-    Raises LLMError on API or parse failures.
-    """
-    api_key = os.environ.get("ANTHROPIC_API_KEY", "")
-    if not api_key:
-        raise LLMNotConfiguredError(
-            "ANTHROPIC_API_KEY is not configured",
-            error_type="not_configured",
-        )
-
+    """Generate 6 category-specific Google Shopping search phrases for a style description."""
+    _get_api_key()
     start = time.monotonic()
 
     try:
-        client = _get_client(api_key)
-        message = await client.messages.create(
-            model=_MODEL,
-            max_tokens=512,
-            system=_OUTFIT_GENERATE_SYSTEM_PROMPT,
-            messages=[{"role": "user", "content": description}],
-        )
+        text = await _chat(_OUTFIT_GENERATE_SYSTEM_PROMPT, description, max_tokens=512)
         elapsed_ms = round((time.monotonic() - start) * 1000)
 
-        if not message.content:
-            raise LLMError("Empty response from Claude", error_type="schema_error")
-
-        queries = json.loads(message.content[0].text)
-
+        queries = json.loads(text)
         if not isinstance(queries, dict):
-            raise LLMError("Claude returned non-object response", error_type="schema_error")
+            raise LLMError("OpenAI returned non-object response", error_type="schema_error")
 
-        # Ensure all required categories are present
         missing = [k for k in _OUTFIT_CATEGORIES if k not in queries or not queries[k]]
         if missing:
             raise LLMError(
-                f"Claude response missing categories: {missing}", error_type="schema_error"
+                f"OpenAI response missing categories: {missing}", error_type="schema_error"
             )
 
         result = {k: str(queries[k]).strip()[:70] for k in _OUTFIT_CATEGORIES}
 
-        _emit(
-            {
-                "event": "llm_outfit_queries_generated",
-                "description_length": len(description),
-                "llm_latency_ms": elapsed_ms,
-                "model": _MODEL,
-                "timestamp_utc": datetime.now(timezone.utc).isoformat(),
-            }
-        )
+        _emit({
+            "event": "llm_outfit_queries_generated",
+            "description_length": len(description),
+            "llm_latency_ms": elapsed_ms,
+            "model": _MODEL,
+            "timestamp_utc": datetime.now(timezone.utc).isoformat(),
+        })
 
         return result
 
     except json.JSONDecodeError as exc:
-        raise LLMError("Claude returned non-JSON response", error_type="json_parse_error") from exc
-
-    except anthropic.APIError as exc:
-        raise LLMError(f"Claude API error: {exc}", error_type="api_error") from exc
+        raise LLMError("OpenAI returned non-JSON response", error_type="json_parse_error") from exc
+    except openai.APIError as exc:
+        raise LLMError(f"OpenAI API error: {exc}", error_type="api_error") from exc
 
 
 async def expand_query(query: str) -> list[str]:
-    """Expand a natural-language clothing query into 2–3 targeted search terms.
-
-    Returns a list of search strings suitable for passing to search_products().
-    Raises LLMNotConfiguredError if ANTHROPIC_API_KEY is absent.
-    Raises LLMError on API or parse failures.
-    """
-    api_key = os.environ.get("ANTHROPIC_API_KEY", "")
-    if not api_key:
-        raise LLMNotConfiguredError(
-            "ANTHROPIC_API_KEY is not configured — LLM query expansion unavailable",
-            error_type="not_configured",
-        )
-
+    """Expand a natural-language clothing query into 2–3 targeted search terms."""
+    _get_api_key()
     start = time.monotonic()
 
     try:
-        client = _get_client(api_key)
-        message = await client.messages.create(
-            model=_MODEL,
-            max_tokens=256,
-            system=_SYSTEM_PROMPT,
-            messages=[{"role": "user", "content": query}],
-        )
+        text = await _chat(_SYSTEM_PROMPT, query)
         elapsed_ms = round((time.monotonic() - start) * 1000)
 
-        if not message.content:
-            _emit(
-                {
-                    "event": "llm_expand_error",
-                    "error_type": "schema_error",
-                    "llm_expand_latency_ms": elapsed_ms,
-                    "timestamp_utc": datetime.now(timezone.utc).isoformat(),
-                }
-            )
-            raise LLMError("Empty response from Claude", error_type="schema_error")
-
-        response_text = message.content[0].text
-        terms = json.loads(response_text)
-
+        terms = json.loads(text)
         if not isinstance(terms, list) or not all(isinstance(t, str) for t in terms):
-            raise LLMError(
-                "Unexpected response format from Claude", error_type="schema_error"
-            )
+            raise LLMError("Unexpected response format from OpenAI", error_type="schema_error")
 
         terms = [t.strip() for t in terms if t.strip()][:3]
 
-        _emit(
-            {
-                "event": "llm_query_expanded",
-                "query_length": len(query),
-                "term_count": len(terms),
-                "llm_expand_latency_ms": elapsed_ms,
-                "model": _MODEL,
-                "timestamp_utc": datetime.now(timezone.utc).isoformat(),
-            }
-        )
+        _emit({
+            "event": "llm_query_expanded",
+            "query_length": len(query),
+            "term_count": len(terms),
+            "llm_expand_latency_ms": elapsed_ms,
+            "model": _MODEL,
+            "timestamp_utc": datetime.now(timezone.utc).isoformat(),
+        })
 
         return terms
 
     except json.JSONDecodeError as exc:
         elapsed_ms = round((time.monotonic() - start) * 1000)
-        _emit(
-            {
-                "event": "llm_expand_error",
-                "error_type": "json_parse_error",
-                "llm_expand_latency_ms": elapsed_ms,
-                "timestamp_utc": datetime.now(timezone.utc).isoformat(),
-            }
-        )
-        raise LLMError("Claude returned non-JSON response", error_type="json_parse_error") from exc
+        _emit({
+            "event": "llm_expand_error",
+            "error_type": "json_parse_error",
+            "llm_expand_latency_ms": elapsed_ms,
+            "timestamp_utc": datetime.now(timezone.utc).isoformat(),
+        })
+        raise LLMError("OpenAI returned non-JSON response", error_type="json_parse_error") from exc
 
-    except anthropic.APIError as exc:
+    except openai.APIError as exc:
         elapsed_ms = round((time.monotonic() - start) * 1000)
-        _emit(
-            {
-                "event": "llm_expand_error",
-                "error_type": "api_error",
-                "llm_expand_latency_ms": elapsed_ms,
-                "timestamp_utc": datetime.now(timezone.utc).isoformat(),
-            }
-        )
-        raise LLMError(f"Claude API error: {exc}", error_type="api_error") from exc
+        _emit({
+            "event": "llm_expand_error",
+            "error_type": "api_error",
+            "llm_expand_latency_ms": elapsed_ms,
+            "timestamp_utc": datetime.now(timezone.utc).isoformat(),
+        })
+        raise LLMError(f"OpenAI API error: {exc}", error_type="api_error") from exc

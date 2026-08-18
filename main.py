@@ -269,7 +269,7 @@ async def lifespan(app: FastAPI):
             "SERPAPI_KEY environment variable is not set. Cannot start application."
         )
     templates.env.globals["try_on_enabled"] = bool(os.environ.get("FASHN_API_KEY"))
-    templates.env.globals["refine_enabled"] = bool(os.environ.get("ANTHROPIC_API_KEY"))
+    templates.env.globals["refine_enabled"] = bool(os.environ.get("OPENAI_API_KEY"))
     templates.env.globals["skimlinks_pub_id"] = os.environ.get("SKIMLINKS_PUB_ID", "")
 
     web_concurrency_str = os.environ.get("WEB_CONCURRENCY", "")
@@ -448,7 +448,7 @@ async def get_search(request: Request, q: str = "", fresh: bool = False, format:
     api_key = os.environ.get("SERPAPI_KEY", "")
 
     try:
-        if expand and os.environ.get("ANTHROPIC_API_KEY") and start == 0:
+        if expand and os.environ.get("OPENAI_API_KEY") and start == 0:
             products, llm_used = await _expanded_search(q_stripped, api_key, fresh=fresh)
         else:
             products = await search_products(q_stripped, api_key, fresh=fresh, start=start)
@@ -479,7 +479,7 @@ async def get_search(request: Request, q: str = "", fresh: bool = False, format:
 
     # When no results, ask Claude for alternative query suggestions (degrades gracefully)
     llm_suggestions: list[str] = []
-    if not products and os.environ.get("ANTHROPIC_API_KEY"):
+    if not products and os.environ.get("OPENAI_API_KEY"):
         try:
             llm_suggestions = await suggest_alternatives(q_stripped)
         except (LLMError, LLMNotConfiguredError):
@@ -496,7 +496,7 @@ async def get_search(request: Request, q: str = "", fresh: bool = False, format:
             "cache_age_minutes": cache_age_minutes,
             "error_message": None,
             "llm_used": llm_used,
-            "expand_available": bool(os.environ.get("ANTHROPIC_API_KEY")),
+            "expand_available": bool(os.environ.get("OPENAI_API_KEY")),
             "start": start,
             "has_more": result_count == 10,
             "llm_suggestions": llm_suggestions,
@@ -603,9 +603,9 @@ async def outfit_complete(body: _OutfitCompleteRequest):
     """Return LLM-generated suggestions to complete an outfit.
 
     Returns {"suggestions": [...]} or {"suggestions": []} when unavailable.
-    Requires ANTHROPIC_API_KEY.
+    Requires OPENAI_API_KEY.
     """
-    if not os.environ.get("ANTHROPIC_API_KEY"):
+    if not os.environ.get("OPENAI_API_KEY"):
         return JSONResponse({"suggestions": []})
 
     _emit(
@@ -819,7 +819,7 @@ async def get_outfit_generator(request: Request):
     try_on_enabled = bool(os.environ.get("FASHN_API_KEY"))
     return templates.TemplateResponse(request, "outfit_generator.html", {
         "try_on_enabled": try_on_enabled,
-        "llm_enabled": bool(os.environ.get("ANTHROPIC_API_KEY")),
+        "llm_enabled": bool(os.environ.get("OPENAI_API_KEY")),
     })
 
 

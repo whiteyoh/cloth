@@ -360,7 +360,7 @@ class TestOutfitsPage:
 
 class TestOutfitComplete:
     def test_returns_empty_when_no_api_key(self, client, monkeypatch):
-        monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
+        monkeypatch.delenv("OPENAI_API_KEY", raising=False)
         r = client.post("/outfits/complete", json={"items": [{"name": "white shirt"}]})
         assert r.status_code == 200
         assert r.json()["suggestions"] == []
@@ -368,7 +368,7 @@ class TestOutfitComplete:
     def test_returns_suggestions_when_key_set(self, client, monkeypatch):
         from unittest.mock import AsyncMock, patch
 
-        monkeypatch.setenv("ANTHROPIC_API_KEY", "test-key")
+        monkeypatch.setenv("OPENAI_API_KEY", "test-key")
         expected = ["navy chinos", "leather belt", "oxford shoes"]
         with patch("main.suggest_outfit_completion", new=AsyncMock(return_value=expected)):
             r = client.post("/outfits/complete", json={"items": [{"name": "white shirt"}]})
@@ -380,7 +380,7 @@ class TestOutfitComplete:
 
         from llm import LLMError
 
-        monkeypatch.setenv("ANTHROPIC_API_KEY", "test-key")
+        monkeypatch.setenv("OPENAI_API_KEY", "test-key")
         with patch("main.suggest_outfit_completion", new=AsyncMock(side_effect=LLMError("fail"))):
             r = client.post("/outfits/complete", json={"items": [{"name": "white shirt"}]})
         assert r.status_code == 200
@@ -404,7 +404,7 @@ class TestExpandedSearchUnit:
         """LLM succeeds → parallel searches run, products merged and deduplicated."""
         from main import _expanded_search
 
-        monkeypatch.setenv("ANTHROPIC_API_KEY", "test-key")
+        monkeypatch.setenv("OPENAI_API_KEY", "test-key")
 
         product_a = _make_product("Blue Shirt")
         product_a = product_a.model_copy(update={"id": "id-a"})
@@ -680,7 +680,7 @@ class TestExpandedSearchLogEvents:
 class TestExpandParam:
     def test_expand_false_bypasses_llm(self, client, monkeypatch):
         """expand=false should call search_products directly, not _expanded_search."""
-        monkeypatch.setenv("ANTHROPIC_API_KEY", "test-key")
+        monkeypatch.setenv("OPENAI_API_KEY", "test-key")
         with (
             patch("main._expanded_search", new=AsyncMock(return_value=([], True))) as mock_exp,
             patch("main.search_products", new=AsyncMock(return_value=[])) as mock_search,
@@ -691,8 +691,8 @@ class TestExpandParam:
         mock_search.assert_called_once()
 
     def test_expand_true_uses_expanded_search_when_key_present(self, client, monkeypatch):
-        """expand=true (default) with ANTHROPIC_API_KEY should call _expanded_search."""
-        monkeypatch.setenv("ANTHROPIC_API_KEY", "test-key")
+        """expand=true (default) with OPENAI_API_KEY should call _expanded_search."""
+        monkeypatch.setenv("OPENAI_API_KEY", "test-key")
         with patch("main._expanded_search", new=AsyncMock(return_value=([], True))) as mock_exp:
             r = client.get("/search?q=shirt&expand=true&format=json")
         assert r.status_code == 200
@@ -700,15 +700,15 @@ class TestExpandParam:
 
     def test_json_response_includes_llm_used_true(self, client, monkeypatch):
         """When _expanded_search returns llm_used=True, JSON response includes it."""
-        monkeypatch.setenv("ANTHROPIC_API_KEY", "test-key")
+        monkeypatch.setenv("OPENAI_API_KEY", "test-key")
         with patch("main._expanded_search", new=AsyncMock(return_value=([], True))):
             r = client.get("/search?q=shirt&format=json")
         data = r.json()
         assert data["llm_used"] is True
 
     def test_json_response_includes_llm_used_false_when_no_key(self, client, monkeypatch):
-        """Without ANTHROPIC_API_KEY, llm_used must be False in JSON response."""
-        monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
+        """Without OPENAI_API_KEY, llm_used must be False in JSON response."""
+        monkeypatch.delenv("OPENAI_API_KEY", raising=False)
         with patch("main.search_products", new=AsyncMock(return_value=[])):
             r = client.get("/search?q=shirt&format=json")
         data = r.json()
@@ -896,7 +896,7 @@ class TestSearchRefine:
     """Tests for POST /search/refine."""
 
     def test_returns_new_query_on_success(self, client, monkeypatch):
-        monkeypatch.setenv("ANTHROPIC_API_KEY", "test-key")
+        monkeypatch.setenv("OPENAI_API_KEY", "test-key")
         with patch("main.refine_query", new=AsyncMock(return_value="navy chinos under 50")):
             resp = client.post(
                 "/search/refine",
@@ -906,7 +906,7 @@ class TestSearchRefine:
         assert resp.json()["new_query"] == "navy chinos under 50"
 
     def test_graceful_degradation_when_no_api_key(self, client, monkeypatch):
-        monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
+        monkeypatch.delenv("OPENAI_API_KEY", raising=False)
         from llm import LLMNotConfiguredError
         with patch("main.refine_query", new=AsyncMock(side_effect=LLMNotConfiguredError("no key"))):
             resp = client.post(
@@ -917,7 +917,7 @@ class TestSearchRefine:
         assert resp.json()["new_query"] == "navy chinos"
 
     def test_graceful_degradation_on_llm_error(self, client, monkeypatch):
-        monkeypatch.setenv("ANTHROPIC_API_KEY", "test-key")
+        monkeypatch.setenv("OPENAI_API_KEY", "test-key")
         from llm import LLMError
         with patch("main.refine_query", new=AsyncMock(side_effect=LLMError("api error"))):
             resp = client.post(
@@ -944,7 +944,7 @@ class TestSearchRefine:
         assert "error" in resp.json()
 
     def test_original_query_truncated_to_500_chars(self, client, monkeypatch):
-        monkeypatch.setenv("ANTHROPIC_API_KEY", "test-key")
+        monkeypatch.setenv("OPENAI_API_KEY", "test-key")
         long_query = "x" * 600
         with patch("main.refine_query", new=AsyncMock(return_value="truncated result")) as mock_refine:
             resp = client.post(
@@ -956,7 +956,7 @@ class TestSearchRefine:
         assert len(called_original) <= 500
 
     def test_refinement_truncated_to_200_chars(self, client, monkeypatch):
-        monkeypatch.setenv("ANTHROPIC_API_KEY", "test-key")
+        monkeypatch.setenv("OPENAI_API_KEY", "test-key")
         long_refinement = "r" * 300
         with patch("main.refine_query", new=AsyncMock(return_value="result")) as mock_refine:
             resp = client.post(
@@ -994,19 +994,19 @@ class TestCuratedList:
 
 class TestOutfitGenerator:
     def test_generator_page_renders(self, client, monkeypatch):
-        monkeypatch.setenv("ANTHROPIC_API_KEY", "test-anthropic-key")
+        monkeypatch.setenv("OPENAI_API_KEY", "test-anthropic-key")
         r = client.get("/outfit-generator")
         assert r.status_code == 200
         assert "outfit-gen-form" in r.text
 
     def test_generator_page_shows_unavailable_without_llm(self, client, monkeypatch):
-        monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
+        monkeypatch.delenv("OPENAI_API_KEY", raising=False)
         r = client.get("/outfit-generator")
         assert r.status_code == 200
         assert "outfit-gen-unavailable" in r.text
 
     def test_generate_happy_path(self, client, monkeypatch):
-        monkeypatch.setenv("ANTHROPIC_API_KEY", "test-key")
+        monkeypatch.setenv("OPENAI_API_KEY", "test-key")
         queries = {
             "shoes": "white leather trainers", "pants": "slim chinos",
             "accessory": "leather belt", "shirt": "white oxford shirt",
@@ -1025,7 +1025,7 @@ class TestOutfitGenerator:
         assert data["items"]["shoes"]["name"] == "White Trainers"
 
     def test_generate_partial_empty_categories(self, client, monkeypatch):
-        monkeypatch.setenv("ANTHROPIC_API_KEY", "test-key")
+        monkeypatch.setenv("OPENAI_API_KEY", "test-key")
         queries = {
             "shoes": "trainers", "pants": "chinos", "accessory": "belt",
             "shirt": "oxford shirt", "jacket": "blazer", "headwear": "cap",
@@ -1048,29 +1048,29 @@ class TestOutfitGenerator:
         assert data["items"]["shoes"]["name"] == "Blue Shirt"
 
     def test_generate_empty_description_returns_422(self, client, monkeypatch):
-        monkeypatch.setenv("ANTHROPIC_API_KEY", "test-key")
+        monkeypatch.setenv("OPENAI_API_KEY", "test-key")
         r = client.post("/outfit/generate", json={"description": ""})
         assert r.status_code == 422
 
     def test_generate_too_long_description_returns_422(self, client, monkeypatch):
-        monkeypatch.setenv("ANTHROPIC_API_KEY", "test-key")
+        monkeypatch.setenv("OPENAI_API_KEY", "test-key")
         r = client.post("/outfit/generate", json={"description": "x" * 101})
         assert r.status_code == 422
 
     def test_generate_no_llm_key_returns_503(self, client, monkeypatch):
-        monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
+        monkeypatch.delenv("OPENAI_API_KEY", raising=False)
         r = client.post("/outfit/generate", json={"description": "casual summer"})
         assert r.status_code == 503
 
     def test_generate_llm_not_configured_returns_503(self, client, monkeypatch):
-        monkeypatch.setenv("ANTHROPIC_API_KEY", "test-key")
+        monkeypatch.setenv("OPENAI_API_KEY", "test-key")
         from llm import LLMNotConfiguredError
         with patch("main.generate_outfit_queries", new=AsyncMock(side_effect=LLMNotConfiguredError())):
             r = client.post("/outfit/generate", json={"description": "smart casual"})
         assert r.status_code == 503
 
     def test_generate_rate_limited(self, client, monkeypatch):
-        monkeypatch.setenv("ANTHROPIC_API_KEY", "test-key")
+        monkeypatch.setenv("OPENAI_API_KEY", "test-key")
         import rate_limit, time
         # TestClient uses "testclient" as the request client host
         rate_limit._search_timestamps["testclient"] = [time.monotonic()] * 10
