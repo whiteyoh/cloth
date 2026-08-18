@@ -42,10 +42,10 @@
         if (btn) {
           btn.dataset.originalLabel = btn.textContent;
           btn.disabled = true;
-          btn.textContent = 'Searching…';
+          btn.textContent = 'Finding options…';
           btn.classList.add('is-loading');
           setTimeout(function () {
-            if (btn.classList.contains('is-loading')) btn.textContent = 'AI is expanding your search…';
+            if (btn.classList.contains('is-loading')) btn.textContent = 'Searching further…';
           }, 4000);
           setTimeout(function () {
             if (btn.classList.contains('is-loading')) btn.textContent = 'Still searching — first searches may take a moment…';
@@ -437,7 +437,7 @@
     setSavedItems(items);
     updateSaveButtons(data.id, idx === -1);
     updateSavedCount();
-    showToast(idx === -1 ? 'Saved ♥' : 'Removed');
+    showToast(idx === -1 ? 'Good eye.' : 'Removed.');
   }
 
   function initSaveButtons() {
@@ -475,7 +475,7 @@
           var original = btn.textContent;
           btn.textContent = 'Copied!';
           btn.classList.add('is-copied');
-          showToast('Copied!');
+          showToast('Copied.');
           setTimeout(function () {
             btn.textContent = original;
             btn.classList.remove('is-copied');
@@ -725,7 +725,7 @@
     var clearBtn = document.getElementById('clear-saved-btn');
 
     if (!items.length) {
-      container.innerHTML = '<p class="saved-empty">No saved items yet. Browse and tap ♡ to save items.</p>';
+      container.innerHTML = '<p class="saved-empty">Start building your wardrobe.</p>';
       if (clearBtn) clearBtn.style.display = 'none';
       return;
     }
@@ -797,7 +797,7 @@
           capturedLi.remove();
           updateSavedCount();
           if (!remaining.length) {
-            container.innerHTML = '<p class="saved-empty">No saved items yet. Browse and tap ♡ to save items.</p>';
+            container.innerHTML = '<p class="saved-empty">Start building your wardrobe.</p>';
             if (clearBtn) clearBtn.style.display = 'none';
           }
         });
@@ -880,7 +880,7 @@
       clearBtn.style.display = '';
       clearBtn.addEventListener('click', function () {
         setSavedItems([]);
-        container.innerHTML = '<p class="saved-empty">No saved items yet. Browse and tap ♡ to save items.</p>';
+        container.innerHTML = '<p class="saved-empty">Start building your wardrobe.</p>';
         clearBtn.style.display = 'none';
         updateSavedCount();
       });
@@ -1429,6 +1429,46 @@
     });
   }
 
+  // Fallback panel when popup blocker prevents window.open() for multiple tabs
+  function showShopAllLinks(items, outfitName) {
+    var existing = document.getElementById('shop-all-links-panel');
+    if (existing) existing.remove();
+
+    var panel = document.createElement('div');
+    panel.id = 'shop-all-links-panel';
+    panel.setAttribute('role', 'dialog');
+    panel.setAttribute('aria-modal', 'true');
+    panel.setAttribute('aria-label', 'Shop ' + outfitName);
+
+    var linksHtml = items.map(function (item) {
+      return '<a href="' + escapeHtml(item.url) + '" target="_blank" rel="noopener noreferrer" class="shop-all-link-item">'
+        + (item.image ? '<img src="' + escapeHtml(item.image) + '" alt="" class="shop-all-link-thumb" loading="lazy">' : '<span class="shop-all-link-thumb shop-all-link-thumb--empty"></span>')
+        + '<span class="shop-all-link-info">'
+        + '<span class="shop-all-link-name">' + escapeHtml(item.name) + '</span>'
+        + (item.retailer ? '<span class="shop-all-link-retailer">' + escapeHtml(item.retailer) + '</span>' : '')
+        + '</span>'
+        + '<span class="shop-all-link-arrow" aria-hidden="true">↗</span>'
+        + '</a>';
+    }).join('');
+
+    panel.innerHTML = '<div class="shop-all-links-inner">'
+      + '<div class="shop-all-links-header">'
+      + '<span class="shop-all-links-title">Shop ' + escapeHtml(outfitName) + '</span>'
+      + '<button class="shop-all-links-close" aria-label="Close">&#x2715;</button>'
+      + '</div>'
+      + '<p class="shop-all-links-hint">Popups are blocked — click each item to open it.</p>'
+      + '<div class="shop-all-links-list">' + linksHtml + '</div>'
+      + '</div>';
+
+    document.body.appendChild(panel);
+    requestAnimationFrame(function () { panel.classList.add('is-visible'); });
+
+    panel.querySelector('.shop-all-links-close').addEventListener('click', function () { panel.remove(); });
+    panel.addEventListener('click', function (e) { if (e.target === panel) panel.remove(); });
+    panel.addEventListener('keydown', function (e) { if (e.key === 'Escape') panel.remove(); });
+    panel.querySelector('.shop-all-links-close').focus();
+  }
+
   // WN-160: generate related search chips from a query
   var _COLOUR_SYNS = {
     'navy': ['navy blue', 'dark blue', 'indigo'],
@@ -1721,7 +1761,7 @@
     if (loading) {
       btn.dataset.originalLabel = btn.textContent;
       btn.disabled = true;
-      btn.textContent = 'Searching…';
+      btn.textContent = 'Finding options…';
       btn.classList.add('is-loading');
     } else {
       btn.disabled = false;
@@ -1753,7 +1793,7 @@
     var indicator = document.createElement('li');
     indicator.id = 'phase2-loading';
     indicator.className = 'phase2-loading';
-    indicator.textContent = 'Finding more with AI…';
+    indicator.textContent = 'Searching further…';
     grid.appendChild(indicator);
 
     fetch('/search?q=' + encodeURIComponent(query) + '&format=json&expand=true', {signal: _phase2Controller.signal})
@@ -1839,7 +1879,7 @@
       // Progressive messages so a slow first search doesn't feel like a hang
       timers.push(setTimeout(function () {
         var btn = form.querySelector('button[type="submit"]');
-        if (btn && btn.classList.contains('is-loading')) btn.textContent = 'AI is expanding your search…';
+        if (btn && btn.classList.contains('is-loading')) btn.textContent = 'Searching further…';
       }, 4000));
       timers.push(setTimeout(function () {
         var btn = form.querySelector('button[type="submit"]');
@@ -2006,7 +2046,7 @@
       });
       itemsHtml += '</ul>';
     } else {
-      itemsHtml = '<p class="outfit-empty-items">No items yet. Add items from search results or saved items.</p>';
+      itemsHtml = '<p class="outfit-empty-items">No items yet.</p>';
     }
 
     return '<article class="outfit-board" data-outfit-id="' + escapeHtml(outfit.id) + '" aria-label="Outfit board: ' + escapeHtml(outfit.name) + '">'
@@ -2039,7 +2079,7 @@
     var outfits = getOutfits();
 
     if (!outfits.length) {
-      container.innerHTML = '<p class="outfits-empty">No outfit boards yet. Create one to start collecting items.</p>';
+      container.innerHTML = '<p class="outfits-empty">Your first look is waiting.</p>';
       return;
     }
 
@@ -2171,7 +2211,7 @@
           .catch(function () {
             btn.disabled = false;
             btn.textContent = 'Complete this outfit';
-            suggestionsEl.innerHTML = '<p class="outfit-suggestions-empty">Could not get suggestions. Please try again.</p>';
+            suggestionsEl.innerHTML = '<p class="outfit-suggestions-empty">Suggestions unavailable.</p>';
             suggestionsEl.hidden = false;
           });
       });
@@ -2185,15 +2225,26 @@
         var outfit = null;
         outfits.forEach(function (o) { if (o.id === outfitId) outfit = o; });
         if (!outfit || !outfit.items.length) return;
-        var urls = outfit.items.map(function (i) { return i.url; }).filter(Boolean);
-        if (!urls.length) return;
+        var itemsWithUrls = outfit.items.filter(function (i) { return i.url; });
+        if (!itemsWithUrls.length) return;
+        var urls = itemsWithUrls.map(function (i) { return i.url; });
+
+        function doOpen() {
+          var anyBlocked = false;
+          urls.forEach(function (url) {
+            var w = window.open(url, '_blank', 'noopener noreferrer');
+            if (!w) anyBlocked = true;
+          });
+          if (anyBlocked) showShopAllLinks(itemsWithUrls, outfit.name);
+        }
+
         if (urls.length > 5) {
           showConfirm('Open ' + urls.length + ' tabs for "' + outfit.name + '"?').then(function (ok) {
-            if (ok) urls.forEach(function (url) { window.open(url, '_blank', 'noopener noreferrer'); });
+            if (ok) doOpen();
           });
           return;
         }
-        urls.forEach(function (url) { window.open(url, '_blank', 'noopener noreferrer'); });
+        doOpen();
       });
     });
 
@@ -2250,7 +2301,7 @@
     if (!container) return;
     var saves = _getCanvasSaves();
     if (!saves.length) {
-      container.innerHTML = '<p class="canvas-saves-empty">No saved canvases yet. Build a canvas in the style tool and click "Save canvas".</p>';
+      container.innerHTML = '<p class="canvas-saves-empty">No saved canvases.</p>';
       return;
     }
     var html = '<ul class="canvas-saves-list" aria-label="Saved canvases">';
@@ -2476,7 +2527,7 @@
               optBtn.textContent = o.name + ' ✓';
               optBtn.classList.add('is-in-outfit');
               optBtn.setAttribute('aria-pressed', 'true');
-              showToast('Added to "' + o.name + '"');
+              showToast('Added.');
             }
             picker.remove();
           });
@@ -2489,14 +2540,14 @@
 
     var newBtn = document.createElement('button');
     newBtn.className = 'outfit-picker-new';
-    newBtn.textContent = '+ New outfit';
+    newBtn.textContent = '+ New look';
     newBtn.addEventListener('click', function () {
       picker.remove();
       showDialog('Outfit board name:', 'My outfit').then(function (name) {
         if (name && name.trim()) {
           var newOutfit = createOutfit(name.trim());
           addItemToOutfit(newOutfit.id, itemData);
-          showToast('Added to "' + newOutfit.name + '"');
+          showToast('Added.');
           updateOutfitsCount();
         }
       });
@@ -2669,7 +2720,7 @@
     // Fallback: click button (browsers without IntersectionObserver)
     btn.addEventListener('click', function () {
       btn.disabled = true;
-      btn.textContent = 'Loading…';
+      btn.textContent = 'Finding options…';
       _doLoadMore(query, nextStart, wrap, function (hasMore, newStart) {
         nextStart = newStart;
         if (hasMore) {
@@ -2886,7 +2937,7 @@
             modal.querySelector('#try-on-result').hidden = false;
           } else {
             var errEl = modal.querySelector('#try-on-error');
-            errEl.textContent = data.error || 'Try-on failed. Please try again.';
+            errEl.textContent = data.error || 'Try-on failed.';
             errEl.hidden = false;
             updateGenerateBtn();
           }
@@ -2894,7 +2945,7 @@
         .catch(function () {
           modal.querySelector('#try-on-loading').hidden = true;
           var errEl = modal.querySelector('#try-on-error');
-          errEl.textContent = 'Could not connect to try-on service. Please try again.';
+          errEl.textContent = 'Try-on unavailable.';
           errEl.hidden = false;
           updateGenerateBtn();
         });
@@ -3210,7 +3261,7 @@
         })
         .catch(function () {
           btn.disabled = false;
-          status.textContent = 'Refinement failed. Please try again.';
+          status.textContent = 'Refinement failed.';
         });
     }
 
@@ -3832,13 +3883,13 @@
     form.addEventListener('submit', function (e) {
       e.preventDefault();
       var desc = textarea.value.trim();
-      if (!desc) { showError('Please enter a style description.'); return; }
+      if (!desc) { showError('Enter a style description.'); return; }
       if (desc.length > 100) { showError('Description must be 100 characters or fewer.'); return; }
 
       hideError();
       resultsEl.setAttribute('hidden', '');
       submitBtn.disabled = true;
-      submitBtn.textContent = 'Generating…';
+      submitBtn.textContent = 'Getting your look ready…';
       renderSkeletons();
       resultsEl.removeAttribute('hidden');
 
@@ -3853,7 +3904,7 @@
           submitBtn.textContent = 'Generate outfit';
           if (!res.ok) {
             resultsEl.setAttribute('hidden', '');
-            showError(res.data.error || 'Something went wrong. Please try again.');
+            showError(res.data.error || 'Something went wrong.');
             return;
           }
           renderResults(res.data);
@@ -3862,7 +3913,7 @@
           submitBtn.disabled = false;
           submitBtn.textContent = 'Generate outfit';
           resultsEl.setAttribute('hidden', '');
-          showError('Could not reach the server. Please try again.');
+          showError('Unavailable. Try again.');
         });
     });
 
@@ -3899,7 +3950,7 @@
         outfits.unshift(outfit);
         localStorage.setItem(OUTFITS_KEY, JSON.stringify(outfits));
         updateOutfitsCount();
-        showToast('Outfit saved to your boards');
+        showToast('Looking good.');
       });
     }
   }

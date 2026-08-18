@@ -3,23 +3,23 @@
 {% block content %}
 <section class="outfits-page">
   <div class="outfits-page-header">
-    <h1>Outfit boards</h1>
+    <h1>Your looks</h1>
     <div class="outfits-header-actions">
       <label class="btn-secondary outfit-import-label" title="Restore outfits from a backup file" aria-label="Import outfits from backup file">
         Import
         <input type="file" id="outfit-import-input" accept=".json,application/json" style="display:none">
       </label>
       <button id="outfit-export-btn" class="btn-secondary" title="Save all outfits to a backup file">Export</button>
-      <button id="new-outfit-btn" class="btn-new-outfit">+ New outfit</button>
+      <button id="new-outfit-btn" class="btn-new-outfit">+ New look</button>
     </div>
   </div>
   <div id="outfits-container">
-    <p class="outfits-empty">No outfit boards yet. Create one to start collecting items.</p>
+    <p class="outfits-empty">Your first look is waiting.</p>
   </div>
   <section class="canvas-saves-section" aria-label="Saved canvases">
     <h2 class="canvas-saves-heading">Saved canvases</h2>
     <div id="canvas-saves-container">
-      <p class="canvas-saves-empty">No saved canvases yet. Build a canvas in the style tool and click "Save canvas".</p>
+      <p class="canvas-saves-empty">No saved canvases.</p>
     </div>
   </section>
 </section>

@@ -24,7 +24,7 @@
    */
   function buildCacheAgeText(minutes) {
     if (minutes === null || minutes === undefined) return '';
-    if (minutes === 0) return 'Just fetched · ';
+    if (minutes === 0) return 'Fetched now · ';
     if (minutes === 1) return 'Results from 1 minute ago · ';
     if (minutes < 60) return 'Results from ' + minutes + ' minutes ago · ';
     var hours = Math.floor(minutes / 60);

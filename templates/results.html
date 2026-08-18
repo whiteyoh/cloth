@@ -16,7 +16,7 @@
   {% if cache_age_minutes is defined and cache_age_minutes is not none %}
   <p class="meta">
     {% if cache_age_minutes == 0 %}
-      Just fetched &middot;
+      Fetched now &middot;
     {% elif cache_age_minutes == 1 %}
       Results from 1 minute ago &middot;
     {% elif cache_age_minutes < 60 %}
@@ -34,7 +34,7 @@
   </p>
   {% endif %}
   {% if llm_used is defined and llm_used %}
-  <p class="meta">AI-expanded search &middot; <a href="/search?q={{ query|urlencode }}&amp;expand=false">Search without AI</a></p>
+  <p class="meta">Found more options &middot; <a href="/search?q={{ query|urlencode }}&amp;expand=false">Search without AI</a></p>
   {% endif %}
   {% if error_message %}
   <p class="error-message" role="alert">{{ error_message }}</p>
@@ -45,7 +45,7 @@
 <div class="refine-bar" id="refine-bar" aria-label="Refine your search">
   <label for="refine-input" class="filter-label">Refine:</label>
   <input type="text" id="refine-input" class="refine-input"
-         placeholder="e.g. only under £50, in navy, from a UK brand"
+         placeholder="colour, price, brand..."
          aria-label="Refine search results" maxlength="200">
   <button type="button" id="refine-btn" class="btn-secondary">Refine</button>
   <span class="refine-status" id="refine-status" aria-live="polite"></span>
@@ -158,16 +158,16 @@
 {% elif not error_message %}
 <section class="empty-state">
   <h2>No results found</h2>
-  <p>We couldn't find any matching items for <em>{{ query }}</em>.</p>
+  <p>No results for <em>{{ query }}</em>.</p>
   {% if llm_suggestions is defined and llm_suggestions %}
-  <p>Try one of these AI-suggested searches:</p>
+  <p>Try instead:</p>
   <ul class="example-searches" aria-label="AI-suggested searches">
     {% for suggestion in llm_suggestions %}
     <li><a href="/search?q={{ suggestion|urlencode }}" class="example-chip">{{ suggestion }}</a></li>
     {% endfor %}
   </ul>
   {% else %}
-  <p>Try one of these searches:</p>
+  <p>Try instead:</p>
   <ul class="example-searches" aria-label="Example searches">
     <li><a href="/search?q=navy+chinos" class="example-chip">navy chinos</a></li>
     <li><a href="/search?q=floral+midi+dress" class="example-chip">floral midi dress</a></li>

@@ -3,7 +3,7 @@
 {% block content %}
 <div id="onboarding-banner" class="onboarding-banner" role="region" aria-label="Feature discovery" hidden>
   <div class="onboarding-banner-inner">
-    <h2 class="onboarding-banner-title">Welcome to dress.me</h2>
+    <h2 class="onboarding-banner-title">Welcome</h2>
     <ul class="onboarding-feature-list" aria-label="Key features">
       <li>Search across the web for any clothing item using plain English</li>
       <li>Save favourites and organise them into outfit boards</li>
@@ -14,20 +14,20 @@
   </div>
 </div>
 <section class="hero">
-  <p class="hero-eyebrow">Powered by AI &middot; Hundreds of retailers &middot; Free</p>
-  <h1>Find exactly what<br>you want to wear</h1>
-  <p class="hero-sub">Describe any clothing item in plain English and we'll search across the web to find it — from ASOS to Zara to independent boutiques.</p>
+  <p class="hero-eyebrow">Hundreds of retailers. One search.</p>
+  <h1>Find it. Wear it. Own it.</h1>
+  <p class="hero-sub">Describe what you want. We search hundreds of retailers to find it.</p>
   <form class="search-form" method="get" action="/search">
     <div class="search-field">
       <label for="q" class="sr-only">Describe a clothing item</label>
-      <input type="text" id="q" name="q" placeholder="e.g. oversized navy wool coat under £150"
+      <input type="text" id="q" name="q" placeholder="What are you looking for?"
              maxlength="500" autocomplete="off" aria-describedby="search-hint"
              list="cloth-autocomplete-hero"
              value="{{ query|default('') }}">
       <datalist id="cloth-autocomplete-hero"></datalist>
       <button type="submit" class="btn-primary">Search</button>
     </div>
-    <p id="search-hint" class="search-hint">Try "linen shirt women", "floral midi dress" or "smart casual blazer"</p>
+    <p id="search-hint" class="search-hint">Try 'wool coat under £150' or 'floral midi dress'</p>
     {% if error %}
     <p class="inline-error" role="alert">{{ error }}</p>
     {% endif %}
@@ -37,18 +37,15 @@
 <section class="feature-strip" aria-label="Key features">
   <a href="/how-it-works" class="feature-card">
     <span class="feature-icon" aria-hidden="true">🤖</span>
-    <strong>AI search</strong>
-    <span>Searches hundreds of retailers with one query</span>
+    <strong>Smart search</strong>
   </a>
   <a href="/how-it-works#try-on" class="feature-card">
     <span class="feature-icon" aria-hidden="true">📷</span>
-    <strong>Virtual try-on</strong>
-    <span>See how it looks on you before you buy</span>
+    <strong>Try it on</strong>
   </a>
   <a href="/outfit-generator" class="feature-card">
     <span class="feature-icon" aria-hidden="true">✂️</span>
-    <strong>Outfit generator</strong>
-    <span>Describe a style and get a complete outfit instantly</span>
+    <strong>Build a look</strong>
   </a>
 </section>
 

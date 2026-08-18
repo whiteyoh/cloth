@@ -409,7 +409,7 @@
     // Saved items mini-grid
     var savedItems = [];
     try {
-      savedItems = JSON.parse(localStorage.getItem('cloth_saved_items') || '[]');
+      savedItems = JSON.parse(localStorage.getItem('dressme_saved_items') || '[]');
     } catch (e) { /* localStorage unavailable */ }
 
     if (savedItems.length) {
@@ -937,7 +937,7 @@
   // ------------------------------------------------------------------ //
   // Canvas save / load (WN-148)                                         //
   // ------------------------------------------------------------------ //
-  var CANVAS_SAVES_KEY = 'cloth_canvas_saves';
+  var CANVAS_SAVES_KEY = 'dressme_canvas_saves';
 
   function _getCanvasSaves() {
     try { return JSON.parse(localStorage.getItem(CANVAS_SAVES_KEY) || '[]'); } catch (e) { return []; }
@@ -1121,7 +1121,7 @@
         var outfitId = btn.getAttribute('data-outfit-id');
         var outfits = [];
         try {
-          outfits = JSON.parse(localStorage.getItem('cloth_outfits') || '[]');
+          outfits = JSON.parse(localStorage.getItem('dressme_outfits') || '[]');
         } catch (e) { /* localStorage unavailable */ }
         var outfit = null;
         for (var i = 0; i < outfits.length; i++) {
