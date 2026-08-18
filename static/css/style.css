@@ -1750,6 +1750,17 @@ a:hover {
   gap: var(--space-sm);
 }
 
+.outfits-header-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  flex-wrap: wrap;
+}
+
+.outfit-import-label {
+  cursor: pointer;
+}
+
 .outfits-page h1 {
   font-size: 1.5rem;
   font-weight: 700;

@@ -4,7 +4,14 @@
 <section class="outfits-page">
   <div class="outfits-page-header">
     <h1>Outfit boards</h1>
-    <button id="new-outfit-btn" class="btn-new-outfit">+ New outfit</button>
+    <div class="outfits-header-actions">
+      <label class="btn-secondary outfit-import-label" title="Restore outfits from a backup file" aria-label="Import outfits from backup file">
+        Import
+        <input type="file" id="outfit-import-input" accept=".json,application/json" style="display:none">
+      </label>
+      <button id="outfit-export-btn" class="btn-secondary" title="Save all outfits to a backup file">Export</button>
+      <button id="new-outfit-btn" class="btn-new-outfit">+ New outfit</button>
+    </div>
   </div>
   <div id="outfits-container">
     <p class="outfits-empty">No outfit boards yet. Create one to start collecting items.</p>

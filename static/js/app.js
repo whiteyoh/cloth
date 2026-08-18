@@ -2297,6 +2297,78 @@
 
     renderOutfitsPage();
     renderCanvasSaves();
+    initOutfitPersistence();
+  }
+
+  function initOutfitPersistence() {
+    var exportBtn = document.getElementById('outfit-export-btn');
+    if (exportBtn && !exportBtn._bound) {
+      exportBtn._bound = true;
+      exportBtn.addEventListener('click', function () {
+        var payload = {
+          version: 1,
+          exported_at: new Date().toISOString(),
+          outfits: JSON.parse(localStorage.getItem('cloth_outfits') || '[]'),
+          saved_items: JSON.parse(localStorage.getItem('cloth_saved_items') || '[]')
+        };
+        var blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+        var url = URL.createObjectURL(blob);
+        var a = document.createElement('a');
+        a.href = url;
+        a.download = 'cloth-outfits-' + new Date().toISOString().slice(0, 10) + '.json';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      });
+    }
+
+    var importInput = document.getElementById('outfit-import-input');
+    if (importInput && !importInput._bound) {
+      importInput._bound = true;
+      importInput.addEventListener('change', function (e) {
+        var file = e.target.files[0];
+        if (!file) return;
+        var reader = new FileReader();
+        reader.onload = function (ev) {
+          try {
+            var data = JSON.parse(ev.target.result);
+            if (!data || !Array.isArray(data.outfits)) {
+              alert('Invalid backup file — no outfits found.');
+              return;
+            }
+            var existing = JSON.parse(localStorage.getItem('cloth_outfits') || '[]');
+            if (existing.length > 0) {
+              var merge = confirm(
+                'You already have ' + existing.length + ' outfit board' + (existing.length === 1 ? '' : 's') + '.\n\n' +
+                'OK = merge (keep both)\nCancel = replace with backup'
+              );
+              if (merge) {
+                var existingIds = new Set(existing.map(function (o) { return o.id; }));
+                var merged = existing.concat(data.outfits.filter(function (o) { return !existingIds.has(o.id); }));
+                localStorage.setItem('cloth_outfits', JSON.stringify(merged));
+              } else {
+                localStorage.setItem('cloth_outfits', JSON.stringify(data.outfits));
+              }
+            } else {
+              localStorage.setItem('cloth_outfits', JSON.stringify(data.outfits));
+            }
+            if (Array.isArray(data.saved_items) && data.saved_items.length > 0) {
+              if (confirm('Also restore ' + data.saved_items.length + ' saved item' + (data.saved_items.length === 1 ? '' : 's') + ' from this backup?')) {
+                localStorage.setItem('cloth_saved_items', JSON.stringify(data.saved_items));
+                updateSavedCount();
+              }
+            }
+            renderOutfitsPage();
+            updateOutfitsCount();
+          } catch (err) {
+            alert('Could not read backup file. Make sure it is a Cloth export.');
+          }
+          importInput.value = '';
+        };
+        reader.readAsText(file);
+      });
+    }
   }
 
   function renderSharedOutfit(shared) {
