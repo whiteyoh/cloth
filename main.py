@@ -26,6 +26,7 @@ from llm import (
     LLMError,
     LLMNotConfiguredError,
     expand_query,
+    generate_outfit_queries,
     refine_query,
     suggest_alternatives,
     suggest_outfit_completion,
@@ -802,3 +803,103 @@ async def image_proxy(url: str):
             "exception": type(exc).__name__,
         })
         return JSONResponse({"error": "Upstream error"}, status_code=502)
+
+
+# ------------------------------------------------------------------ #
+# WN-185 + WN-186 — Outfit generator                                  #
+# ------------------------------------------------------------------ #
+
+class OutfitGenerateRequest(BaseModel):
+    description: str
+
+
+@app.get("/outfit-generator", response_class=HTMLResponse)
+async def get_outfit_generator(request: Request):
+    api_key = os.environ.get("SERPAPI_KEY", "")
+    try_on_enabled = bool(os.environ.get("FASHN_API_KEY"))
+    return templates.TemplateResponse(request, "outfit_generator.html", {
+        "try_on_enabled": try_on_enabled,
+        "llm_enabled": bool(os.environ.get("ANTHROPIC_API_KEY")),
+    })
+
+
+@app.post("/outfit/generate")
+async def post_outfit_generate(request: Request, body: OutfitGenerateRequest):
+    description = body.description.strip()
+    if not description:
+        return JSONResponse({"error": "description is required"}, status_code=422)
+    if len(description) > 100:
+        return JSONResponse({"error": "description must be 100 characters or fewer"}, status_code=422)
+
+    api_key = os.environ.get("SERPAPI_KEY", "")
+    if not api_key:
+        return JSONResponse({"error": "Search service unavailable"}, status_code=503)
+
+    client_ip = _get_client_ip(request)
+    if not rate_limit.check_search(client_ip):
+        _emit({
+            "event": "rate_limit_rejected",
+            "ip_hash": _hash_ip(client_ip),
+            "limit_type": "outfit_generate",
+            "timestamp_utc": datetime.now(timezone.utc).isoformat(),
+        })
+        return JSONResponse(
+            {"error": "Too many requests. Please wait a moment and try again."},
+            status_code=429,
+        )
+
+    start = time.monotonic()
+
+    # LLM generates one search phrase per category
+    try:
+        queries = await asyncio.wait_for(generate_outfit_queries(description), timeout=8.0)
+    except asyncio.TimeoutError:
+        return JSONResponse({"error": "AI took too long. Please try again."}, status_code=504)
+    except LLMNotConfiguredError:
+        return JSONResponse({"error": "AI not configured"}, status_code=503)
+    except LLMError as exc:
+        return JSONResponse({"error": f"AI error: {exc}"}, status_code=500)
+
+    # Run 6 parallel SerpAPI searches, one per category
+    categories = list(queries.keys())
+    results = await asyncio.gather(
+        *[search_products(queries[cat], api_key, fresh=False) for cat in categories],
+        return_exceptions=True,
+    )
+
+    items: dict[str, dict | None] = {}
+    success_count = 0
+    fail_count = 0
+    for cat, result in zip(categories, results):
+        if isinstance(result, Exception) or not result:
+            items[cat] = None
+            fail_count += 1
+        else:
+            p = result[0]
+            items[cat] = {
+                "id": p.id,
+                "name": p.name,
+                "price_display": p.price_display,
+                "price_value": p.price_value,
+                "retailer_name": p.retailer_name,
+                "purchase_url": p.purchase_url,
+                "image_url": p.image_url,
+                "in_stock": p.in_stock,
+                "search_query": queries[cat],
+            }
+            success_count += 1
+
+    latency_ms = round((time.monotonic() - start) * 1000)
+    _emit({
+        "event": "outfit_generate_completed",
+        "description_length": len(description),
+        "success_count": success_count,
+        "fail_count": fail_count,
+        "latency_ms": latency_ms,
+        "timestamp_utc": datetime.now(timezone.utc).isoformat(),
+    })
+
+    return JSONResponse({
+        "description": description,
+        "items": items,
+    })

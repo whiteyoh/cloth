@@ -1,6 +1,30 @@
-// Cloth — minimal UI enhancements
+// dress.me — UI enhancements
 (function () {
   'use strict';
+
+  // WN-182: one-time migration of cloth_* localStorage keys to dressme_*
+  (function migrateStorage() {
+    if (localStorage.getItem('dressme_migrated')) return;
+    var keys = [
+      'search_history', 'theme', 'recently_viewed', 'saved_items',
+      'collections', 'outfits', 'canvas_saves', 'density', 'compare',
+      'curated_list', 'onboarded'
+    ];
+    keys.forEach(function (k) {
+      var val = localStorage.getItem('cloth_' + k);
+      if (val !== null) {
+        localStorage.setItem('dressme_' + k, val);
+        localStorage.removeItem('cloth_' + k);
+      }
+    });
+    // sessionStorage filter_open
+    var fo = sessionStorage.getItem('dressme_filter_open');
+    if (fo !== null) {
+      sessionStorage.setItem('dressme_filter_open', fo);
+      sessionStorage.removeItem('dressme_filter_open');
+    }
+    localStorage.setItem('dressme_migrated', '1');
+  })();
 
   // Auto-focus search input on home page — only on pointer:fine devices (WN-119)
   var heroInput = document.querySelector('.hero input[name="q"]');
@@ -46,7 +70,7 @@
 
   function saveSearchToHistory(query) {
     if (!query || !query.trim()) return;
-    var KEY = 'cloth_search_history';
+    var KEY = 'dressme_search_history';
     var history = JSON.parse(localStorage.getItem(KEY) || '[]');
     history = history.filter(function (q) { return q !== query.trim(); });
     history.unshift(query.trim());
@@ -79,7 +103,7 @@
       btn.setAttribute('aria-pressed', isDark ? 'true' : 'false');
       btn.textContent = isDark ? '☽' : '☀';
       try {
-        localStorage.setItem('cloth_theme', isDark ? 'dark' : 'light');
+        localStorage.setItem('dressme_theme', isDark ? 'dark' : 'light');
       } catch (e) { /* ignore */ }
     });
   }
@@ -87,7 +111,7 @@
   function initSearchAutocomplete() {
     var history = [];
     try {
-      history = JSON.parse(localStorage.getItem('cloth_search_history') || '[]');
+      history = JSON.parse(localStorage.getItem('dressme_search_history') || '[]');
     } catch (e) { /* ignore */ }
 
     var combined = history.slice(0, 10).concat(
@@ -219,7 +243,7 @@
   }
 
   function renderSearchHistory() {
-    var KEY = 'cloth_search_history';
+    var KEY = 'dressme_search_history';
     var history = JSON.parse(localStorage.getItem(KEY) || '[]');
     if (!history.length) return;
 
@@ -268,7 +292,7 @@
   // ------------------------------------------------------------------ //
   // Recently viewed                                                      //
   // ------------------------------------------------------------------ //
-  var RECENTLY_VIEWED_KEY = 'cloth_recently_viewed';
+  var RECENTLY_VIEWED_KEY = 'dressme_recently_viewed';
   var RECENTLY_VIEWED_MAX = 20;
 
   function trackRecentlyViewed(item) {
@@ -362,7 +386,7 @@
   // ------------------------------------------------------------------ //
   // Saved items                                                          //
   // ------------------------------------------------------------------ //
-  var SAVED_KEY = 'cloth_saved_items';
+  var SAVED_KEY = 'dressme_saved_items';
 
   function getSavedItems() {
     try {
@@ -474,7 +498,7 @@
   // ------------------------------------------------------------------ //
   // Collections                                                          //
   // ------------------------------------------------------------------ //
-  var COLLECTIONS_KEY = 'cloth_collections';
+  var COLLECTIONS_KEY = 'dressme_collections';
 
   function getCollections() {
     try {
@@ -1885,7 +1909,7 @@
   // ------------------------------------------------------------------ //
   // Outfit boards (WN-099)                                              //
   // ------------------------------------------------------------------ //
-  var OUTFITS_KEY = 'cloth_outfits';
+  var OUTFITS_KEY = 'dressme_outfits';
 
   function generateId() {
     return Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
@@ -2212,7 +2236,7 @@
   // ------------------------------------------------------------------ //
   // Canvas saves section on outfits page (WN-148)                      //
   // ------------------------------------------------------------------ //
-  var CANVAS_SAVES_KEY = 'cloth_canvas_saves';
+  var CANVAS_SAVES_KEY = 'dressme_canvas_saves';
 
   function _getCanvasSaves() {
     try { return JSON.parse(localStorage.getItem(CANVAS_SAVES_KEY) || '[]'); } catch (e) { return []; }
@@ -2308,8 +2332,8 @@
         var payload = {
           version: 1,
           exported_at: new Date().toISOString(),
-          outfits: JSON.parse(localStorage.getItem('cloth_outfits') || '[]'),
-          saved_items: JSON.parse(localStorage.getItem('cloth_saved_items') || '[]')
+          outfits: JSON.parse(localStorage.getItem('dressme_outfits') || '[]'),
+          saved_items: JSON.parse(localStorage.getItem('dressme_saved_items') || '[]')
         };
         var blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
         var url = URL.createObjectURL(blob);
@@ -2337,7 +2361,7 @@
               alert('Invalid backup file — no outfits found.');
               return;
             }
-            var existing = JSON.parse(localStorage.getItem('cloth_outfits') || '[]');
+            var existing = JSON.parse(localStorage.getItem('dressme_outfits') || '[]');
             if (existing.length > 0) {
               var merge = confirm(
                 'You already have ' + existing.length + ' outfit board' + (existing.length === 1 ? '' : 's') + '.\n\n' +
@@ -2346,16 +2370,16 @@
               if (merge) {
                 var existingIds = new Set(existing.map(function (o) { return o.id; }));
                 var merged = existing.concat(data.outfits.filter(function (o) { return !existingIds.has(o.id); }));
-                localStorage.setItem('cloth_outfits', JSON.stringify(merged));
+                localStorage.setItem('dressme_outfits', JSON.stringify(merged));
               } else {
-                localStorage.setItem('cloth_outfits', JSON.stringify(data.outfits));
+                localStorage.setItem('dressme_outfits', JSON.stringify(data.outfits));
               }
             } else {
-              localStorage.setItem('cloth_outfits', JSON.stringify(data.outfits));
+              localStorage.setItem('dressme_outfits', JSON.stringify(data.outfits));
             }
             if (Array.isArray(data.saved_items) && data.saved_items.length > 0) {
               if (confirm('Also restore ' + data.saved_items.length + ' saved item' + (data.saved_items.length === 1 ? '' : 's') + ' from this backup?')) {
-                localStorage.setItem('cloth_saved_items', JSON.stringify(data.saved_items));
+                localStorage.setItem('dressme_saved_items', JSON.stringify(data.saved_items));
                 updateSavedCount();
               }
             }
@@ -2538,7 +2562,7 @@
 
   var deriveSimilarQuery = window.ClothPure.deriveSimilarQuery;
 
-  var DENSITY_KEY = 'cloth_density';
+  var DENSITY_KEY = 'dressme_density';
 
   function _initQueryAugmentChips(selector, dataAttr) {
     var resultsHeader = document.querySelector('.results-header[data-query]');
@@ -2949,7 +2973,7 @@
     });
   }
 
-  var _COMPARE_KEY = 'cloth_compare';
+  var _COMPARE_KEY = 'dressme_compare';
   var _COMPARE_MAX = 4;
 
   function _getCompareItems() {
@@ -3064,7 +3088,7 @@
   // ------------------------------------------------------------------ //
   // Shareable curated list (WN-046)                                    //
   // ------------------------------------------------------------------ //
-  var _LIST_KEY = 'cloth_curated_list';
+  var _LIST_KEY = 'dressme_curated_list';
 
   function _getCuratedList() {
     try {
@@ -3345,6 +3369,10 @@
     initMobileBottomSearch(); // WN-168
     initCardMoreButtons(); // WN-173
 
+    if (document.getElementById('outfit-gen-form')) {
+      initOutfitGeneratorPage();
+    }
+
     // One-time document-level setup
     _initSpaNavigation();
   }
@@ -3538,7 +3566,7 @@
       toggle.setAttribute('aria-expanded', bar.classList.contains('is-expanded') ? 'true' : 'false');
     }
 
-    var savedOpen = sessionStorage.getItem('cloth_filter_open') === '1';
+    var savedOpen = sessionStorage.getItem('dressme_filter_open') === '1';
     if (savedOpen) {
       bar.classList.add('is-expanded');
       var bdRestore = document.getElementById('filter-backdrop');
@@ -3549,7 +3577,7 @@
       toggle._filterBound = true;
       toggle.addEventListener('click', function () {
         var open = bar.classList.toggle('is-expanded');
-        sessionStorage.setItem('cloth_filter_open', open ? '1' : '0');
+        sessionStorage.setItem('dressme_filter_open', open ? '1' : '0');
         updateToggleLabel();
         // backdrop only shown on mobile (desktop expansion is inline, not an overlay)
         var bd = document.getElementById('filter-backdrop');
@@ -3570,7 +3598,7 @@
         var t = document.getElementById('mobile-filter-toggle');
         if (!b) return;
         b.classList.remove('is-expanded');
-        sessionStorage.setItem('cloth_filter_open', '0');
+        sessionStorage.setItem('dressme_filter_open', '0');
         backdrop.classList.remove('is-visible');
         if (t) {
           var count = 0;
@@ -3597,7 +3625,7 @@
         if (!b.contains(e.target)) return;
         setTimeout(function() {
           b.classList.remove('is-expanded');
-          sessionStorage.setItem('cloth_filter_open', '0');
+          sessionStorage.setItem('dressme_filter_open', '0');
           var t = document.getElementById('mobile-filter-toggle');
           if (t) t.setAttribute('aria-expanded', 'false');
           var bd = document.getElementById('filter-backdrop');
@@ -3694,15 +3722,184 @@
   function initOnboardingBanner() {
     var banner = document.getElementById('onboarding-banner');
     if (!banner) return;
-    if (localStorage.getItem('cloth_onboarded')) return;
+    if (localStorage.getItem('dressme_onboarded')) return;
 
     banner.removeAttribute('hidden');
 
     var dismissBtn = document.getElementById('onboarding-dismiss');
     if (dismissBtn) {
       dismissBtn.addEventListener('click', function () {
-        localStorage.setItem('cloth_onboarded', '1');
+        localStorage.setItem('dressme_onboarded', '1');
         banner.setAttribute('hidden', '');
+      });
+    }
+  }
+
+  // ------------------------------------------------------------------ //
+  // WN-185/186: Outfit generator page                                   //
+  // ------------------------------------------------------------------ //
+  function initOutfitGeneratorPage() {
+    var form = document.getElementById('outfit-gen-form');
+    if (!form || form._bound) return;
+    form._bound = true;
+
+    var textarea = document.getElementById('outfit-desc');
+    var counter = document.getElementById('outfit-desc-count');
+    var submitBtn = document.getElementById('outfit-gen-submit');
+    var resultsEl = document.getElementById('outfit-gen-results');
+    var errorEl = document.getElementById('outfit-gen-error');
+    var grid = document.getElementById('outfit-gen-grid');
+    var resultsTitle = document.getElementById('outfit-gen-results-title');
+    var saveBtn = document.getElementById('outfit-gen-save-btn');
+    var againBtn = document.getElementById('outfit-gen-again-btn');
+
+    var _lastItems = null;
+
+    var _CATEGORY_LABELS = {
+      shoes: 'Shoes',
+      pants: 'Trousers',
+      accessory: 'Accessory',
+      shirt: 'Shirt',
+      jacket: 'Jacket',
+      headwear: 'Headwear'
+    };
+
+    function updateCounter() {
+      var remaining = 100 - (textarea.value.length);
+      counter.textContent = remaining + ' left';
+      counter.style.color = remaining < 15 ? 'var(--colour-error)' : '';
+    }
+
+    textarea.addEventListener('input', updateCounter);
+
+    function showError(msg) {
+      errorEl.textContent = msg;
+      errorEl.removeAttribute('hidden');
+    }
+
+    function hideError() {
+      errorEl.textContent = '';
+      errorEl.setAttribute('hidden', '');
+    }
+
+    function renderSkeletons() {
+      grid.innerHTML = '';
+      Object.keys(_CATEGORY_LABELS).forEach(function (cat) {
+        var li = document.createElement('div');
+        li.className = 'outfit-slot outfit-slot--skeleton';
+        li.setAttribute('aria-hidden', 'true');
+        li.innerHTML = '<div class="outfit-slot-label">' + _CATEGORY_LABELS[cat] + '</div>' +
+          '<div class="outfit-slot-img-wrap skeleton-shimmer"></div>' +
+          '<div class="outfit-slot-name skeleton-line"></div>' +
+          '<div class="outfit-slot-price skeleton-line skeleton-line--short"></div>';
+        grid.appendChild(li);
+      });
+    }
+
+    function renderResults(data) {
+      _lastItems = data.items;
+      grid.innerHTML = '';
+      var categories = Object.keys(_CATEGORY_LABELS);
+      categories.forEach(function (cat) {
+        var item = data.items[cat];
+        var slot = document.createElement('div');
+        slot.className = 'outfit-slot';
+        if (!item) {
+          slot.innerHTML = '<div class="outfit-slot-label">' + _CATEGORY_LABELS[cat] + '</div>' +
+            '<div class="outfit-slot-empty">No match found</div>' +
+            '<p class="outfit-slot-retry-hint">Try refining your description</p>';
+        } else {
+          slot.innerHTML =
+            '<div class="outfit-slot-label">' + _CATEGORY_LABELS[cat] + '</div>' +
+            (item.image_url
+              ? '<div class="outfit-slot-img-wrap"><img src="' + window.ClothPure.escapeHtml(item.image_url) +
+                '" alt="' + window.ClothPure.escapeHtml(item.name) + '" loading="lazy"></div>'
+              : '<div class="outfit-slot-img-wrap outfit-slot-img-placeholder"><span>' +
+                window.ClothPure.escapeHtml(item.retailer_name) + '</span></div>') +
+            '<p class="outfit-slot-name">' + window.ClothPure.escapeHtml(item.name) + '</p>' +
+            '<p class="outfit-slot-price">' + (item.price_display ? window.ClothPure.escapeHtml(item.price_display) : '') + '</p>' +
+            '<p class="outfit-slot-retailer">' + window.ClothPure.escapeHtml(item.retailer_name) + '</p>' +
+            '<a href="' + window.ClothPure.escapeHtml(item.purchase_url) + '" class="btn-view outfit-slot-view" ' +
+            'target="_blank" rel="noopener noreferrer">View item</a>';
+        }
+        grid.appendChild(slot);
+      });
+
+      resultsTitle.textContent = '“' + data.description + '”';
+      resultsEl.removeAttribute('hidden');
+    }
+
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      var desc = textarea.value.trim();
+      if (!desc) { showError('Please enter a style description.'); return; }
+      if (desc.length > 100) { showError('Description must be 100 characters or fewer.'); return; }
+
+      hideError();
+      resultsEl.setAttribute('hidden', '');
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Generating…';
+      renderSkeletons();
+      resultsEl.removeAttribute('hidden');
+
+      fetch('/outfit/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ description: desc })
+      })
+        .then(function (r) { return r.json().then(function (d) { return { ok: r.ok, data: d }; }); })
+        .then(function (res) {
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Generate outfit';
+          if (!res.ok) {
+            resultsEl.setAttribute('hidden', '');
+            showError(res.data.error || 'Something went wrong. Please try again.');
+            return;
+          }
+          renderResults(res.data);
+        })
+        .catch(function () {
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Generate outfit';
+          resultsEl.setAttribute('hidden', '');
+          showError('Could not reach the server. Please try again.');
+        });
+    });
+
+    if (againBtn) {
+      againBtn.addEventListener('click', function () {
+        resultsEl.setAttribute('hidden', '');
+        textarea.focus();
+      });
+    }
+
+    if (saveBtn) {
+      saveBtn.addEventListener('click', function () {
+        if (!_lastItems) return;
+        var OUTFITS_KEY = 'dressme_outfits';
+        var outfits = [];
+        try { outfits = JSON.parse(localStorage.getItem(OUTFITS_KEY) || '[]'); } catch (e) { /* ignore */ }
+        var items = [];
+        Object.values(_lastItems).forEach(function (item) {
+          if (item) items.push({
+            id: item.id,
+            name: item.name,
+            price: item.price_display || '',
+            retailer: item.retailer_name,
+            image: item.image_url || '',
+            url: item.purchase_url
+          });
+        });
+        var outfit = {
+          id: Date.now().toString(36) + Math.random().toString(36).slice(2),
+          name: 'Generated: ' + (resultsTitle.textContent || '').replace(/[""]/g, '').slice(0, 40),
+          createdAt: new Date().toISOString(),
+          items: items
+        };
+        outfits.unshift(outfit);
+        localStorage.setItem(OUTFITS_KEY, JSON.stringify(outfits));
+        updateOutfitsCount();
+        showToast('Outfit saved to your boards');
       });
     }
   }

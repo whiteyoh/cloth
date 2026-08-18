@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block title %}Build an outfit — dress.me{% endblock %}
+{% block meta_description %}Describe a style in plain English and dress.me generates a complete outfit — shoes, trousers, shirt, jacket, accessory and headwear — instantly.{% endblock %}
+{% block content %}
+<section class="outfit-gen-page">
+  <div class="outfit-gen-header">
+    <h1>Build an outfit</h1>
+    <p class="outfit-gen-intro">Describe a style or occasion and we'll build a complete outfit for you — one item per category, sourced from across the web.</p>
+  </div>
+
+  {% if not llm_enabled %}
+  <div class="outfit-gen-unavailable">
+    <p>The outfit generator requires an AI key that isn't configured on this deployment. All other search features still work normally.</p>
+  </div>
+  {% else %}
+  <form class="outfit-gen-form" id="outfit-gen-form" novalidate>
+    <div class="outfit-gen-field">
+      <label for="outfit-desc" class="outfit-gen-label">Your style description</label>
+      <textarea
+        id="outfit-desc"
+        name="description"
+        class="outfit-gen-textarea"
+        maxlength="100"
+        rows="2"
+        placeholder="e.g. smart casual summer wedding, relaxed weekend city look, dark academia autumn"
+        aria-describedby="outfit-desc-hint outfit-desc-count"
+        required></textarea>
+      <div class="outfit-gen-meta">
+        <span id="outfit-desc-hint" class="outfit-gen-hint">Up to 100 characters — be specific about style, occasion, season or colour.</span>
+        <span id="outfit-desc-count" class="outfit-gen-count" aria-live="polite">100 left</span>
+      </div>
+    </div>
+    <button type="submit" class="btn-primary outfit-gen-submit" id="outfit-gen-submit">Generate outfit</button>
+  </form>
+
+  <div id="outfit-gen-results" class="outfit-gen-results" hidden>
+    <div class="outfit-gen-results-header">
+      <h2 id="outfit-gen-results-title" class="outfit-gen-results-title"></h2>
+      <div class="outfit-gen-results-actions">
+        <button type="button" class="btn-primary" id="outfit-gen-save-btn">Save as outfit board</button>
+        <button type="button" class="btn-secondary" id="outfit-gen-again-btn">Try again</button>
+      </div>
+    </div>
+    <div class="outfit-gen-grid" id="outfit-gen-grid" aria-label="Generated outfit items">
+      <!-- slots populated by JS -->
+    </div>
+  </div>
+
+  <div id="outfit-gen-error" class="outfit-gen-error" hidden role="alert"></div>
+  {% endif %}
+</section>
+{% endblock %}

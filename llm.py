@@ -252,6 +252,83 @@ async def refine_query(original_query: str, refinement: str) -> str:
         raise LLMError(f"Claude API error: {exc}", error_type="api_error") from exc
 
 
+_OUTFIT_GENERATE_SYSTEM_PROMPT = (
+    "You are a fashion stylist. Given a short style description, generate targeted Google Shopping "
+    "search phrases for each of these clothing categories: shoes, pants, accessory, shirt, jacket, headwear.\n\n"
+    'Return ONLY a JSON object with exactly these six keys — no explanation, no markdown:\n'
+    '{"shoes": "...", "pants": "...", "accessory": "...", "shirt": "...", "jacket": "...", "headwear": "..."}\n\n'
+    "Rules:\n"
+    "- Each value must be a concrete, specific Google Shopping search phrase under 70 characters\n"
+    "- Include gender, style, material or colour attributes where appropriate\n"
+    "- Make all six items work together as a cohesive outfit\n"
+    "- Do not return null or empty strings — always provide a search phrase for every category"
+)
+
+_OUTFIT_CATEGORIES = ("shoes", "pants", "accessory", "shirt", "jacket", "headwear")
+
+
+async def generate_outfit_queries(description: str) -> dict[str, str]:
+    """Generate 6 category-specific Google Shopping search phrases for a style description.
+
+    Returns a dict with keys: shoes, pants, accessory, shirt, jacket, headwear.
+    Raises LLMNotConfiguredError if ANTHROPIC_API_KEY is absent.
+    Raises LLMError on API or parse failures.
+    """
+    api_key = os.environ.get("ANTHROPIC_API_KEY", "")
+    if not api_key:
+        raise LLMNotConfiguredError(
+            "ANTHROPIC_API_KEY is not configured",
+            error_type="not_configured",
+        )
+
+    start = time.monotonic()
+
+    try:
+        client = _get_client(api_key)
+        message = await client.messages.create(
+            model=_MODEL,
+            max_tokens=512,
+            system=_OUTFIT_GENERATE_SYSTEM_PROMPT,
+            messages=[{"role": "user", "content": description}],
+        )
+        elapsed_ms = round((time.monotonic() - start) * 1000)
+
+        if not message.content:
+            raise LLMError("Empty response from Claude", error_type="schema_error")
+
+        queries = json.loads(message.content[0].text)
+
+        if not isinstance(queries, dict):
+            raise LLMError("Claude returned non-object response", error_type="schema_error")
+
+        # Ensure all required categories are present
+        missing = [k for k in _OUTFIT_CATEGORIES if k not in queries or not queries[k]]
+        if missing:
+            raise LLMError(
+                f"Claude response missing categories: {missing}", error_type="schema_error"
+            )
+
+        result = {k: str(queries[k]).strip()[:70] for k in _OUTFIT_CATEGORIES}
+
+        _emit(
+            {
+                "event": "llm_outfit_queries_generated",
+                "description_length": len(description),
+                "llm_latency_ms": elapsed_ms,
+                "model": _MODEL,
+                "timestamp_utc": datetime.now(timezone.utc).isoformat(),
+            }
+        )
+
+        return result
+
+    except json.JSONDecodeError as exc:
+        raise LLMError("Claude returned non-JSON response", error_type="json_parse_error") from exc
+
+    except anthropic.APIError as exc:
+        raise LLMError(f"Claude API error: {exc}", error_type="api_error") from exc
+
+
 async def expand_query(query: str) -> list[str]:
     """Expand a natural-language clothing query into 2–3 targeted search terms.
 

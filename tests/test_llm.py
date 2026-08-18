@@ -615,3 +615,65 @@ class TestRefineQueryErrors:
                 await refine_query("navy chinos", "under 50")
 
         assert exc_info.value.error_type == "api_error"
+
+
+class TestGenerateOutfitQueries:
+    def _mock_message(self, content: str):
+        msg = MagicMock()
+        msg.content = [MagicMock(text=content)]
+        return msg
+
+    @pytest.mark.asyncio
+    async def test_happy_path_returns_all_categories(self, monkeypatch):
+        from llm import generate_outfit_queries
+        monkeypatch.setenv("ANTHROPIC_API_KEY", "test-key")
+        payload = {
+            "shoes": "white leather trainers",
+            "pants": "slim chinos",
+            "accessory": "leather belt",
+            "shirt": "white oxford shirt",
+            "jacket": "navy blazer",
+            "headwear": "baseball cap",
+        }
+        msg = self._mock_message(json.dumps(payload))
+        with patch("llm.anthropic.AsyncAnthropic") as MockClient:
+            instance = MockClient.return_value
+            instance.messages = MagicMock()
+            instance.messages.create = AsyncMock(return_value=msg)
+            result = await generate_outfit_queries("smart casual weekend")
+        assert set(result.keys()) == {"shoes", "pants", "accessory", "shirt", "jacket", "headwear"}
+        assert result["shoes"] == "white leather trainers"
+
+    @pytest.mark.asyncio
+    async def test_raises_not_configured_when_no_key(self, monkeypatch):
+        from llm import generate_outfit_queries
+        monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
+        with pytest.raises(LLMNotConfiguredError):
+            await generate_outfit_queries("smart casual")
+
+    @pytest.mark.asyncio
+    async def test_raises_llm_error_on_non_json(self, monkeypatch):
+        from llm import generate_outfit_queries
+        monkeypatch.setenv("ANTHROPIC_API_KEY", "test-key")
+        msg = self._mock_message("not json")
+        with patch("llm.anthropic.AsyncAnthropic") as MockClient:
+            instance = MockClient.return_value
+            instance.messages = MagicMock()
+            instance.messages.create = AsyncMock(return_value=msg)
+            with pytest.raises(LLMError) as exc:
+                await generate_outfit_queries("smart casual")
+        assert exc.value.error_type == "json_parse_error"
+
+    @pytest.mark.asyncio
+    async def test_raises_llm_error_on_missing_category(self, monkeypatch):
+        from llm import generate_outfit_queries
+        monkeypatch.setenv("ANTHROPIC_API_KEY", "test-key")
+        partial = {"shoes": "trainers", "pants": "chinos"}
+        msg = self._mock_message(json.dumps(partial))
+        with patch("llm.anthropic.AsyncAnthropic") as MockClient:
+            instance = MockClient.return_value
+            instance.messages = MagicMock()
+            instance.messages.create = AsyncMock(return_value=msg)
+            with pytest.raises(LLMError) as exc:
+                await generate_outfit_queries("smart casual")
+        assert exc.value.error_type == "schema_error"

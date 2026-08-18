@@ -990,3 +990,89 @@ class TestCuratedList:
         r = client.get("/list?v=")
         assert r.status_code == 200
         assert "curated-list-empty" in r.text
+
+
+class TestOutfitGenerator:
+    def test_generator_page_renders(self, client, monkeypatch):
+        monkeypatch.setenv("ANTHROPIC_API_KEY", "test-anthropic-key")
+        r = client.get("/outfit-generator")
+        assert r.status_code == 200
+        assert "outfit-gen-form" in r.text
+
+    def test_generator_page_shows_unavailable_without_llm(self, client, monkeypatch):
+        monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
+        r = client.get("/outfit-generator")
+        assert r.status_code == 200
+        assert "outfit-gen-unavailable" in r.text
+
+    def test_generate_happy_path(self, client, monkeypatch):
+        monkeypatch.setenv("ANTHROPIC_API_KEY", "test-key")
+        queries = {
+            "shoes": "white leather trainers", "pants": "slim chinos",
+            "accessory": "leather belt", "shirt": "white oxford shirt",
+            "jacket": "navy blazer", "headwear": "baseball cap",
+        }
+        product = _make_product("White Trainers")
+        with (
+            patch("main.generate_outfit_queries", new=AsyncMock(return_value=queries)),
+            patch("main.search_products", new=AsyncMock(return_value=[product])),
+        ):
+            r = client.post("/outfit/generate", json={"description": "smart casual weekend"})
+        assert r.status_code == 200
+        data = r.json()
+        assert data["description"] == "smart casual weekend"
+        assert set(data["items"].keys()) == {"shoes", "pants", "accessory", "shirt", "jacket", "headwear"}
+        assert data["items"]["shoes"]["name"] == "White Trainers"
+
+    def test_generate_partial_empty_categories(self, client, monkeypatch):
+        monkeypatch.setenv("ANTHROPIC_API_KEY", "test-key")
+        queries = {
+            "shoes": "trainers", "pants": "chinos", "accessory": "belt",
+            "shirt": "oxford shirt", "jacket": "blazer", "headwear": "cap",
+        }
+        product = _make_product()
+
+        async def mock_search(q, key, **kw):
+            if q == "cap":
+                return []
+            return [product]
+
+        with (
+            patch("main.generate_outfit_queries", new=AsyncMock(return_value=queries)),
+            patch("main.search_products", new=mock_search),
+        ):
+            r = client.post("/outfit/generate", json={"description": "casual"})
+        assert r.status_code == 200
+        data = r.json()
+        assert data["items"]["headwear"] is None
+        assert data["items"]["shoes"]["name"] == "Blue Shirt"
+
+    def test_generate_empty_description_returns_422(self, client, monkeypatch):
+        monkeypatch.setenv("ANTHROPIC_API_KEY", "test-key")
+        r = client.post("/outfit/generate", json={"description": ""})
+        assert r.status_code == 422
+
+    def test_generate_too_long_description_returns_422(self, client, monkeypatch):
+        monkeypatch.setenv("ANTHROPIC_API_KEY", "test-key")
+        r = client.post("/outfit/generate", json={"description": "x" * 101})
+        assert r.status_code == 422
+
+    def test_generate_no_llm_key_returns_503(self, client, monkeypatch):
+        monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
+        r = client.post("/outfit/generate", json={"description": "casual summer"})
+        assert r.status_code == 503
+
+    def test_generate_llm_not_configured_returns_503(self, client, monkeypatch):
+        monkeypatch.setenv("ANTHROPIC_API_KEY", "test-key")
+        from llm import LLMNotConfiguredError
+        with patch("main.generate_outfit_queries", new=AsyncMock(side_effect=LLMNotConfiguredError())):
+            r = client.post("/outfit/generate", json={"description": "smart casual"})
+        assert r.status_code == 503
+
+    def test_generate_rate_limited(self, client, monkeypatch):
+        monkeypatch.setenv("ANTHROPIC_API_KEY", "test-key")
+        import rate_limit, time
+        # TestClient uses "testclient" as the request client host
+        rate_limit._search_timestamps["testclient"] = [time.monotonic()] * 10
+        r = client.post("/outfit/generate", json={"description": "smart casual"})
+        assert r.status_code == 429
