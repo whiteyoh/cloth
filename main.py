@@ -90,9 +90,11 @@ _SEARCH_ERROR_MESSAGES: dict[str, str] = {
 
 _CSP = (
     "default-src 'self'; "
+    "script-src 'self' https://s.skimresources.com; "
     "img-src 'self' https://*.google.com https://*.gstatic.com https://*.ggpht.com "
     "https://*.googleusercontent.com https://*.googleapis.com data:; "
     "style-src 'self' 'unsafe-inline'; "
+    "connect-src 'self' https://go.skimresources.com https://r.skimresources.com; "
     "frame-ancestors 'none';"
 )
 
@@ -267,6 +269,7 @@ async def lifespan(app: FastAPI):
         )
     templates.env.globals["try_on_enabled"] = bool(os.environ.get("FASHN_API_KEY"))
     templates.env.globals["refine_enabled"] = bool(os.environ.get("ANTHROPIC_API_KEY"))
+    templates.env.globals["skimlinks_pub_id"] = os.environ.get("SKIMLINKS_PUB_ID", "")
 
     web_concurrency_str = os.environ.get("WEB_CONCURRENCY", "")
     if web_concurrency_str:
@@ -566,6 +569,12 @@ async def saved_items(request: Request):
 async def privacy(request: Request):
     """Render the privacy notice page."""
     return templates.TemplateResponse(request, "privacy.html")
+
+
+@app.get("/how-it-works", response_class=HTMLResponse)
+async def how_it_works(request: Request):
+    """Render the how it works page."""
+    return templates.TemplateResponse(request, "how_it_works.html")
 
 
 @app.get("/outfits", response_class=HTMLResponse)

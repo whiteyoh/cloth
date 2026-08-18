@@ -114,11 +114,19 @@ a:hover {
   letter-spacing: -0.02em;
   flex-shrink: 0;
   text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
 }
 
 .logo:hover {
   text-decoration: none;
   opacity: 0.85;
+}
+
+.logo-icon {
+  color: #ffffff;
+  flex-shrink: 0;
 }
 
 .site-header-top {
@@ -3854,4 +3862,240 @@ a:hover {
     transition-delay: 0ms !important;
     scroll-behavior: auto !important;
   }
+}
+
+/* ------------------------------------------------------------------ */
+/* How it works page (WN-174)                                          */
+/* ------------------------------------------------------------------ */
+.how-it-works-page {
+  max-width: 800px;
+  margin-inline: auto;
+  padding-block: var(--space-xl);
+}
+
+.hiw-hero {
+  text-align: center;
+  padding-block: var(--space-xl);
+  border-bottom: 1px solid var(--colour-border);
+  margin-bottom: var(--space-xl);
+}
+
+.hiw-hero h1 {
+  font-size: clamp(2rem, 5vw, 3rem);
+  font-weight: 800;
+  color: var(--colour-navy);
+  letter-spacing: -0.03em;
+  margin-bottom: var(--space-sm);
+}
+
+[data-theme="dark"] .hiw-hero h1 {
+  color: var(--colour-text);
+}
+
+.hiw-hero > p {
+  font-size: 1.2rem;
+  color: var(--colour-text-muted);
+  margin-bottom: var(--space-lg);
+}
+
+.hiw-cta {
+  display: inline-block;
+  padding: 0.7rem 2rem;
+}
+
+.hiw-steps {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: var(--space-lg);
+  margin-bottom: var(--space-2xl);
+}
+
+.hiw-step {
+  background: var(--colour-surface);
+  border: 1px solid var(--colour-border);
+  border-radius: var(--radius);
+  padding: var(--space-lg);
+}
+
+.hiw-step-icon {
+  font-size: 2rem;
+  margin-bottom: var(--space-sm);
+  display: block;
+}
+
+.hiw-step h2 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--colour-navy);
+  margin-bottom: var(--space-sm);
+}
+
+[data-theme="dark"] .hiw-step h2 {
+  color: var(--colour-text);
+}
+
+.hiw-step p {
+  font-size: 0.95rem;
+  color: var(--colour-text-muted);
+  line-height: 1.65;
+}
+
+.hiw-faq {
+  border-top: 1px solid var(--colour-border);
+  padding-top: var(--space-xl);
+  margin-bottom: var(--space-xl);
+}
+
+.hiw-faq h2 {
+  font-size: 1.4rem;
+  font-weight: 700;
+  margin-bottom: var(--space-lg);
+}
+
+.hiw-faq-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.hiw-faq-item {
+  border: 1px solid var(--colour-border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.hiw-faq-item summary {
+  padding: var(--space-md) var(--space-lg);
+  font-weight: 600;
+  cursor: pointer;
+  list-style: none;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.hiw-faq-item summary::after {
+  content: '+';
+  font-size: 1.2rem;
+  color: var(--colour-text-muted);
+  transition: transform var(--transition);
+}
+
+.hiw-faq-item[open] summary::after {
+  transform: rotate(45deg);
+}
+
+.hiw-faq-item p {
+  padding: 0 var(--space-lg) var(--space-md);
+  color: var(--colour-text-muted);
+  line-height: 1.65;
+}
+
+.hiw-cta-section {
+  text-align: center;
+  padding-block: var(--space-xl);
+  border-top: 1px solid var(--colour-border);
+}
+
+.hiw-cta-section h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: var(--space-md);
+}
+
+/* ------------------------------------------------------------------ */
+/* Home page — feature strip (WN-178)                                  */
+/* ------------------------------------------------------------------ */
+.feature-strip {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-md);
+  max-width: 640px;
+  margin: var(--space-xl) auto 0;
+}
+
+.feature-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 0.3rem;
+  padding: var(--space-md);
+  background: var(--colour-surface);
+  border: 1px solid var(--colour-border);
+  border-radius: var(--radius);
+  text-decoration: none;
+  color: var(--colour-text);
+  transition: border-color var(--transition), box-shadow var(--transition);
+}
+
+.feature-card:hover {
+  border-color: var(--colour-accent);
+  box-shadow: var(--shadow);
+  text-decoration: none;
+}
+
+.feature-icon {
+  font-size: 1.5rem;
+  line-height: 1;
+}
+
+.feature-card strong {
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+
+.feature-card span {
+  font-size: 0.78rem;
+  color: var(--colour-text-muted);
+  line-height: 1.4;
+}
+
+/* ------------------------------------------------------------------ */
+/* Home page — curated searches (WN-180)                               */
+/* ------------------------------------------------------------------ */
+.curated-searches {
+  max-width: 640px;
+  margin: var(--space-xl) auto 0;
+}
+
+.curated-searches-title {
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--colour-text-muted);
+  margin-bottom: var(--space-md);
+}
+
+.curated-group {
+  margin-bottom: var(--space-lg);
+}
+
+.curated-group h3 {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--colour-text-muted);
+  margin-bottom: var(--space-xs);
+}
+
+/* ------------------------------------------------------------------ */
+/* Home page — hero upgrade (WN-176)                                   */
+/* ------------------------------------------------------------------ */
+.hero-eyebrow {
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--colour-accent);
+  margin-bottom: var(--space-md) !important;
+}
+
+.hero-sub {
+  font-size: 1.05rem;
+  color: var(--colour-text-muted);
+  max-width: 520px;
+  margin-inline: auto;
+  margin-bottom: var(--space-xl) !important;
+  line-height: 1.65;
 }

@@ -4,6 +4,11 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{% block title %}Cloth{% endblock %}</title>
+  <meta name="description" content="{% block meta_description %}Cloth — search across the web for any clothing item using plain English. AI-powered results from hundreds of retailers.{% endblock %}">
+  <meta property="og:title" content="{% block og_title %}{{ self.title() }}{% endblock %}">
+  <meta property="og:description" content="{% block og_description %}Search across the web for any clothing item using plain English. AI-powered results from hundreds of retailers.{% endblock %}">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary">
   <meta name="try-on-enabled" content="{{ 'true' if try_on_enabled else 'false' }}">
   <link rel="stylesheet" href="/static/css/style.css">
   <script src="/static/js/theme-init.js"></script>
@@ -12,7 +17,14 @@
   <header class="site-header">
     <div class="container">
       <div class="site-header-top">
-        <a href="/" class="logo">Cloth</a>
+        <a href="/" class="logo" aria-label="Cloth — home">
+          <svg class="logo-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <!-- Hanger icon -->
+            <path d="M12 3a2 2 0 0 1 2 2c0 .8-.4 1.5-1 1.9L21 14H3l8-7.1A2 2 0 0 1 10 5a2 2 0 0 1 2-2z"/>
+            <path d="M3 14c0 2.2 4 4 9 4s9-1.8 9-4"/>
+          </svg>
+          Cloth
+        </a>
         <a href="/outfits" class="outfits-link" aria-label="Outfit boards">Outfits (<span id="outfits-count">0</span>)</a>
         <a href="/saved" class="saved-link" id="saved-link" aria-label="Saved items">Saved (<span id="saved-count">0</span>)</a>
         <button type="button" id="theme-toggle" class="btn-theme-toggle" aria-label="Toggle dark mode" aria-pressed="false">&#9788;</button>
@@ -31,7 +43,7 @@
   </main>
   <footer class="site-footer">
     <div class="container">
-      <p><a href="/privacy">Privacy Notice</a> &middot; Prices are indicative. Check the retailer for current price and availability.</p>
+      <p><a href="/how-it-works">How it works</a> &middot; <a href="/privacy">Privacy Notice</a> &middot; Prices are indicative. Check the retailer for current price and availability.</p>
     </div>
   </footer>
   <script src="/static/js/cloth-pure.js"></script>
@@ -121,6 +133,12 @@
       <div class="card-action-sheet-actions" id="card-action-sheet-actions"></div>
     </div>
   </div>
+  <!-- WN-175: Skimlinks affiliate — set SKIMLINKS_PUB_ID env var to activate -->
+  {% if skimlinks_pub_id %}
+  <script>var skimlinks_pub_id = "{{ skimlinks_pub_id }}";</script>
+  <script src="https://s.skimresources.com/js/{{ skimlinks_pub_id }}.skimlinks.js" async></script>
+  {% endif %}
+
   <!-- Mobile bottom search bar (WN-168) -->
   <div id="mobile-search-bar" class="mobile-search-bar" hidden>
     <form class="mobile-search-form" action="/search" method="get" role="search" aria-label="Quick search">

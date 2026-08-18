@@ -14,22 +14,73 @@
   </div>
 </div>
 <section class="hero">
-  <h1>Find clothing from across the web</h1>
-  <p>Describe what you're looking for and we'll find it.</p>
+  <p class="hero-eyebrow">Powered by AI &middot; Hundreds of retailers &middot; Free</p>
+  <h1>Find exactly what<br>you want to wear</h1>
+  <p class="hero-sub">Describe any clothing item in plain English and we'll search across the web to find it — from ASOS to Zara to independent boutiques.</p>
   <form class="search-form" method="get" action="/search">
     <div class="search-field">
       <label for="q" class="sr-only">Describe a clothing item</label>
-      <input type="text" id="q" name="q" placeholder="e.g. blue linen shirt with collar"
+      <input type="text" id="q" name="q" placeholder="e.g. oversized navy wool coat under £150"
              maxlength="500" autocomplete="off" aria-describedby="search-hint"
              list="cloth-autocomplete-hero"
              value="{{ query|default('') }}">
       <datalist id="cloth-autocomplete-hero"></datalist>
       <button type="submit" class="btn-primary">Search</button>
     </div>
-    <p id="search-hint" class="search-hint">Try "navy chinos", "floral midi dress" or "oversized cream jumper"</p>
+    <p id="search-hint" class="search-hint">Try "linen shirt women", "floral midi dress" or "smart casual blazer"</p>
     {% if error %}
     <p class="inline-error" role="alert">{{ error }}</p>
     {% endif %}
   </form>
+</section>
+
+<section class="feature-strip" aria-label="Key features">
+  <a href="/how-it-works" class="feature-card">
+    <span class="feature-icon" aria-hidden="true">🤖</span>
+    <strong>AI search</strong>
+    <span>Searches hundreds of retailers with one query</span>
+  </a>
+  <a href="/how-it-works#try-on" class="feature-card">
+    <span class="feature-icon" aria-hidden="true">📷</span>
+    <strong>Virtual try-on</strong>
+    <span>See how it looks on you before you buy</span>
+  </a>
+  <a href="/outfits" class="feature-card">
+    <span class="feature-icon" aria-hidden="true">✂️</span>
+    <strong>Outfit builder</strong>
+    <span>Build, save and share complete looks</span>
+  </a>
+</section>
+
+<section class="curated-searches" aria-label="Curated searches">
+  <h2 class="curated-searches-title">Popular right now</h2>
+  <div class="curated-group">
+    <h3>Summer essentials</h3>
+    <ul class="example-searches" aria-label="Summer searches">
+      <li><a href="/search?q=linen+shirt+women" class="example-chip">Linen shirt</a></li>
+      <li><a href="/search?q=floral+midi+dress" class="example-chip">Floral midi dress</a></li>
+      <li><a href="/search?q=white+linen+trousers" class="example-chip">White linen trousers</a></li>
+      <li><a href="/search?q=espadrilles+women" class="example-chip">Espadrilles</a></li>
+      <li><a href="/search?q=raffia+bag" class="example-chip">Raffia bag</a></li>
+    </ul>
+  </div>
+  <div class="curated-group">
+    <h3>Smart casual</h3>
+    <ul class="example-searches" aria-label="Smart casual searches">
+      <li><a href="/search?q=navy+chinos+men" class="example-chip">Navy chinos</a></li>
+      <li><a href="/search?q=white+button+down+shirt" class="example-chip">White shirt</a></li>
+      <li><a href="/search?q=blazer+women+smart+casual" class="example-chip">Women's blazer</a></li>
+      <li><a href="/search?q=leather+loafers+men" class="example-chip">Leather loafers</a></li>
+    </ul>
+  </div>
+  <div class="curated-group">
+    <h3>Workwear</h3>
+    <ul class="example-searches" aria-label="Workwear searches">
+      <li><a href="/search?q=tailored+trousers+women" class="example-chip">Tailored trousers</a></li>
+      <li><a href="/search?q=smart+midi+skirt" class="example-chip">Midi skirt</a></li>
+      <li><a href="/search?q=wool+suit+men" class="example-chip">Men's suit</a></li>
+      <li><a href="/search?q=block+heel+pumps" class="example-chip">Block heel pumps</a></li>
+    </ul>
+  </div>
 </section>
 {% endblock %}

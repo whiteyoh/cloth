@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% block title %}How it works — Cloth{% endblock %}
+{% block meta_description %}Learn how Cloth uses AI to search hundreds of clothing retailers at once. Save items, build outfits, and virtually try on clothes.{% endblock %}
+{% block content %}
+<article class="how-it-works-page">
+  <header class="hiw-hero">
+    <h1>How Cloth works</h1>
+    <p>One search. Hundreds of retailers. Powered by AI.</p>
+    <a href="/" class="btn-primary hiw-cta">Start searching</a>
+  </header>
+
+  <section class="hiw-steps">
+    <div class="hiw-step">
+      <div class="hiw-step-icon" aria-hidden="true">🔍</div>
+      <h2>Describe it in plain English</h2>
+      <p>Type exactly what you're looking for — "oversized navy wool coat under £150" or "floral midi dress for a wedding". Our AI understands natural language and expands your search to find the best matches across the web.</p>
+    </div>
+    <div class="hiw-step">
+      <div class="hiw-step-icon" aria-hidden="true">✨</div>
+      <h2>AI expands your search</h2>
+      <p>Behind the scenes, Claude AI rewrites your query into multiple search variations, then pulls results from hundreds of UK and international retailers — all in a few seconds. You see the best results, deduplicated and ranked.</p>
+    </div>
+    <div class="hiw-step">
+      <div class="hiw-step-icon" aria-hidden="true">🎯</div>
+      <h2>Filter to find your match</h2>
+      <p>Refine by colour, gender, category, size, and price. Use the keyword filter to narrow further — "linen only" or "with pockets". Your filters are remembered as you search.</p>
+    </div>
+    <div class="hiw-step">
+      <div class="hiw-step-icon" aria-hidden="true">♡</div>
+      <h2>Save and organise</h2>
+      <p>Save items as you browse. Organise them into named collections. Add notes ("try in store first") and share your saved list with a link — no account required. Everything is stored in your browser.</p>
+    </div>
+    <div class="hiw-step">
+      <div class="hiw-step-icon" aria-hidden="true">👗</div>
+      <h2>Build outfit boards</h2>
+      <p>Group saved items into outfit boards. Ask the AI to suggest what else might complete the look. Share your outfit boards with a single link.</p>
+    </div>
+    <div class="hiw-step" id="try-on">
+      <div class="hiw-step-icon" aria-hidden="true">📷</div>
+      <h2>Virtually try it on</h2>
+      <p>Upload a photo of yourself and try on any item from the results. Powered by Fashn.ai. Your photo is never stored — it is only used for the try-on and discarded immediately after.</p>
+    </div>
+  </section>
+
+  <section class="hiw-faq">
+    <h2>Common questions</h2>
+    <div class="hiw-faq-list">
+      <details class="hiw-faq-item">
+        <summary>Is Cloth free?</summary>
+        <p>Yes. Cloth is free to use. We earn a small commission when you click through to a retailer and make a purchase — at no extra cost to you.</p>
+      </details>
+      <details class="hiw-faq-item">
+        <summary>Do I need an account?</summary>
+        <p>No account required. Your saved items, outfits, and preferences are stored in your browser's local storage. They stay on your device and are never sent to our servers.</p>
+      </details>
+      <details class="hiw-faq-item">
+        <summary>Which retailers does Cloth search?</summary>
+        <p>Cloth searches Google Shopping, which covers thousands of UK and international retailers including ASOS, Marks &amp; Spencer, Zara, H&amp;M, Farfetch, Next, John Lewis, and many more.</p>
+      </details>
+      <details class="hiw-faq-item">
+        <summary>Are prices accurate?</summary>
+        <p>Prices shown are fetched live from Google Shopping and are generally accurate, but always check the retailer's website for the current price before purchasing.</p>
+      </details>
+      <details class="hiw-faq-item">
+        <summary>How does the virtual try-on work?</summary>
+        <p>You upload a photo of yourself and select an item. We send both to Fashn.ai, which composites the garment onto your image using AI. Your photo is used only for this purpose and is not stored.</p>
+      </details>
+    </div>
+  </section>
+
+  <section class="hiw-cta-section">
+    <h2>Ready to find something to wear?</h2>
+    <a href="/" class="btn-primary">Start searching</a>
+  </section>
+</article>
+{% endblock %}
