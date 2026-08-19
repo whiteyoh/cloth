@@ -717,7 +717,7 @@
   // ------------------------------------------------------------------ //
   function _trapFocus(e) {
     var modal = document.getElementById('style-canvas-modal');
-    if (!modal || modal.style.display === 'none') return;
+    if (!modal || !modal.classList.contains('is-open')) return;
 
     var focusable = modal.querySelectorAll(
       'button:not([disabled]), input:not([disabled]), textarea:not([disabled]), [tabindex="0"]'
@@ -747,7 +747,8 @@
   function _openModal(garmentUrl, garmentName) {
     var modal = document.getElementById('style-canvas-modal');
     if (!modal) return;
-    modal.style.display = '';
+    modal.classList.add('is-open');
+    modal.style.display = 'flex';
     modal._pendingUrl = garmentUrl;
     modal._pendingLabel = garmentName;
 
@@ -781,6 +782,7 @@
   function _closeModal() {
     var modal = document.getElementById('style-canvas-modal');
     if (!modal) return;
+    modal.classList.remove('is-open');
     modal.style.display = 'none';
     if (_triggerBtn && document.contains(_triggerBtn)) _triggerBtn.focus();
     _triggerBtn = null;
@@ -839,7 +841,7 @@
     // Keyboard: Escape closes; Tab stays trapped; Ctrl+Z / Ctrl+Shift+Z undo (WN-161)
     document.addEventListener('keydown', function (e) {
       var m = document.getElementById('style-canvas-modal');
-      if (!m || m.style.display === 'none') return;
+      if (!m || !m.classList.contains('is-open')) return;
       if (e.key === 'Escape') {
         _closeModal();
       } else if (e.key === 'Tab') {

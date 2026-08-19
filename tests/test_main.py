@@ -344,9 +344,10 @@ class TestOutfitsPage:
         r = client.get("/outfits")
         assert "new-outfit-btn" in r.text
 
-    def test_contains_outfits_link_in_header(self, client):
+    def test_contains_build_a_look_link_in_header(self, client):
+        """WN-238: nav reduced to logo / Build a look / Saved. Outfits link removed."""
         r = client.get("/outfits")
-        assert 'href="/outfits"' in r.text
+        assert 'href="/outfit-generator"' in r.text
 
     def test_security_headers_present(self, client):
         r = client.get("/outfits")

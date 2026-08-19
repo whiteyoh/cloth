@@ -420,7 +420,7 @@
   function updateSavedCount() {
     var count = getSavedItems().length;
     var countEl = document.getElementById('saved-count');
-    if (countEl) countEl.textContent = count;
+    if (countEl) countEl.textContent = count > 0 ? ' (' + count + ')' : '';
   }
 
   function toggleSaveItem(data) {
@@ -3955,6 +3955,71 @@
     }
   }
 
+  // WN-237: Animated search placeholder cycling
+  function initSearchPlaceholderAnimation() {
+    var span = document.getElementById('search-placeholder-animated');
+    var input = document.getElementById('q');
+    if (!span || !input) return;
+    if (span._placeholderBound) return;
+    span._placeholderBound = true;
+
+    var queries = [
+      'wool coat under £150',
+      'floral midi dress for a wedding',
+      'white linen trousers',
+      'oversized blazer for work',
+      'casual summer outfits'
+    ];
+    var idx = 0;
+    var timer = null;
+
+    function showCurrent() {
+      if (input.value.length > 0 || document.activeElement === input) {
+        span.classList.add('is-hidden');
+        return;
+      }
+      span.classList.add('is-hidden');
+      setTimeout(function () {
+        span.textContent = queries[idx];
+        span.classList.remove('is-hidden');
+      }, 300);
+    }
+
+    function cycle() {
+      span.classList.add('is-hidden');
+      setTimeout(function () {
+        idx = (idx + 1) % queries.length;
+        if (input.value.length === 0 && document.activeElement !== input) {
+          span.textContent = queries[idx];
+          span.classList.remove('is-hidden');
+        }
+      }, 300);
+    }
+
+    showCurrent();
+    timer = setInterval(cycle, 3000);
+
+    input.addEventListener('focus', function () {
+      span.classList.add('is-hidden');
+      if (timer) { clearInterval(timer); timer = null; }
+    });
+
+    input.addEventListener('blur', function () {
+      if (input.value.length === 0) {
+        showCurrent();
+        timer = setInterval(cycle, 3000);
+      }
+    });
+
+    input.addEventListener('input', function () {
+      if (input.value.length > 0) {
+        span.classList.add('is-hidden');
+      } else if (document.activeElement !== input) {
+        showCurrent();
+      }
+    });
+  }
+
   document.addEventListener('DOMContentLoaded', function () {
     // One-time init that should not repeat on SPA page swaps
     initThemeToggle();
@@ -3963,6 +4028,7 @@
     initMobileNav(); // WN-157
     initBackToTop(); // WN-158
     initOnboardingBanner(); // WN-141
+    initSearchPlaceholderAnimation(); // WN-237
 
     // Per-page init
     initPage();
