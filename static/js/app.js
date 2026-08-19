@@ -40,15 +40,15 @@
       form.addEventListener('submit', function () {
         var btn = form.querySelector('button[type="submit"]');
         if (btn) {
-          btn.dataset.originalLabel = btn.textContent;
+          btn.dataset.originalLabel = btn.innerHTML;
           btn.disabled = true;
-          btn.textContent = 'Finding options…';
+          btn.innerHTML = '<span class="spinner" aria-hidden="true"></span>';
           btn.classList.add('is-loading');
           setTimeout(function () {
-            if (btn.classList.contains('is-loading')) btn.textContent = 'Searching further…';
+            if (btn.classList.contains('is-loading')) btn.innerHTML = '<span class="spinner" aria-hidden="true"></span>';
           }, 4000);
           setTimeout(function () {
-            if (btn.classList.contains('is-loading')) btn.textContent = 'Still searching — first searches may take a moment…';
+            if (btn.classList.contains('is-loading')) btn.innerHTML = '<span class="spinner" aria-hidden="true"></span>';
           }, 10000);
         }
       });
@@ -61,8 +61,8 @@
       document.querySelectorAll('button[type="submit"].is-loading').forEach(function (btn) {
         btn.disabled = false;
         btn.classList.remove('is-loading');
-        if (btn.dataset.originalLabel) {
-          btn.textContent = btn.dataset.originalLabel;
+        if (btn.dataset.originalLabel !== undefined) {
+          btn.innerHTML = btn.dataset.originalLabel;
         }
       });
     }
@@ -1766,14 +1766,14 @@
     var btn = form.querySelector('button[type="submit"]');
     if (!btn) return;
     if (loading) {
-      btn.dataset.originalLabel = btn.textContent;
+      btn.dataset.originalLabel = btn.innerHTML;
       btn.disabled = true;
-      btn.textContent = 'Finding options…';
+      btn.innerHTML = '<span class="spinner" aria-hidden="true"></span>';
       btn.classList.add('is-loading');
     } else {
       btn.disabled = false;
       btn.classList.remove('is-loading');
-      if (btn.dataset.originalLabel) btn.textContent = btn.dataset.originalLabel;
+      if (btn.dataset.originalLabel !== undefined) btn.innerHTML = btn.dataset.originalLabel;
     }
   }
 
@@ -1800,7 +1800,7 @@
     var indicator = document.createElement('li');
     indicator.id = 'phase2-loading';
     indicator.className = 'phase2-loading';
-    indicator.textContent = 'Searching further…';
+    indicator.innerHTML = '<span class="spinner" aria-hidden="true"></span> Searching further…';
     grid.appendChild(indicator);
 
     fetch('/search?q=' + encodeURIComponent(query) + '&format=json&expand=true', {signal: _phase2Controller.signal})
@@ -1883,15 +1883,6 @@
 
     if (form) {
       setSearchButtonState(form, true);
-      // Progressive messages so a slow first search doesn't feel like a hang
-      timers.push(setTimeout(function () {
-        var btn = form.querySelector('button[type="submit"]');
-        if (btn && btn.classList.contains('is-loading')) btn.textContent = 'Searching further…';
-      }, 4000));
-      timers.push(setTimeout(function () {
-        var btn = form.querySelector('button[type="submit"]');
-        if (btn && btn.classList.contains('is-loading')) btn.textContent = 'Still searching — first searches may take a moment…';
-      }, 10000));
     }
 
     fetch(url)
@@ -2064,8 +2055,8 @@
       + '<button class="btn-outfit-move-down" data-outfit-id="' + escapeHtml(outfit.id) + '" aria-label="Move ' + escapeHtml(outfit.name) + ' down"' + (isLast ? ' disabled' : '') + '>↓</button>'
       + '<button class="btn-rename-outfit" data-outfit-id="' + escapeHtml(outfit.id) + '" aria-label="Rename outfit ' + escapeHtml(outfit.name) + '">Rename</button>'
       + '<button class="btn-share-outfit" data-outfit-id="' + escapeHtml(outfit.id) + '" aria-label="Share outfit ' + escapeHtml(outfit.name) + '">Share</button>'
-      + '<button class="btn-complete-outfit" data-outfit-id="' + escapeHtml(outfit.id) + '" aria-label="Complete outfit ' + escapeHtml(outfit.name) + '"'
-      + (outfit.items.length === 0 ? ' disabled' : '') + '>Complete this outfit</button>'
+      + '<button class="btn-complete-outfit" data-outfit-id="' + escapeHtml(outfit.id) + '" aria-label="Complete look ' + escapeHtml(outfit.name) + '"'
+      + (outfit.items.length === 0 ? ' disabled' : '') + '>Complete this look</button>'
       + '<button class="btn-open-canvas" data-outfit-id="' + escapeHtml(outfit.id) + '" '
       + 'aria-label="Open ' + escapeHtml(outfit.name) + ' in style canvas"'
       + (outfit.items.length === 0 ? ' disabled' : '') + '>Mood board</button>'
@@ -2188,7 +2179,7 @@
         if (!suggestionsEl) return;
 
         btn.disabled = true;
-        btn.textContent = 'Thinking…';
+        btn.innerHTML = '<span class="spinner" aria-hidden="true"></span>';
 
         var itemNames = outfit.items.map(function (i) { return {name: i.name}; });
 
@@ -2200,13 +2191,13 @@
           .then(function (res) { return res.json(); })
           .then(function (data) {
             btn.disabled = false;
-            btn.textContent = 'Complete this outfit';
+            btn.textContent = 'Complete this look'; // restore plain text
             if (!data.suggestions || !data.suggestions.length) {
-              suggestionsEl.innerHTML = '<p class="outfit-suggestions-empty">No suggestions available.</p>';
+              suggestionsEl.innerHTML = '<p class="outfit-suggestions-empty">No suggestions yet.</p>';
               suggestionsEl.hidden = false;
               return;
             }
-            var chipsHtml = '<p class="outfit-suggestions-label">Suggested items to complete this outfit:</p>'
+            var chipsHtml = '<p class="outfit-suggestions-label">Suggested items to complete this look:</p>'
               + '<ul class="outfit-suggestion-chips" aria-label="Outfit completion suggestions">';
             data.suggestions.forEach(function (s) {
               chipsHtml += '<li><a href="/search?q=' + encodeURIComponent(s) + '" class="example-chip">' + escapeHtml(s) + '</a></li>';
@@ -2217,8 +2208,8 @@
           })
           .catch(function () {
             btn.disabled = false;
-            btn.textContent = 'Complete this outfit';
-            suggestionsEl.innerHTML = '<p class="outfit-suggestions-empty">Suggestions unavailable.</p>';
+            btn.textContent = 'Complete this look';
+            suggestionsEl.innerHTML = '<p class="outfit-suggestions-empty">Try again.</p>';
             suggestionsEl.hidden = false;
           });
       });
@@ -2291,10 +2282,10 @@
     if (!container) return;
     var saves = _getCanvasSaves();
     if (!saves.length) {
-      container.innerHTML = '<p class="canvas-saves-empty">No saved canvases.</p>';
+      container.innerHTML = '<p class="canvas-saves-empty">No mood boards saved yet.</p>';
       return;
     }
-    var html = '<ul class="canvas-saves-list" aria-label="Saved canvases">';
+    var html = '<ul class="canvas-saves-list" aria-label="Saved mood boards">';
     saves.forEach(function (save) {
       var date = '';
       try { date = new Date(save.savedAt).toLocaleDateString(); } catch (e) { /* ignore */ }
@@ -2305,7 +2296,7 @@
         + thumbHtml
         + '<p class="canvas-save-name">' + escapeHtml(save.name) + '</p>'
         + '<p class="canvas-save-date">' + escapeHtml(date) + '</p>'
-        + '<button class="btn-open-canvas-save btn-secondary" data-save-id="' + escapeHtml(save.id) + '" aria-label="Open ' + escapeHtml(save.name) + '">Open</button>'
+        + '<button class="btn-open-canvas-save btn-secondary" data-save-id="' + escapeHtml(save.id) + '" aria-label="Open ' + escapeHtml(save.name) + '">Open board</button>'
         + '<button class="btn-delete-canvas-save" data-save-id="' + escapeHtml(save.id) + '" aria-label="Delete ' + escapeHtml(save.name) + '">Remove</button>'
         + '</li>';
     });
@@ -3847,7 +3838,7 @@
         slot.className = 'outfit-slot';
         if (!item) {
           slot.innerHTML = '<div class="outfit-slot-label">' + _CATEGORY_LABELS[cat] + '</div>' +
-            '<div class="outfit-slot-empty">No match found</div>' +
+            '<div class="outfit-slot-empty">Nothing found.</div>' +
             '<p class="outfit-slot-retry-hint">Try refining your description</p>';
         } else {
           slot.innerHTML =
@@ -3879,7 +3870,7 @@
       hideError();
       resultsEl.setAttribute('hidden', '');
       submitBtn.disabled = true;
-      submitBtn.textContent = 'Getting your look ready…';
+      submitBtn.innerHTML = '<span class="spinner" aria-hidden="true"></span> Working…';
       renderSkeletons();
       resultsEl.removeAttribute('hidden');
 
@@ -3891,7 +3882,7 @@
         .then(function (r) { return r.json().then(function (d) { return { ok: r.ok, data: d }; }); })
         .then(function (res) {
           submitBtn.disabled = false;
-          submitBtn.textContent = 'Generate outfit';
+          submitBtn.textContent = 'Build this look';
           if (!res.ok) {
             resultsEl.setAttribute('hidden', '');
             showError(res.data.error || 'Something went wrong.');
@@ -3901,7 +3892,7 @@
         })
         .catch(function () {
           submitBtn.disabled = false;
-          submitBtn.textContent = 'Generate outfit';
+          submitBtn.textContent = 'Build this look';
           resultsEl.setAttribute('hidden', '');
           showError('Unavailable. Try again.');
         });
@@ -3941,9 +3932,12 @@
         try {
           setOutfits([outfit].concat(getOutfits()));
           updateOutfitsCount();
-          saveBtn.textContent = 'Saved ✓';
+          saveBtn.innerHTML = '<span class="spinner" aria-hidden="true"></span>';
           saveBtn.disabled = true;
-          showToast('Saved to Your looks.');
+          setTimeout(function () {
+            saveBtn.textContent = 'Saved ✓';
+            showToast('Saved to Your looks.');
+          }, 200);
         } catch (e) {
           showToast('Could not save. Try again.');
         }
@@ -3961,10 +3955,10 @@
 
     var queries = [
       'wool coat under £150',
-      'floral midi dress for a wedding',
+      'outfit for a summer wedding',
       'white linen trousers',
       'oversized blazer for work',
-      'casual summer outfits'
+      'floral midi dress'
     ];
     var idx = 0;
     var timer = null;
