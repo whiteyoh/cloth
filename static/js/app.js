@@ -420,7 +420,14 @@
   function updateSavedCount() {
     var count = getSavedItems().length;
     var countEl = document.getElementById('saved-count');
-    if (countEl) countEl.textContent = count > 0 ? ' (' + count + ')' : '';
+    if (!countEl) return;
+    if (count > 0) {
+      countEl.textContent = ' (' + count + ')';
+      countEl.removeAttribute('hidden');
+    } else {
+      countEl.textContent = '';
+      countEl.setAttribute('hidden', '');
+    }
   }
 
   function toggleSaveItem(data) {
@@ -2061,7 +2068,7 @@
       + (outfit.items.length === 0 ? ' disabled' : '') + '>Complete this outfit</button>'
       + '<button class="btn-open-canvas" data-outfit-id="' + escapeHtml(outfit.id) + '" '
       + 'aria-label="Open ' + escapeHtml(outfit.name) + ' in style canvas"'
-      + (outfit.items.length === 0 ? ' disabled' : '') + '>Open in canvas</button>'
+      + (outfit.items.length === 0 ? ' disabled' : '') + '>Mood board</button>'
       + '<button class="btn-delete-outfit" data-outfit-id="' + escapeHtml(outfit.id) + '" aria-label="Delete outfit ' + escapeHtml(outfit.name) + '">Delete</button>'
       + '<button class="btn-shop-all-outfit" data-outfit-id="' + escapeHtml(outfit.id) + '" aria-label="Shop the outfit ' + escapeHtml(outfit.name) + ' — open all items"'
       + (outfit.items.length === 0 ? ' disabled' : '') + '>Shop all</button>'
@@ -2227,24 +2234,7 @@
         if (!outfit || !outfit.items.length) return;
         var itemsWithUrls = outfit.items.filter(function (i) { return i.url; });
         if (!itemsWithUrls.length) return;
-        var urls = itemsWithUrls.map(function (i) { return i.url; });
-
-        function doOpen() {
-          var anyBlocked = false;
-          urls.forEach(function (url) {
-            var w = window.open(url, '_blank', 'noopener noreferrer');
-            if (!w) anyBlocked = true;
-          });
-          if (anyBlocked) showShopAllLinks(itemsWithUrls, outfit.name);
-        }
-
-        if (urls.length > 5) {
-          showConfirm('Open ' + urls.length + ' tabs for "' + outfit.name + '"?').then(function (ok) {
-            if (ok) doOpen();
-          });
-          return;
-        }
-        doOpen();
+        showShopAllLinks(itemsWithUrls, outfit.name);
       });
     });
 
@@ -3927,9 +3917,6 @@
     if (saveBtn) {
       saveBtn.addEventListener('click', function () {
         if (!_lastItems) return;
-        var OUTFITS_KEY = 'dressme_outfits';
-        var outfits = [];
-        try { outfits = JSON.parse(localStorage.getItem(OUTFITS_KEY) || '[]'); } catch (e) { /* ignore */ }
         var items = [];
         Object.values(_lastItems).forEach(function (item) {
           if (item) items.push({
@@ -3941,16 +3928,25 @@
             url: item.purchase_url
           });
         });
+        if (!items.length) {
+          showToast('No items to save.');
+          return;
+        }
         var outfit = {
           id: Date.now().toString(36) + Math.random().toString(36).slice(2),
-          name: 'Generated: ' + (resultsTitle.textContent || '').replace(/[""]/g, '').slice(0, 40),
+          name: 'Generated: ' + (resultsTitle ? resultsTitle.textContent || '' : '').replace(/[«»""]/g, '').trim().slice(0, 40),
           createdAt: new Date().toISOString(),
           items: items
         };
-        outfits.unshift(outfit);
-        localStorage.setItem(OUTFITS_KEY, JSON.stringify(outfits));
-        updateOutfitsCount();
-        showToast('Looking good.');
+        try {
+          setOutfits([outfit].concat(getOutfits()));
+          updateOutfitsCount();
+          saveBtn.textContent = 'Saved ✓';
+          saveBtn.disabled = true;
+          showToast('Saved to Your looks.');
+        } catch (e) {
+          showToast('Could not save. Try again.');
+        }
       });
     }
   }
