@@ -348,7 +348,7 @@ class TestOutfitsPage:
 
     def test_contains_heading(self, client):
         r = client.get("/outfits")
-        assert "Outfit boards" in r.text
+        assert "Your looks" in r.text
 
     def test_contains_new_outfit_button(self, client):
         r = client.get("/outfits")

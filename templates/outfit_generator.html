@@ -1,11 +1,13 @@
 {% extends "base.html" %}
 {% block title %}Build an outfit — dress.me{% endblock %}
 {% block meta_description %}Describe a style in plain English and dress.me generates a complete outfit — shoes, trousers, shirt, jacket, accessory and headwear — instantly.{% endblock %}
+{% block og_description %}Describe any style or occasion and dress.me builds a complete outfit — top, trousers, shoes, accessories — sourced from hundreds of retailers in seconds. Free, no account needed.{% endblock %}
+{% block body_class %}page-outfit-generator{% endblock %}
 {% block content %}
 <section class="outfit-gen-page">
   <div class="outfit-gen-header">
     <h1>Build your look</h1>
-    <p class="outfit-gen-intro">Describe a style or occasion and we'll build a complete outfit for you — one item per category, sourced from across the web.</p>
+    <p class="outfit-gen-intro">Describe a style or occasion — we'll put together a complete outfit and find every piece across hundreds of retailers.</p>
   </div>
 
   {% if not llm_enabled %}

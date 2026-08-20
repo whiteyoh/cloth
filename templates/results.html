@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% block body_class %}page-results{% endblock %}
 {% block title %}{{ query }} — dress.me{% endblock %}
 {% block meta_description %}{{ result_count or '' }} results for {{ query }} — dress.me{% endblock %}
 {% block og_description %}{{ result_count or '' }} results for "{{ query }}" — find clothing across hundreds of retailers with dress.me.{% endblock %}

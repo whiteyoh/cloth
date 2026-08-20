@@ -2303,11 +2303,13 @@
   function renderCanvasSaves() {
     var container = document.getElementById('canvas-saves-container');
     if (!container) return;
+    var section = container.closest('.canvas-saves-section');
     var saves = _getCanvasSaves();
     if (!saves.length) {
-      container.innerHTML = '<p class="canvas-saves-empty">No mood boards saved yet.</p>';
+      if (section) section.hidden = true;
       return;
     }
+    if (section) section.hidden = false;
     var html = '<ul class="canvas-saves-list" aria-label="Saved mood boards">';
     saves.forEach(function (save) {
       var date = '';
