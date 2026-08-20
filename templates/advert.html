@@ -1108,6 +1108,81 @@ body::after {
   max-width: 480px;
 }
 
+/* ── MOOD BOARD SECTION ── */
+.s-moodboard {
+  display: flex;
+  align-items: center;
+  gap: 5rem;
+  padding: 9rem 6vw;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+.moodboard-copy { flex: 1; min-width: 0; }
+.moodboard-vis { flex: 1; min-width: 0; display: flex; justify-content: center; }
+
+.moodboard-mock {
+  background: var(--surf2);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 1.25rem;
+  width: 100%;
+  max-width: 340px;
+}
+.mb-label {
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 0.75rem;
+}
+.mb-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: auto auto;
+  gap: 0.4rem;
+}
+.mb-col {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+.mb-item {
+  border-radius: 8px;
+  position: relative;
+  overflow: hidden;
+}
+.mb-item--tall { grid-row: span 2; min-height: 160px; }
+.mb-item--wide { grid-column: span 2; min-height: 60px; }
+.mb-item--1 { background: linear-gradient(160deg, #2A3A5A 0%, #1A2840 100%); }
+.mb-item--2 { background: linear-gradient(160deg, #3A3030 0%, #201818 100%); min-height: 74px; }
+.mb-item--3 { background: linear-gradient(160deg, #2A3A28 0%, #182218 100%); min-height: 74px; }
+.mb-item--4 { background: linear-gradient(160deg, #2E2A20 0%, #1C180E 100%); }
+.mb-tag {
+  position: absolute;
+  bottom: 0.4rem;
+  left: 0.4rem;
+  font-size: 0.52rem;
+  font-weight: 600;
+  color: rgba(237,232,224,0.75);
+  background: rgba(6,5,4,0.55);
+  padding: 0.15rem 0.4rem;
+  border-radius: 4px;
+  letter-spacing: 0.04em;
+}
+.mb-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 0.75rem;
+}
+.mb-total { font-size: 0.62rem; color: var(--muted); }
+.mb-share { font-size: 0.62rem; color: var(--accent); letter-spacing: 0.04em; }
+
+@media (max-width: 768px) {
+  .s-moodboard { flex-direction: column; gap: 3rem; padding: 5rem 6vw; }
+}
+
   </style>
 </head>
 <body>
@@ -1329,6 +1404,47 @@ body::after {
   </div>
 </section>
 
+
+<!-- ════════ MOOD BOARD ════════ -->
+<section class="s-moodboard" data-s>
+  <div class="moodboard-copy">
+    <span class="eyebrow fi">Build a look</span>
+    <h2 class="feat-headline">
+      <div class="r"><span class="ri">Your own</span></div>
+      <div class="r"><span class="ri d1"><em>shop window.</em></span></div>
+    </h2>
+    <p class="feat-body fi d2">
+      Save pieces from any retailer and arrange them into a mood board. See how everything works together before you buy — like walking past a shop window and saying "yes, that whole look."
+    </p>
+    <a href="/start" class="btn-primary fi d3">Start building →</a>
+  </div>
+
+  <div class="moodboard-vis fi d1" aria-hidden="true">
+    <div class="moodboard-mock">
+      <div class="mb-label">Weekend mood</div>
+      <div class="mb-grid">
+        <div class="mb-item mb-item--tall mb-item--1">
+          <div class="mb-tag">ASOS · £89</div>
+        </div>
+        <div class="mb-col">
+          <div class="mb-item mb-item--2">
+            <div class="mb-tag">Zara · £49</div>
+          </div>
+          <div class="mb-item mb-item--3">
+            <div class="mb-tag">M&amp;S · £35</div>
+          </div>
+        </div>
+        <div class="mb-item mb-item--wide mb-item--4">
+          <div class="mb-tag">John Lewis · £79</div>
+        </div>
+      </div>
+      <div class="mb-footer">
+        <span class="mb-total">4 items · 3 retailers</span>
+        <span class="mb-share">↗ Share look</span>
+      </div>
+    </div>
+  </div>
+</section>
 
 <!-- ════════ PROOF ════════ -->
 <section class="s-proof" data-s>

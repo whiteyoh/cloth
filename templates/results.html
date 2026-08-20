@@ -41,6 +41,11 @@
   {% endif %}
 </section>
 
+<form class="results-search-again" method="get" action="/search" aria-label="Search again">
+  <input type="text" name="q" value="{{ query|e }}" aria-label="Refine your search query" maxlength="500" autocomplete="off">
+  <button type="submit" class="btn-secondary">Search</button>
+</form>
+
 {% if products %}
 <div class="filter-sort-bar" id="filter-sort-bar" aria-label="Filter and sort results">
   <div class="color-filter-group" role="group" aria-label="Color filter">
@@ -158,7 +163,7 @@
   {% include "card.html" %}
   {% endfor %}
 </ul>
-{% if result_count == 10 %}
+{% if result_count is not none and result_count >= 10 %}
 <div class="load-more-wrap" id="load-more-wrap">
   <button type="button" class="btn-load-more" id="btn-load-more"
           data-query="{{ query|e }}" data-next-start="10">Load more results</button>
