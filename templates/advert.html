@@ -605,21 +605,21 @@ body::after {
 
 
 <!-- ════════ PROOF ════════ -->
-<section class="s-proof" data-s>
-  <span class="eyebrow fi">By the numbers</span>
+<section class="s-proof">
+  <span class="eyebrow">By the numbers</span>
 
   <div class="proof-stats">
     <div class="stat">
-      <div class="stat-num fi">100<span class="a">s</span></div>
-      <span class="stat-lbl fi d1">of retailers searched</span>
+      <div class="stat-num">100<span class="a">s</span></div>
+      <span class="stat-lbl">of retailers searched</span>
     </div>
     <div class="stat">
-      <div class="stat-num fi d1">1<span class="a">×</span></div>
-      <span class="stat-lbl fi d2">search. that's it.</span>
+      <div class="stat-num">1<span class="a">×</span></div>
+      <span class="stat-lbl">search. that's it.</span>
     </div>
     <div class="stat">
-      <div class="stat-num fi d2">£<span class="a">0</span></div>
-      <span class="stat-lbl fi d3">free. always.</span>
+      <div class="stat-num">£<span class="a">0</span></div>
+      <span class="stat-lbl">free. always.</span>
     </div>
   </div>
 </section>
@@ -627,17 +627,16 @@ body::after {
 
 
 <!-- ════════ CTA ════════ -->
-<section class="s-cta" data-s>
+<section class="s-cta">
   <div class="cta-glow" aria-hidden="true"></div>
   <h2 class="cta-headline">
-    <div class="r"><span class="ri">Stop browsing.</span></div>
-    <div class="r"><span class="ri d1"><em>Start wearing.</em></span></div>
+    Stop browsing.<br><em>Start wearing.</em>
   </h2>
-  <div class="cta-buttons fi d2">
+  <div class="cta-buttons">
     <a href="/start" class="btn-primary">Find your look now →</a>
     <a href="/how-it-works" class="btn-ghost">How it works</a>
   </div>
-  <div class="cta-trust fi d3">
+  <div class="cta-trust">
     <span>Free to use</span>
     <span>No sign-up</span>
     <span>Your data stays yours</span>
@@ -675,19 +674,6 @@ body::after {
     nav.classList.toggle('show', visible);
   }, { threshold: 0.15 }).observe(hero);
 
-// ── CTA constellation dots ──
-  const dotsContainer = document.getElementById('cta-dots');
-  for (let i = 0; i < 18; i++) {
-    const d = document.createElement('div');
-    d.className = 'cta-dot';
-    d.style.cssText = [
-      `left:${Math.random() * 100}%`,
-      `top:${Math.random() * 100}%`,
-      `--dur:${3 + Math.random() * 5}s`,
-      `--delay:${Math.random() * 6}s`,
-    ].join(';');
-    dotsContainer.appendChild(d);
-  }
 </script>
 
 </body>
