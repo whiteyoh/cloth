@@ -952,6 +952,8 @@ h6 { font-size: var(--text-base); }
   margin-top: 0.3rem;
 }
 
+.product-card-actions .card-action-secondary { display: none; }
+
 @media (hover: hover) and (pointer: fine) {
   .product-card-actions {
     position: absolute;

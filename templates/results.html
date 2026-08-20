@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block title %}{{ query }} — dress.me{% endblock %}
 {% block meta_description %}{{ result_count or '' }} results for {{ query }} — dress.me{% endblock %}
-{% block og_description %}{{ result_count or '' }} results for "{{ query }}" — find clothing across the web with Cloth.{% endblock %}
+{% block og_description %}{{ result_count or '' }} results for "{{ query }}" — find clothing across hundreds of retailers with dress.me.{% endblock %}
 {% block content %}
 <div id="results-region">
 <section class="results-header" data-query="{{ query|e }}">
@@ -16,7 +16,7 @@
   {% if cache_age_minutes is defined and cache_age_minutes is not none %}
   <p class="meta">
     {% if cache_age_minutes == 0 %}
-      Fetched now &middot;
+      Just fetched &middot;
     {% elif cache_age_minutes == 1 %}
       Results from 1 minute ago &middot;
     {% elif cache_age_minutes < 60 %}
@@ -29,7 +29,7 @@
     <a href="/search?q={{ query|urlencode }}&amp;fresh=true">Refresh</a>
   </p>
   {% elif retrieved_at %}
-  <p class="meta">Retrieved {{ retrieved_at.strftime('%d %b %Y, %H:%M') }} UTC &middot;
+  <p class="meta">Results from {{ retrieved_at.strftime('%d %b %Y') }} &middot;
     <a href="/search?q={{ query|urlencode }}&amp;fresh=true">Refresh</a>
   </p>
   {% endif %}
@@ -41,20 +41,10 @@
   {% endif %}
 </section>
 
-{% if refine_enabled and products %}
-<div class="refine-bar" id="refine-bar" aria-label="Refine your search">
-  <label for="refine-input" class="filter-label">Refine:</label>
-  <input type="text" id="refine-input" class="refine-input"
-         placeholder="colour, price, brand..."
-         aria-label="Refine search results" maxlength="200">
-  <button type="button" id="refine-btn" class="btn-secondary">Refine</button>
-  <span class="refine-status" id="refine-status" aria-live="polite"></span>
-</div>
-{% endif %}
 {% if products %}
 <div class="filter-sort-bar" id="filter-sort-bar" aria-label="Filter and sort results">
   <div class="color-filter-group" role="group" aria-label="Color filter">
-    <span class="filter-label">Color:</span>
+    <span class="filter-label">Colour:</span>
     <div class="filter-chips color-chips">
       <button type="button" class="filter-chip color-chip" data-color="Black" aria-pressed="false"><span class="color-swatch" style="background:#222" aria-hidden="true"></span>Black</button>
       <button type="button" class="filter-chip color-chip" data-color="White" aria-pressed="false"><span class="color-swatch" style="background:#f5f5f5;border:1px solid #ccc" aria-hidden="true"></span>White</button>

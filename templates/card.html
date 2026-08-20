@@ -44,7 +44,7 @@
       <button class="btn-card-more"
               aria-label="More options for {{ product.name|e }}"
               title="More options">&#8943;</button>
-      <button class="btn-copy-link"
+      <button class="btn-copy-link card-action-secondary"
               data-url="{{ product.purchase_url }}"
               aria-label="Copy link to {{ product.name }}">Copy link</button>
       <button class="btn-save"
@@ -65,13 +65,13 @@
               data-url="{{ product.purchase_url }}"
               aria-label="Add {{ product.name }} to outfit">+ Outfit</button>
       <a href="/search?q={{ product.name|truncate(60, True, '')|urlencode }}"
-         class="btn-find-similar"
+         class="btn-find-similar card-action-secondary"
          aria-label="Find items similar to {{ product.name }}">Find similar</a>
-      <button class="btn-style-it"
+      <button class="btn-style-it card-action-secondary"
               data-garment-url="{{ product.image_url|default('')|e }}"
               data-garment-name="{{ product.name|e }}"
               aria-label="Style {{ product.name }} on canvas">Style it</button>
-      <button class="btn-compare"
+      <button class="btn-compare card-action-secondary"
               data-id="{{ product.id }}"
               data-name="{{ product.name|e }}"
               data-price="{{ product.price_display or '' }}"
@@ -80,7 +80,7 @@
               data-url="{{ product.purchase_url }}"
               aria-label="Compare {{ product.name }}"
               aria-pressed="false">Compare</button>
-      <button class="btn-add-to-list"
+      <button class="btn-add-to-list card-action-secondary"
               data-id="{{ product.id }}"
               data-name="{{ product.name|e }}"
               data-price="{{ product.price_display or '' }}"
