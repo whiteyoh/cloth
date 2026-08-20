@@ -332,316 +332,12 @@ body::after {
 .mock-count { text-align: center; font-size: 0.62rem; color: var(--muted); margin-top: 0.8rem; }
 
 /* ══════════════════════════════════════════════
-   SCENE 2 — WORD SLAM
-   Left-aligned editorial typography.
-   Three words. Maximum impact.
-   ══════════════════════════════════════════════ */
-.s-words {
-  min-height: 100dvh;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  padding: 8vh 8vw;
-  border-bottom: 1px solid var(--border);
-  position: relative;
-  overflow: hidden;
-}
-
-.words-bg {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(135deg, #0B0906 0%, var(--bg) 100%);
-}
-
-.words-inner { position: relative; z-index: 1; }
-
-.word-row {
-  display: block;
-  overflow: hidden;
-}
-
-.word-text {
-  display: block;
-  font-family: 'Playfair Display', Georgia, serif;
-  font-size: clamp(4.5rem, 13vw, 11rem);
-  font-weight: 900;
-  font-style: italic;
-  line-height: 1.0;
-  letter-spacing: -0.04em;
-  transform: translateY(110%);
-  transition: transform 1.05s var(--ease);
-  will-change: transform;
-}
-.word-accent { color: var(--accent); }
-
-[data-s].iv .word-text { transform: translateY(0); }
-
-.words-body {
-  margin-top: 3rem;
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 2rem;
-  max-width: 900px;
-}
-
-.word-fact {
-  border-top: 1px solid var(--border);
-  padding-top: 1rem;
-}
-.word-fact-label {
-  font-size: 0.6rem;
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
-  color: var(--accent);
-  font-weight: 600;
-  display: block;
-  margin-bottom: 0.5rem;
-}
-.word-fact-text {
-  font-size: 0.88rem;
-  color: var(--muted);
-  line-height: 1.65;
-}
-
-/* ══════════════════════════════════════════════
-   SCENE 4 — TRY-ON
-   SVG figure art: before/after with proper craft.
-   ══════════════════════════════════════════════ */
-.s-tryon {
-  min-height: 100dvh;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  align-items: center;
-  border-bottom: 1px solid var(--border);
-}
-
-.tryon-vis {
-  background: #07090F;
-  min-height: 60vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 5vw;
-  position: relative;
-  overflow: hidden;
-}
-
-.tryon-vis::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(ellipse 80% 70% at 50% 60%, #0D1528 0%, #07090F 100%);
-}
-
-.tryon-stage {
-  display: flex;
-  align-items: flex-end;
-  gap: 0.9rem;
-  position: relative;
-  z-index: 1;
-}
-
-.tryon-card {
-  width: 136px;
-  border-radius: 20px;
-  overflow: hidden;
-  box-shadow: 0 24px 60px rgba(0,0,0,0.55);
-  flex-shrink: 0;
-}
-.tryon-card-b {
-  background: #10131E;
-  border: 1px solid rgba(255,255,255,0.05);
-}
-.tryon-card-a {
-  background: #0E1626;
-  border: 1px solid rgba(80,130,210,0.18);
-  box-shadow: 0 24px 60px rgba(0,0,0,0.55), 0 0 60px rgba(60,100,200,0.08);
-}
-
-.tryon-card-body {
-  aspect-ratio: 9/13;
-  position: relative;
-  overflow: hidden;
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-  padding-bottom: 1rem;
-}
-
-/* SVG person figures */
-.person-svg { width: 68%; position: relative; z-index: 1; }
-
-.tryon-card-label {
-  padding: 0.55rem 0.6rem;
-  font-size: 0.52rem;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--muted);
-  border-top: 1px solid rgba(255,255,255,0.05);
-  text-align: center;
-  background: rgba(0,0,0,0.25);
-}
-.tryon-card-a .tryon-card-label { color: #7AABEE; }
-
-.tryon-arrow {
-  width: 34px; height: 34px;
-  background: var(--accent);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--bg);
-  font-size: 0.85rem;
-  align-self: center;
-  flex-shrink: 0;
-  box-shadow: 0 4px 22px rgba(196,149,90,0.4);
-}
-
-.tryon-copy { padding: 6vw 8vw 6vw 6vw; }
-
-.feat-headline {
-  font-family: 'Playfair Display', Georgia, serif;
-  font-size: clamp(2rem, 4vw, 3.2rem);
-  font-weight: 700;
-  line-height: 1.15;
-  letter-spacing: -0.02em;
-  margin: 1.25rem 0 1.25rem;
-}
-.feat-headline em { font-style: italic; color: var(--accent); }
-
-.feat-body {
-  font-size: 1rem;
-  line-height: 1.82;
-  color: var(--muted);
-  max-width: 40ch;
-}
-
-.feat-note {
-  margin-top: 1.5rem;
-  font-size: 0.7rem;
-  color: var(--dim);
-  display: flex;
-  align-items: flex-start;
-  gap: 0.5rem;
-  max-width: 36ch;
-  line-height: 1.55;
-}
-.feat-note-icon {
-  width: 14px; height: 14px;
-  border-radius: 50%;
-  border: 1px solid var(--dim);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.52rem;
-  flex-shrink: 0;
-  margin-top: 1px;
-  color: var(--muted);
-}
-
-/* ══════════════════════════════════════════════
-   SCENE 5 — OUTFITS
-   ══════════════════════════════════════════════ */
-.s-outfits {
-  min-height: 100dvh;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  align-items: center;
-  border-bottom: 1px solid var(--border);
-}
-
-.outfits-copy { padding: 6vw 6vw 6vw 8vw; }
-
-.outfits-vis {
-  background: #080A07;
-  min-height: 60vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 5vw;
-}
-
-.outfit-mock {
-  width: 100%;
-  max-width: 290px;
-  background: var(--surf);
-  border-radius: 16px;
-  padding: 1.15rem;
-  border: 1px solid var(--border);
-  box-shadow: 0 36px 72px rgba(0,0,0,0.45);
-}
-
-.om-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 0.85rem;
-}
-.om-title { font-size: 0.65rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; }
-.om-share { font-size: 0.58rem; color: var(--accent); letter-spacing: 0.06em; text-transform: uppercase; }
-
-.om-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.42rem; }
-.om-cell {
-  border-radius: 10px;
-  background: var(--surf2);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-  overflow: hidden;
-  padding: 0.4rem;
-}
-.om-cell:nth-child(1) { grid-column: 1/-1; aspect-ratio: 2/1; }
-.om-cell:nth-child(2), .om-cell:nth-child(3) { aspect-ratio: 1; }
-.om-cell:nth-child(4) { grid-column: 1/-1; aspect-ratio: 16/5; font-size: 1.4rem; }
-
-.om-badge {
-  position: absolute;
-  bottom: 0.32rem; right: 0.32rem;
-  font-size: 0.46rem;
-  font-family: 'Inter', sans-serif;
-  background: rgba(196,149,90,0.92);
-  color: var(--bg);
-  padding: 0.14rem 0.36rem;
-  border-radius: 100px;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-}
-
-.om-ai {
-  margin-top: 0.8rem;
-  padding: 0.58rem 0.75rem;
-  background: rgba(196,149,90,0.06);
-  border: 1px solid rgba(196,149,90,0.15);
-  border-radius: 8px;
-  font-size: 0.6rem;
-  color: var(--gold);
-  display: flex;
-  gap: 0.48rem;
-  line-height: 1.55;
-}
-.om-ai-dot {
-  width: 13px; height: 13px;
-  border-radius: 50%;
-  background: var(--accent);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.48rem;
-  flex-shrink: 0;
-  margin-top: 1px;
-  color: var(--bg);
-}
-
-/* ══════════════════════════════════════════════
-   SCENE 6 — PROOF
+   SCENE 2 — PROOF
    Numbers
    ══════════════════════════════════════════════ */
 .s-proof {
   padding: 10vh 6vw 8vh;
   text-align: center;
-  border-bottom: 1px solid var(--border);
 }
 
 .proof-stats {
@@ -650,8 +346,6 @@ body::after {
   gap: clamp(3rem, 8vw, 8rem);
   flex-wrap: wrap;
   margin-top: 4rem;
-  padding-bottom: 5rem;
-  border-bottom: 1px solid var(--border);
 }
 
 .stat { text-align: center; }
@@ -680,15 +374,15 @@ body::after {
    Rule: Clear action + urgency + consistent brand
    ══════════════════════════════════════════════ */
 .s-cta {
-  min-height: 100dvh;
   position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 10vh 6vw;
+  padding: 8rem 6vw 7rem;
   text-align: center;
   overflow: hidden;
+  border-top: 1px solid var(--border);
 }
 
 /* Animated radial glow — moves slowly for depth */
@@ -706,85 +400,19 @@ body::after {
   75%      { --gx: 46%; --gy: 54%; }
 }
 
-/* Subtle constellation dots */
-.cta-dots {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  overflow: hidden;
-}
-.cta-dot {
-  position: absolute;
-  width: 1px; height: 1px;
-  border-radius: 50%;
-  background: var(--accent);
-  opacity: 0;
-  animation: twinkle var(--dur, 4s) ease-in-out var(--delay, 0s) infinite;
-}
-@keyframes twinkle {
-  0%,100% { opacity: 0; transform: scale(1); }
-  50%      { opacity: 0.4; transform: scale(2); }
-}
-
-.cta-wordmark {
-  position: relative; z-index: 1;
-  font-size: 0.85rem;
-  font-weight: 800;
-  letter-spacing: -0.025em;
-  color: rgba(237,232,224,0.2);
-  margin-bottom: 2.5rem;
-}
-.cta-wordmark span { color: rgba(196,149,90,0.4); }
-
 .cta-headline {
   position: relative; z-index: 1;
   font-family: 'Playfair Display', Georgia, serif;
-  font-size: clamp(4rem, 13vw, 11rem);
+  font-size: clamp(2.8rem, 7vw, 5.5rem);
   font-weight: 900;
-  line-height: 0.92;
-  letter-spacing: -0.045em;
+  line-height: 1.05;
+  letter-spacing: -0.03em;
 }
 .cta-headline em {
   display: block;
   font-style: italic;
   font-weight: 700;
   color: var(--accent);
-}
-
-.cta-sub {
-  position: relative; z-index: 1;
-  font-size: clamp(0.95rem, 2vw, 1.1rem);
-  color: var(--muted);
-  margin-top: 2rem;
-  line-height: 1.7;
-  max-width: 44ch;
-}
-
-/* Urgency pill — removes reason to delay */
-.cta-urgency {
-  position: relative; z-index: 1;
-  margin-top: 1.5rem;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.5rem 1.2rem;
-  border-radius: 100px;
-  border: 1px solid rgba(196,149,90,0.22);
-  background: rgba(196,149,90,0.07);
-  font-size: 0.7rem;
-  font-weight: 600;
-  color: var(--gold);
-  letter-spacing: 0.04em;
-}
-.urgency-dot {
-  width: 6px; height: 6px;
-  border-radius: 50%;
-  background: var(--accent);
-  animation: urgencyPulse 2s ease-in-out infinite;
-}
-@keyframes urgencyPulse {
-  0%,100% { opacity: 1; transform: scale(1); }
-  50%      { opacity: 0.5; transform: scale(0.7); }
 }
 
 .cta-buttons {
@@ -857,28 +485,14 @@ body::after {
 
 /* ── RESPONSIVE ── */
 @media (max-width: 900px) {
-  .s-hook    { grid-template-columns: 1fr; }
-  .s-tryon   { grid-template-columns: 1fr; }
-  .s-outfits { grid-template-columns: 1fr; }
+  .s-hook { grid-template-columns: 1fr; }
 
   .hook-left  { padding: 5rem 2rem 2rem; }
   .hook-right { padding: 2rem 2rem 4rem; }
-
-  .tryon-vis  { min-height: 55vw; padding: 3rem 2rem; }
-  .tryon-copy { padding: 3rem 2rem; }
-  .feat-body  { max-width: 100%; }
-
-  .outfits-vis  { min-height: 55vw; padding: 3rem 2rem; order: -1; }
-  .outfits-copy { padding: 3rem 2rem; }
-
-  .words-body { grid-template-columns: 1fr; gap: 1.25rem; }
-
-  .s-words { padding: 6vh 6vw; }
 }
 
 @media (max-width: 540px) {
   .proof-stats { gap: 2.5rem; }
-  .cta-headline { font-size: clamp(3.5rem, 16vw, 7rem); }
   /* Hide the floating search mock on small phones — keeps hero tight and removes float overflow */
   .hook-right { display: none; }
   .s-hook { grid-template-columns: 1fr; min-height: auto; padding-bottom: 5rem; }
@@ -887,96 +501,6 @@ body::after {
 
 @media (max-width: 600px) {
   .s-footer { flex-direction: column; align-items: flex-start; gap: 1.5rem; }
-}
-
-/* ── RESULTS SECTION ── */
-.s-results {
-  display: flex;
-  align-items: center;
-  gap: 5rem;
-  padding: 9rem 6vw;
-  max-width: 1100px;
-  margin: 0 auto;
-  flex-direction: row-reverse;
-}
-.results-copy { flex: 1; min-width: 0; }
-.results-vis { flex: 1; min-width: 0; display: flex; justify-content: center; }
-
-.results-mock {
-  background: var(--surf2);
-  border: 1px solid var(--border);
-  border-radius: 16px;
-  padding: 1.25rem;
-  width: 100%;
-  max-width: 340px;
-}
-.rm-filter-bar {
-  display: flex;
-  gap: 0.4rem;
-  flex-wrap: wrap;
-  margin-bottom: 1rem;
-}
-.rm-chip {
-  font-size: 0.65rem;
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  padding: 0.25rem 0.6rem;
-  border-radius: 99px;
-  border: 1px solid var(--border);
-  color: var(--muted);
-}
-.rm-chip--active { border-color: var(--accent); color: var(--accent); }
-.rm-chip--more { color: var(--muted); }
-.rm-grid { display: flex; flex-direction: column; gap: 0.5rem; }
-.rm-card {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  background: var(--surf);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 0.6rem 0.75rem;
-  position: relative;
-}
-.rm-card--saved { border-color: rgba(196,149,90,0.4); }
-.rm-card-img {
-  width: 42px;
-  height: 52px;
-  border-radius: 6px;
-  flex-shrink: 0;
-}
-.rm-card-img--1 { background: linear-gradient(135deg, #2A3A5A, #1A2840); }
-.rm-card-img--2 { background: linear-gradient(135deg, #3A2A1A, #2A1A0A); }
-.rm-card-img--3 { background: linear-gradient(135deg, #1A3A2A, #0A2A1A); }
-.rm-card-info { display: flex; flex-direction: column; gap: 0.15rem; flex: 1; }
-.rm-card-name { font-size: 0.72rem; font-weight: 600; color: var(--fg); }
-.rm-card-shop { font-size: 0.62rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; }
-.rm-card-price { font-size: 0.72rem; font-weight: 700; color: var(--gold); }
-.rm-card-save { font-size: 0.9rem; color: var(--dim); cursor: default; }
-.rm-card-save--active { color: var(--accent); }
-.rm-count { font-size: 0.62rem; color: var(--muted); text-align: center; margin-top: 0.75rem; }
-
-@media (max-width: 768px) {
-  .s-results { flex-direction: column; gap: 3rem; padding: 5rem 6vw; }
-}
-
-/* ── OUTFIT MOCK IMAGES ── */
-.om-img {
-  position: absolute;
-  top: 0; left: 0;
-  width: 100%;
-  height: 100%;
-  border-radius: 10px;
-}
-.om-img--1 { background: linear-gradient(160deg, #2A4060 0%, #1A2840 100%); }
-.om-img--2 { background: linear-gradient(160deg, #3A3030 0%, #201818 100%); }
-.om-img--3 { background: linear-gradient(160deg, #2A3A28 0%, #182218 100%); }
-.om-img--4 { background: linear-gradient(160deg, #3A2A18 0%, #221608 100%); }
-
-/* ── MID-SCROLL CTA ── */
-.s-midcta {
-  text-align: center;
-  padding: 1rem 6vw 4rem;
 }
 
 /* ── FOOTER NAV ── */
@@ -998,81 +522,6 @@ body::after {
   color: var(--dim);
   margin-top: 1rem;
   max-width: 480px;
-}
-
-/* ── MOOD BOARD SECTION ── */
-.s-moodboard {
-  display: flex;
-  align-items: center;
-  gap: 5rem;
-  padding: 9rem 6vw;
-  max-width: 1100px;
-  margin: 0 auto;
-}
-.moodboard-copy { flex: 1; min-width: 0; }
-.moodboard-vis { flex: 1; min-width: 0; display: flex; justify-content: center; }
-
-.moodboard-mock {
-  background: var(--surf2);
-  border: 1px solid var(--border);
-  border-radius: 16px;
-  padding: 1.25rem;
-  width: 100%;
-  max-width: 340px;
-}
-.mb-label {
-  font-size: 0.65rem;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--muted);
-  margin-bottom: 0.75rem;
-}
-.mb-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  grid-template-rows: auto auto;
-  gap: 0.4rem;
-}
-.mb-col {
-  display: flex;
-  flex-direction: column;
-  gap: 0.4rem;
-}
-.mb-item {
-  border-radius: 8px;
-  position: relative;
-  overflow: hidden;
-}
-.mb-item--tall { grid-row: span 2; min-height: 160px; }
-.mb-item--wide { grid-column: span 2; min-height: 60px; }
-.mb-item--1 { background: linear-gradient(160deg, #2A3A5A 0%, #1A2840 100%); }
-.mb-item--2 { background: linear-gradient(160deg, #3A3030 0%, #201818 100%); min-height: 74px; }
-.mb-item--3 { background: linear-gradient(160deg, #2A3A28 0%, #182218 100%); min-height: 74px; }
-.mb-item--4 { background: linear-gradient(160deg, #2E2A20 0%, #1C180E 100%); }
-.mb-tag {
-  position: absolute;
-  bottom: 0.4rem;
-  left: 0.4rem;
-  font-size: 0.52rem;
-  font-weight: 600;
-  color: rgba(237,232,224,0.75);
-  background: rgba(6,5,4,0.55);
-  padding: 0.15rem 0.4rem;
-  border-radius: 4px;
-  letter-spacing: 0.04em;
-}
-.mb-footer {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-top: 0.75rem;
-}
-.mb-total { font-size: 0.62rem; color: var(--muted); }
-.mb-share { font-size: 0.62rem; color: var(--accent); letter-spacing: 0.04em; }
-
-@media (max-width: 768px) {
-  .s-moodboard { flex-direction: column; gap: 3rem; padding: 5rem 6vw; }
 }
 
   </style>
@@ -1155,170 +604,6 @@ body::after {
 
 
 
-<!-- ════════ WORD SLAM ════════ -->
-<!-- Describe. Find. Wear. — simple words, maximum drama -->
-<section class="s-words" data-s>
-  <div class="words-bg" aria-hidden="true"></div>
-  <div class="words-inner">
-    <div class="word-row"><span class="word-text d1">Describe.</span></div>
-    <div class="word-row"><span class="word-text d2">Find.</span></div>
-    <div class="word-row"><span class="word-text word-accent d3">Wear.</span></div>
-
-    <div class="words-body" aria-label="How dress.me works">
-      <div class="word-fact fi d4">
-        <span class="word-fact-label">Plain English</span>
-        <span class="word-fact-text">Type exactly what's in your head. "Floral midi dress for a summer wedding." AI does the rest.</span>
-      </div>
-      <div class="word-fact fi d5">
-        <span class="word-fact-label">Hundreds of retailers</span>
-        <span class="word-fact-text">ASOS, Zara, M&amp;S, Farfetch, John Lewis and hundreds more — searched in seconds.</span>
-      </div>
-      <div class="word-fact fi d6">
-        <span class="word-fact-label">Free. Always.</span>
-        <span class="word-fact-text">No account. No subscription. We earn a small commission only when you buy — never from you.</span>
-      </div>
-    </div>
-  </div>
-</section>
-
-
-
-
-<!-- ════════ MOOD BOARD ════════ -->
-<section class="s-moodboard" data-s>
-  <div class="moodboard-copy">
-    <span class="eyebrow fi">Build a look</span>
-    <h2 class="feat-headline">
-      <div class="r"><span class="ri">Your own</span></div>
-      <div class="r"><span class="ri d1"><em>shop window.</em></span></div>
-    </h2>
-    <p class="feat-body fi d2">
-      Save pieces from any retailer and arrange them into a mood board. See how everything works together before you buy — like walking past a shop window and saying "yes, that whole look."
-    </p>
-    <a href="/start" class="btn-primary fi d3">Start building →</a>
-  </div>
-
-  <div class="moodboard-vis fi d1" aria-hidden="true">
-    <div class="moodboard-mock">
-      <div class="mb-label">Weekend mood</div>
-      <div class="mb-grid">
-        <div class="mb-item mb-item--tall mb-item--1">
-          <div class="mb-tag">ASOS · £89</div>
-        </div>
-        <div class="mb-col">
-          <div class="mb-item mb-item--2">
-            <div class="mb-tag">Zara · £49</div>
-          </div>
-          <div class="mb-item mb-item--3">
-            <div class="mb-tag">M&amp;S · £35</div>
-          </div>
-        </div>
-        <div class="mb-item mb-item--wide mb-item--4">
-          <div class="mb-tag">John Lewis · £79</div>
-        </div>
-      </div>
-      <div class="mb-footer">
-        <span class="mb-total">4 items · 3 retailers</span>
-        <span class="mb-share">↗ Share look</span>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- Mid-scroll CTA — fires after mood board, before feature detail -->
-<div class="s-midcta" data-s>
-  <a href="/start" class="btn-primary fi">Find your look now →</a>
-</div>
-
-<!-- ════════ RESULTS ════════ -->
-<section class="s-results" data-s>
-  <div class="results-copy">
-    <span class="eyebrow fi">What you get</span>
-    <h2 class="feat-headline">
-      <div class="r"><span class="ri">Filtered.</span></div>
-      <div class="r"><span class="ri d1"><em>Ranked. Ready.</em></span></div>
-    </h2>
-    <p class="feat-body fi d2">
-      Filter by colour, price, size, and retailer. Save anything you like with one tap. The AI refines your results as you go.
-    </p>
-  </div>
-
-  <div class="results-vis fi d1" aria-hidden="true">
-    <div class="results-mock">
-      <div class="rm-filter-bar">
-        <span class="rm-chip rm-chip--active">Navy</span>
-        <span class="rm-chip">Under £100</span>
-        <span class="rm-chip">Size 12</span>
-        <span class="rm-chip rm-chip--more">+ More</span>
-      </div>
-      <div class="rm-grid">
-        <div class="rm-card">
-          <div class="rm-card-img rm-card-img--1"></div>
-          <div class="rm-card-info">
-            <span class="rm-card-name">Wool Blend Coat</span>
-            <span class="rm-card-shop">John Lewis</span>
-            <span class="rm-card-price">£89</span>
-          </div>
-          <div class="rm-card-save">♥</div>
-        </div>
-        <div class="rm-card">
-          <div class="rm-card-img rm-card-img--2"></div>
-          <div class="rm-card-info">
-            <span class="rm-card-name">Oversized Trench</span>
-            <span class="rm-card-shop">ASOS</span>
-            <span class="rm-card-price">£65</span>
-          </div>
-          <div class="rm-card-save">♥</div>
-        </div>
-        <div class="rm-card rm-card--saved">
-          <div class="rm-card-img rm-card-img--3"></div>
-          <div class="rm-card-info">
-            <span class="rm-card-name">Belted Midi Coat</span>
-            <span class="rm-card-shop">M&amp;S</span>
-            <span class="rm-card-price">£79</span>
-          </div>
-          <div class="rm-card-save rm-card-save--active">♥</div>
-        </div>
-      </div>
-      <p class="rm-count">248 results from 43 retailers</p>
-    </div>
-  </div>
-</section>
-
-<!-- ════════ OUTFITS ════════ -->
-<section class="s-outfits" data-s>
-  <div class="outfits-copy">
-    <span class="eyebrow fi">Build a look</span>
-    <h2 class="feat-headline">
-      <div class="r"><span class="ri">Complete outfit.</span></div>
-      <div class="r"><span class="ri d1"><em>One link to share.</em></span></div>
-    </h2>
-    <p class="feat-body fi d2">
-      Save items as you find them. Group them into outfit boards. Ask the AI what completes the look. Share with anyone via a single link — no account required.
-    </p>
-  </div>
-
-  <div class="outfits-vis fi d1" aria-hidden="true">
-    <div class="outfit-mock">
-      <div class="om-header">
-        <span class="om-title">Weekend look</span>
-        <span class="om-share">↗ Share link</span>
-      </div>
-      <div class="om-grid">
-        <div class="om-cell"><div class="om-img om-img--1"></div><span class="om-badge">Saved</span></div>
-        <div class="om-cell"><div class="om-img om-img--2"></div><span class="om-badge">Saved</span></div>
-        <div class="om-cell"><div class="om-img om-img--3"></div><span class="om-badge">Saved</span></div>
-        <div class="om-cell"><div class="om-img om-img--4"></div><span class="om-badge">Saved</span></div>
-      </div>
-      <div class="om-ai">
-        <span class="om-ai-dot">✦</span>
-        AI: "A white linen shirt would complete this look"
-      </div>
-    </div>
-  </div>
-</section>
-
-
 <!-- ════════ PROOF ════════ -->
 <section class="s-proof" data-s>
   <span class="eyebrow fi">By the numbers</span>
@@ -1342,37 +627,17 @@ body::after {
 
 
 <!-- ════════ CTA ════════ -->
-<!-- Rule: clear action, urgency, consistent branding -->
 <section class="s-cta" data-s>
   <div class="cta-glow" aria-hidden="true"></div>
-
-  <!-- Constellation dots for depth -->
-  <div class="cta-dots" aria-hidden="true" id="cta-dots"></div>
-
-  <!-- Brand visible at CTA = consistent branding rule -->
-  <div class="cta-wordmark fi">dress<span>.</span>me</div>
-
   <h2 class="cta-headline">
     <div class="r"><span class="ri">Stop browsing.</span></div>
     <div class="r"><span class="ri d1"><em>Start wearing.</em></span></div>
   </h2>
-
-  <p class="cta-sub fi d2">
-    Tell us what you want. We'll search hundreds of retailers and find it — in seconds.
-  </p>
-
-  <!-- Urgency: removes reason to put it off -->
-  <div class="cta-urgency fi d3">
-    <span class="urgency-dot" aria-hidden="true"></span>
-    Free forever · No account needed · Start right now
-  </div>
-
-  <div class="cta-buttons fi d4">
+  <div class="cta-buttons fi d2">
     <a href="/start" class="btn-primary">Find your look now →</a>
     <a href="/how-it-works" class="btn-ghost">How it works</a>
   </div>
-
-  <div class="cta-trust fi d5">
+  <div class="cta-trust fi d3">
     <span>Free to use</span>
     <span>No sign-up</span>
     <span>Your data stays yours</span>
