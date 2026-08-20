@@ -173,12 +173,12 @@ class TestStats:
         assert stats["max_size"] == 500
 
 
-class TestIncrementSerpApiCallCount:
+class TestIncrementSearchCallCount:
     def test_increment_returns_new_count(self):
-        assert cache.increment_serpapi_call_count() == 1
-        assert cache.increment_serpapi_call_count() == 2
+        assert cache.increment_search_call_count() == 1
+        assert cache.increment_search_call_count() == 2
 
     def test_count_reflected_in_stats(self):
-        cache.increment_serpapi_call_count()
-        cache.increment_serpapi_call_count()
+        cache.increment_search_call_count()
+        cache.increment_search_call_count()
         assert cache.stats()["serpapi_call_count"] == 2

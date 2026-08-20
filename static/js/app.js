@@ -1723,17 +1723,22 @@
 
     region.innerHTML = headerHtml + bodyHtml;
 
-    // Re-init image fallback handlers for dynamically added cards
+    // Re-init image fallback + shimmer handlers for dynamically added cards
     region.querySelectorAll('.product-image-wrap img').forEach(function (img) {
+      var wrap = img.closest('.product-image-wrap');
+      function markLoaded() { if (wrap) wrap.classList.add('img-loaded'); }
       img.addEventListener('error', function () {
         img.style.display = 'none';
         var fallback = img.nextElementSibling;
         if (fallback && fallback.classList.contains('image-fallback')) {
           fallback.style.display = 'flex';
         }
+        markLoaded();
       });
-      if (img.complete && !img.naturalWidth) {
-        img.dispatchEvent(new Event('error'));
+      img.addEventListener('load', markLoaded);
+      if (img.complete) {
+        if (!img.naturalWidth) img.dispatchEvent(new Event('error'));
+        else markLoaded();
       }
     });
 
@@ -3346,14 +3351,21 @@
     document.querySelectorAll('.product-image-wrap img').forEach(function (img) {
       if (img._fallbackBound) return;
       img._fallbackBound = true;
+      var wrap = img.closest('.product-image-wrap');
+      function markLoaded() { if (wrap) wrap.classList.add('img-loaded'); }
       img.addEventListener('error', function () {
         img.style.display = 'none';
         var fallback = img.nextElementSibling;
         if (fallback && fallback.classList.contains('image-fallback')) {
           fallback.style.display = 'flex';
         }
+        markLoaded();
       });
-      if (img.complete && !img.naturalWidth) img.dispatchEvent(new Event('error'));
+      img.addEventListener('load', markLoaded);
+      if (img.complete) {
+        if (!img.naturalWidth) img.dispatchEvent(new Event('error'));
+        else markLoaded();
+      }
     });
 
     _initTryOnEnabled();

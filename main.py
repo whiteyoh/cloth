@@ -263,10 +263,10 @@ async def _call_fashn_ai(image_bytes: bytes, garment_url: str, api_key: str, cat
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Validate required environment variables at startup; clean up on shutdown."""
-    serpapi_key = os.environ.get("SERPAPI_KEY", "")
+    serpapi_key = os.environ.get("SERPER_API_KEY") or os.environ.get("SERPAPI_KEY", "")
     if not serpapi_key:
         raise ValueError(
-            "SERPAPI_KEY environment variable is not set. Cannot start application."
+            "SERPER_API_KEY environment variable is not set. Cannot start application."
         )
     templates.env.globals["try_on_enabled"] = bool(os.environ.get("FASHN_API_KEY"))
     templates.env.globals["refine_enabled"] = bool(os.environ.get("OPENAI_API_KEY"))
@@ -445,7 +445,7 @@ async def get_search(request: Request, q: str = "", fresh: bool = False, format:
             },
         )
 
-    api_key = os.environ.get("SERPAPI_KEY", "")
+    api_key = os.environ.get("SERPER_API_KEY") or os.environ.get("SERPAPI_KEY", "")
 
     try:
         if expand and os.environ.get("OPENAI_API_KEY") and start == 0:
@@ -552,10 +552,10 @@ async def search_refine(body: _RefineRequest) -> JSONResponse:
 
 @app.get("/health")
 async def health():
-    """Health check endpoint. Does not call SerpAPI (preserves quota)."""
+    """Health check endpoint. Does not make a search API call (preserves quota)."""
     return {
         "status": "ok",
-        "serpapi_key_configured": bool(os.environ.get("SERPAPI_KEY")),
+        "search_api_key_configured": bool(os.environ.get("SERPER_API_KEY") or os.environ.get("SERPAPI_KEY")),
         "cache": cache.stats(),
     }
 
@@ -576,6 +576,15 @@ async def privacy(request: Request):
 async def how_it_works(request: Request):
     """Render the how it works page."""
     return templates.TemplateResponse(request, "how_it_works.html")
+
+
+@app.get("/advert", response_class=HTMLResponse)
+async def advert(request: Request):
+    """Render the dress.me commercial page."""
+    from fastapi.responses import FileResponse
+    import os
+    path = os.path.join(_TEMPLATES_DIR, "advert.html")
+    return FileResponse(path, media_type="text/html")
 
 
 @app.get("/outfits", response_class=HTMLResponse)
@@ -815,7 +824,7 @@ class OutfitGenerateRequest(BaseModel):
 
 @app.get("/outfit-generator", response_class=HTMLResponse)
 async def get_outfit_generator(request: Request):
-    api_key = os.environ.get("SERPAPI_KEY", "")
+    api_key = os.environ.get("SERPER_API_KEY") or os.environ.get("SERPAPI_KEY", "")
     try_on_enabled = bool(os.environ.get("FASHN_API_KEY"))
     return templates.TemplateResponse(request, "outfit_generator.html", {
         "try_on_enabled": try_on_enabled,
@@ -831,7 +840,7 @@ async def post_outfit_generate(request: Request, body: OutfitGenerateRequest):
     if len(description) > 100:
         return JSONResponse({"error": "description must be 100 characters or fewer"}, status_code=422)
 
-    api_key = os.environ.get("SERPAPI_KEY", "")
+    api_key = os.environ.get("SERPER_API_KEY") or os.environ.get("SERPAPI_KEY", "")
     if not api_key:
         return JSONResponse({"error": "Search service unavailable"}, status_code=503)
 

@@ -978,9 +978,36 @@ h6 { font-size: var(--text-base); }
 
 .product-image-wrap {
   position: relative;
-  padding-top: 140%; /* Taller portrait ratio for fashion */
+  padding-top: 80%;
   overflow: hidden;
   background: var(--color-surface-subtle);
+}
+
+/* Shimmer skeleton while image loads */
+.product-image-wrap::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.35) 50%, transparent 100%);
+  background-size: 200% 100%;
+  animation: img-shimmer 1.4s ease-in-out infinite;
+  pointer-events: none;
+  transition: opacity 0.2s;
+}
+
+[data-theme="dark"] .product-image-wrap::before {
+  background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.08) 50%, transparent 100%);
+  background-size: 200% 100%;
+}
+
+.product-image-wrap.img-loaded::before {
+  display: none;
+}
+
+@keyframes img-shimmer {
+  from { background-position: 200% 0; }
+  to   { background-position: -200% 0; }
 }
 
 .product-image-wrap img {
@@ -988,12 +1015,13 @@ h6 { font-size: var(--text-base); }
   inset: 0;
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
+  padding: var(--space-2);
   transition: transform 0.4s ease;
 }
 
 .product-card:hover .product-image-wrap img {
-  transform: scale(1.03);
+  transform: scale(1.04);
 }
 
 .image-fallback {

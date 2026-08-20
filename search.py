@@ -1,4 +1,4 @@
-"""SerpAPI Google Shopping integration and product normalisation."""
+"""Serper.dev Google Shopping integration and product normalisation."""
 from __future__ import annotations
 
 import hashlib
@@ -13,17 +13,17 @@ import cache
 from models import Product, _truncate_name, parse_price
 from utils import _emit
 
-SERPAPI_URL = "https://serpapi.com/search"
-SOURCE_API = "serpapi_google_shopping"
+SERPER_URL = "https://google.serper.dev/shopping"
+SOURCE_API = "serper_google_shopping"
 
-_BUDGET_WARNING_THRESHOLD = 80
-_BUDGET_EXHAUSTED_THRESHOLD = 100
+_BUDGET_WARNING_THRESHOLD = 2000
+_BUDGET_EXHAUSTED_THRESHOLD = 2500
 
 # Track last search time to detect cold starts (Render.com spins down after ~15 min).
 _last_search_time: float = 0.0
 _COLD_START_GAP_SECONDS = 900  # 15 minutes
 
-# Singleton httpx.AsyncClient — shared across all SerpAPI requests.
+# Singleton httpx.AsyncClient — shared across all search requests.
 _http_client: httpx.AsyncClient | None = None
 
 
@@ -44,7 +44,7 @@ async def close_http_client() -> None:
 
 
 class SearchError(Exception):
-    """Raised when a SerpAPI call fails in a way that cannot be recovered in-process."""
+    """Raised when a search API call fails in a way that cannot be recovered in-process."""
 
     def __init__(self, message: str = "", error_type: str = "unknown") -> None:
         super().__init__(message)
@@ -58,14 +58,14 @@ def _query_hash(normalised_key: str) -> str:
 def _normalise_result(
     item: dict[str, Any], retrieved_at: datetime, position: int = 0
 ) -> Product | None:
-    """Map one SerpAPI shopping_results entry to a Product, or return None to drop it.
+    """Map one Serper shopping result entry to a Product, or return None to drop it.
 
     Emits record_dropped or price_parse_warning NDJSON events where appropriate.
     """
     title = item.get("title") or ""
     source = item.get("source") or ""
-    link = item.get("link") or item.get("product_link") or ""
-    thumbnail = item.get("thumbnail") or ""
+    link = item.get("link") or item.get("productLink") or ""
+    thumbnail = item.get("imageUrl") or item.get("thumbnailUrl") or ""
     raw_price = item.get("price")
 
     now_iso = retrieved_at.isoformat()
@@ -196,7 +196,7 @@ async def search_products(query: str, api_key: str, fresh: bool = False, start: 
                 "query_hash": q_hash,
                 "cache_hit": True,
                 "result_count": len(cached),
-                "serpapi_latency_ms": None,
+                "search_api_latency_ms": None,
                 "total_latency_ms": total_ms,
                 "cold_start": cold_start,
                 "timestamp_utc": datetime.now(timezone.utc).isoformat(),
@@ -205,11 +205,11 @@ async def search_products(query: str, api_key: str, fresh: bool = False, start: 
         return cached
 
     # Budget guard: check before making the call.
-    call_count = cache.increment_serpapi_call_count()
+    call_count = cache.increment_search_call_count()
 
     _emit(
         {
-            "event": "serpapi_call_made",
+            "event": "search_api_call_made",
             "query_hash": q_hash,
             "num_requested": 10,
             "monthly_call_count": call_count,
@@ -220,7 +220,7 @@ async def search_products(query: str, api_key: str, fresh: bool = False, start: 
     if call_count == _BUDGET_WARNING_THRESHOLD:
         _emit(
             {
-                "event": "serpapi_budget_warning",
+                "event": "search_api_budget_warning",
                 "monthly_call_count": call_count,
                 "timestamp_utc": datetime.now(timezone.utc).isoformat(),
             }
@@ -229,33 +229,34 @@ async def search_products(query: str, api_key: str, fresh: bool = False, start: 
     if call_count >= _BUDGET_EXHAUSTED_THRESHOLD:
         _emit(
             {
-                "event": "serpapi_budget_exhausted",
+                "event": "search_api_budget_exhausted",
                 "monthly_call_count": call_count,
                 "timestamp_utc": datetime.now(timezone.utc).isoformat(),
             }
         )
-        raise SearchError("SerpAPI monthly budget exhausted", error_type="serpapi_budget_exhausted")
+        raise SearchError("Search API monthly budget exhausted", error_type="serpapi_budget_exhausted")
 
-    serpapi_start = time.monotonic()
+    api_call_start = time.monotonic()
     _search_event_emitted = False
 
     try:
         try:
             client = _get_http_client()
-            response = await client.get(
-                SERPAPI_URL,
-                params={
-                    "engine": "google_shopping",
+            response = await client.post(
+                SERPER_URL,
+                json={
                     "q": query,
-                    "api_key": api_key,
                     "gl": "gb",
-                    "hl": "en",
-                    "num": "10",
-                    **({"start": str(start)} if start else {}),
+                    "num": 10,
+                    **({"start": start} if start else {}),
+                },
+                headers={
+                    "X-API-KEY": api_key,
+                    "Content-Type": "application/json",
                 },
             )
             response.raise_for_status()
-            serpapi_ms = round((time.monotonic() - serpapi_start) * 1000)
+            api_call_ms = round((time.monotonic() - api_call_start) * 1000)
             data = response.json()
 
         except httpx.TimeoutException as exc:
@@ -266,13 +267,13 @@ async def search_products(query: str, api_key: str, fresh: bool = False, start: 
                     "query_hash": q_hash,
                     "error_type": "serpapi_timeout",
                     "http_status_returned": 200,
-                    "serpapi_status_code": None,
+                    "search_api_status_code": None,
                     "total_latency_ms": total_ms,
                     "timestamp_utc": datetime.now(timezone.utc).isoformat(),
                 }
             )
             _search_event_emitted = True
-            raise SearchError("SerpAPI request timed out", error_type="serpapi_timeout") from exc
+            raise SearchError("Search API request timed out", error_type="serpapi_timeout") from exc
 
         except httpx.HTTPStatusError as exc:
             total_ms = round((time.monotonic() - t_start) * 1000)
@@ -289,13 +290,13 @@ async def search_products(query: str, api_key: str, fresh: bool = False, start: 
                     "query_hash": q_hash,
                     "error_type": error_type,
                     "http_status_returned": 200,
-                    "serpapi_status_code": status_code,
+                    "search_api_status_code": status_code,
                     "total_latency_ms": total_ms,
                     "timestamp_utc": datetime.now(timezone.utc).isoformat(),
                 }
             )
             _search_event_emitted = True
-            raise SearchError(f"SerpAPI returned HTTP {status_code}", error_type=error_type) from exc
+            raise SearchError(f"Search API returned HTTP {status_code}", error_type=error_type) from exc
 
         except httpx.RequestError as exc:
             total_ms = round((time.monotonic() - t_start) * 1000)
@@ -305,13 +306,13 @@ async def search_products(query: str, api_key: str, fresh: bool = False, start: 
                     "query_hash": q_hash,
                     "error_type": "unknown",
                     "http_status_returned": 200,
-                    "serpapi_status_code": None,
+                    "search_api_status_code": None,
                     "total_latency_ms": total_ms,
                     "timestamp_utc": datetime.now(timezone.utc).isoformat(),
                 }
             )
             _search_event_emitted = True
-            raise SearchError("SerpAPI request failed", error_type="unknown") from exc
+            raise SearchError("Search API request failed", error_type="unknown") from exc
 
         except json.JSONDecodeError as exc:
             total_ms = round((time.monotonic() - t_start) * 1000)
@@ -321,14 +322,14 @@ async def search_products(query: str, api_key: str, fresh: bool = False, start: 
                     "query_hash": q_hash,
                     "error_type": "serpapi_schema_error",
                     "http_status_returned": 200,
-                    "serpapi_status_code": None,
+                    "search_api_status_code": None,
                     "total_latency_ms": total_ms,
                     "timestamp_utc": datetime.now(timezone.utc).isoformat(),
                 }
             )
             _search_event_emitted = True
             raise SearchError(
-                "SerpAPI returned non-JSON response", error_type="serpapi_schema_error"
+                "Search API returned non-JSON response", error_type="serpapi_schema_error"
             ) from exc
 
         if not isinstance(data, dict):
@@ -339,15 +340,15 @@ async def search_products(query: str, api_key: str, fresh: bool = False, start: 
                     "query_hash": q_hash,
                     "error_type": "serpapi_schema_error",
                     "http_status_returned": 200,
-                    "serpapi_status_code": None,
+                    "search_api_status_code": None,
                     "total_latency_ms": total_ms,
                     "timestamp_utc": datetime.now(timezone.utc).isoformat(),
                 }
             )
             _search_event_emitted = True
-            raise SearchError("SerpAPI response is not a JSON object", error_type="serpapi_schema_error")
+            raise SearchError("Search API response is not a JSON object", error_type="serpapi_schema_error")
 
-        shopping_results = data.get("shopping_results")
+        shopping_results = data.get("shopping")
         if not isinstance(shopping_results, list):
             total_ms = round((time.monotonic() - t_start) * 1000)
             _emit(
@@ -356,13 +357,13 @@ async def search_products(query: str, api_key: str, fresh: bool = False, start: 
                     "query_hash": q_hash,
                     "error_type": "serpapi_schema_error",
                     "http_status_returned": 200,
-                    "serpapi_status_code": None,
+                    "search_api_status_code": None,
                     "total_latency_ms": total_ms,
                     "timestamp_utc": datetime.now(timezone.utc).isoformat(),
                 }
             )
             _search_event_emitted = True
-            raise SearchError("Unexpected SerpAPI response schema", error_type="serpapi_schema_error")
+            raise SearchError("Unexpected Search API response schema", error_type="serpapi_schema_error")
 
         retrieved_at = datetime.now(timezone.utc)
         products: list[Product] = []
@@ -381,7 +382,7 @@ async def search_products(query: str, api_key: str, fresh: bool = False, start: 
                 "query_hash": q_hash,
                 "cache_hit": False,
                 "result_count": len(products),
-                "serpapi_latency_ms": serpapi_ms,
+                "search_api_latency_ms": api_call_ms,
                 "total_latency_ms": total_ms,
                 "cold_start": cold_start,
                 "timestamp_utc": datetime.now(timezone.utc).isoformat(),

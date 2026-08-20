@@ -186,7 +186,7 @@ class TestHealth:
     def test_serpapi_key_configured_true_when_key_set(self, client):
         r = client.get("/health")
         data = r.json()
-        assert data["serpapi_key_configured"] is True
+        assert data["search_api_key_configured"] is True
 
 
 # ------------------------------------------------------------------ #

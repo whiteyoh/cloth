@@ -107,8 +107,8 @@ def invalidate(key: str) -> None:
     _cache.pop(key, None)
 
 
-def increment_serpapi_call_count() -> int:
-    """Increment the SerpAPI call counter, persist to disk, and return the new value."""
+def increment_search_call_count() -> int:
+    """Increment the search API call counter, persist to disk, and return the new value."""
     global _serpapi_call_count
     _load_counter()
     _serpapi_call_count += 1

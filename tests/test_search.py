@@ -14,7 +14,7 @@ _RETRIEVED_AT = datetime(2026, 8, 14, 14, 32, 0, tzinfo=timezone.utc)
 _VALID_ITEM = {
     "title": "Blue Linen Shirt",
     "price": "£34.99",
-    "thumbnail": "https://img.example.com/shirt.jpg",
+    "imageUrl": "https://img.example.com/shirt.jpg",
     "source": "ASOS",
     "link": "https://www.asos.com/product/12345",
 }
@@ -46,7 +46,7 @@ class TestNormaliseResultHappyPath:
         assert p1.id == p2.id
 
     def test_missing_thumbnail_sets_image_url_to_none(self):
-        item = {**_VALID_ITEM, "thumbnail": ""}
+        item = {**_VALID_ITEM, "imageUrl": ""}
         product = _normalise_result(item, _RETRIEVED_AT)
         assert product is not None
         assert product.image_url is None
@@ -182,14 +182,14 @@ class TestNormaliseResultNameTruncation:
 def _make_mock_response(shopping_results):
     mock_resp = MagicMock()
     mock_resp.raise_for_status = MagicMock()
-    mock_resp.json.return_value = {"shopping_results": shopping_results}
+    mock_resp.json.return_value = {"shopping": shopping_results}
     return mock_resp
 
 
 def _make_mock_client(mock_response):
     """Return an AsyncMock that behaves like an httpx.AsyncClient."""
     mock_client = AsyncMock()
-    mock_client.get = AsyncMock(return_value=mock_response)
+    mock_client.post = AsyncMock(return_value=mock_response)
     return mock_client
 
 
@@ -273,8 +273,8 @@ class TestSearchProductsCaching:
             await search_products("blue shirt", "fake-key")
             await search_products("blue shirt", "fake-key")
 
-        # HTTP GET should only have been called once (second call is cache hit)
-        assert mock_client.get.call_count == 1
+        # HTTP POST should only have been called once (second call is cache hit)
+        assert mock_client.post.call_count == 1
 
     async def test_case_insensitive_cache_hit(self):
         mock_resp = _make_mock_response([_VALID_ITEM])
@@ -284,7 +284,7 @@ class TestSearchProductsCaching:
             await search_products("Blue Shirt", "fake-key")
             await search_products("blue shirt", "fake-key")
 
-        assert mock_client.get.call_count == 1
+        assert mock_client.post.call_count == 1
 
     async def test_fresh_true_bypasses_cache(self):
         mock_resp = _make_mock_response([_VALID_ITEM])
@@ -294,8 +294,8 @@ class TestSearchProductsCaching:
             await search_products("blue shirt", "fake-key")
             await search_products("blue shirt", "fake-key", fresh=True)
 
-        # Both calls should have gone to SerpAPI (2 HTTP GETs)
-        assert mock_client.get.call_count == 2
+        # Both calls should have gone to the search API (2 HTTP POSTs)
+        assert mock_client.post.call_count == 2
 
     async def test_cache_hit_emits_cache_hit_true(self, capsys):
         mock_resp = _make_mock_response([_VALID_ITEM])
@@ -316,7 +316,7 @@ class TestSearchProductsErrors:
         import httpx
 
         mock_client = _make_mock_client(MagicMock())
-        mock_client.get = AsyncMock(side_effect=httpx.TimeoutException("timed out"))
+        mock_client.post = AsyncMock(side_effect=httpx.TimeoutException("timed out"))
 
         with patch("search._get_http_client", return_value=mock_client):
             with pytest.raises(SearchError) as exc_info:
@@ -332,7 +332,7 @@ class TestSearchProductsErrors:
         http_error = httpx.HTTPStatusError("401", request=MagicMock(), response=mock_response)
 
         mock_client = _make_mock_client(MagicMock())
-        mock_client.get = AsyncMock(side_effect=http_error)
+        mock_client.post = AsyncMock(side_effect=http_error)
 
         with patch("search._get_http_client", return_value=mock_client):
             with pytest.raises(SearchError) as exc_info:
@@ -348,7 +348,7 @@ class TestSearchProductsErrors:
         http_error = httpx.HTTPStatusError("429", request=MagicMock(), response=mock_response)
 
         mock_client = _make_mock_client(MagicMock())
-        mock_client.get = AsyncMock(side_effect=http_error)
+        mock_client.post = AsyncMock(side_effect=http_error)
 
         with patch("search._get_http_client", return_value=mock_client):
             with pytest.raises(SearchError) as exc_info:
