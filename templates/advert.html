@@ -18,7 +18,7 @@
 
 /* ── RESET ── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-html { scroll-behavior: smooth; }
+html { scroll-behavior: smooth; overflow-x: clip; }
 
 /* ── TOKENS ── */
 :root {
@@ -40,7 +40,7 @@ body {
   background: var(--bg);
   color: var(--fg);
   font-family: 'Inter', system-ui, sans-serif;
-  overflow-x: hidden;
+  overflow-x: clip;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -987,6 +987,10 @@ body::after {
 @media (max-width: 540px) {
   .proof-stats { gap: 2.5rem; }
   .cta-headline { font-size: clamp(3.5rem, 16vw, 7rem); }
+  /* Hide the floating search mock on small phones — keeps hero tight and removes float overflow */
+  .hook-right { display: none; }
+  .s-hook { grid-template-columns: 1fr; min-height: auto; padding-bottom: 5rem; }
+  .hook-left { padding: 6rem 1.5rem 3rem; }
 }
 
 @media (max-width: 600px) {
