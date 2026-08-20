@@ -9,7 +9,6 @@
   <meta property="og:description" content="{% block og_description %}Search across the web for any clothing item using plain English. AI-powered results from hundreds of retailers.{% endblock %}">
   <meta property="og:type" content="website">
   <meta name="twitter:card" content="summary">
-  <meta name="try-on-enabled" content="{{ 'true' if try_on_enabled else 'false' }}">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
@@ -102,7 +101,6 @@
         <button class="base-option" data-silhouette="/static/img/silhouettes/neutral.svg" aria-label="Neutral silhouette">Neutral</button>
         <button class="base-option" data-silhouette="/static/img/silhouettes/feminine.svg" aria-label="Feminine silhouette">Feminine</button>
         <button class="base-option" data-silhouette="/static/img/silhouettes/masculine.svg" aria-label="Masculine silhouette">Masculine</button>
-        <label class="base-option-upload">Upload photo<input type="file" id="base-photo-upload" accept="image/jpeg,image/png" style="display:none"></label>
       </div>
       <div id="style-canvas-main" style="display:none">
         <div class="style-canvas-actions">

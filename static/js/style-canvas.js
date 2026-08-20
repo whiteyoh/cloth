@@ -904,24 +904,6 @@
       btn.addEventListener('click', function () { _selectBase(btn.dataset.silhouette); });
     });
 
-    // Upload photo label
-    var fileInput = document.getElementById('base-photo-upload');
-    var uploadLabel = modal.querySelector('.base-option-upload');
-    if (uploadLabel && fileInput) {
-      uploadLabel.addEventListener('click', function (e) {
-        e.preventDefault();
-        fileInput.click();
-      });
-    }
-    if (fileInput) {
-      fileInput.addEventListener('change', function () {
-        if (!fileInput.files || !fileInput.files[0]) return;
-        var reader = new FileReader();
-        reader.onload = function (ev) { _selectBase(ev.target.result); };
-        reader.readAsDataURL(fileInput.files[0]);
-      });
-    }
-
     // Canvas pointer events
     var canvas = _getCanvas();
     if (canvas) {

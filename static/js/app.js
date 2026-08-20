@@ -844,16 +844,6 @@
         });
       }(item.id));
 
-      var tryOnBtn = null;
-      if (_TRY_ON_ENABLED) {
-        tryOnBtn = document.createElement('button');
-        tryOnBtn.className = 'btn-try-on';
-        tryOnBtn.dataset.garmentUrl = item.image || '';
-        tryOnBtn.dataset.garmentName = item.name;
-        tryOnBtn.setAttribute('aria-label', 'Try on ' + item.name);
-        tryOnBtn.textContent = 'Try on';
-      }
-
       var styleItBtn = document.createElement('button');
       styleItBtn.className = 'btn-style-it';
       styleItBtn.dataset.garmentUrl = item.image || '';
@@ -868,7 +858,6 @@
       info.appendChild(removeBtn);
       info.appendChild(outfitBtn);
       info.appendChild(similarLink);
-      if (tryOnBtn) info.appendChild(tryOnBtn);
       info.appendChild(styleItBtn);
       info.appendChild(noteTextarea);
 
@@ -880,7 +869,6 @@
     container.innerHTML = '';
     container.appendChild(ul);
     initAddToOutfitButtons();
-    initTryOnButtons();
     if (typeof window.initStyleItButtons === 'function') window.initStyleItButtons();
 
     if (clearBtn) {
@@ -1745,7 +1733,6 @@
     initSaveButtons();
     initCopyLinkButtons();
     initAddToOutfitButtons();
-    initTryOnButtons();
     if (typeof window.initStyleItButtons === 'function') window.initStyleItButtons();
     initFilterSort();
     initColorFilter();
@@ -1832,7 +1819,6 @@
         initSaveButtons();
         initCopyLinkButtons();
         initAddToOutfitButtons();
-        initTryOnButtons();
         if (typeof window.initStyleItButtons === 'function') window.initStyleItButtons();
         _syncCompareButtons();
       })
@@ -2035,12 +2021,6 @@
           + '<p class="outfit-mini-name">' + escapeHtml(item.name) + '</p>'
           + '<p class="outfit-mini-price">' + escapeHtml(item.price || '') + '</p>'
           + '<button class="btn-remove-outfit-item" data-outfit-id="' + escapeHtml(outfit.id) + '" data-item-id="' + escapeHtml(item.id) + '" aria-label="Remove ' + escapeHtml(item.name) + ' from outfit">Remove</button>'
-          + (_TRY_ON_ENABLED
-            ? '<button class="btn-try-on"'
-              + ' data-garment-url="' + escapeHtml(item.image || '') + '"'
-              + ' data-garment-name="' + escapeHtml(item.name) + '"'
-              + ' aria-label="Try on ' + escapeHtml(item.name) + '">Try on</button>'
-            : '')
           + '<button class="btn-style-it"'
           + ' data-garment-url="' + escapeHtml(item.image || '') + '"'
           + ' data-garment-name="' + escapeHtml(item.name) + '"'
@@ -2234,8 +2214,7 @@
       });
     });
 
-    // Wire up try-on and style-it buttons on outfit items
-    initTryOnButtons();
+    // Wire up style-it buttons on outfit items
     if (typeof window.initStyleItButtons === 'function') window.initStyleItButtons();
 
     // Wire up share buttons (WN-102 implementation)
@@ -2647,7 +2626,6 @@
         initSaveButtons();
         initCopyLinkButtons();
         initAddToOutfitButtons();
-        initTryOnButtons();
         if (typeof window.initStyleItButtons === 'function') window.initStyleItButtons();
         initRecentlyViewedTracking();
         updateSavedCount();
@@ -2802,210 +2780,6 @@
         document.querySelectorAll('.density-btn').forEach(function (b) {
           b.classList.toggle('is-active', b.dataset.density === d);
         });
-      });
-    });
-  }
-
-  // ------------------------------------------------------------------ //
-  // Virtual try-on modal (WN-106/WN-107)                               //
-  // ------------------------------------------------------------------ //
-  var _TRY_ON_ENABLED = false;
-
-  function _initTryOnEnabled() {
-    var meta = document.querySelector('meta[name="try-on-enabled"]');
-    _TRY_ON_ENABLED = !!(meta && meta.getAttribute('content') === 'true');
-  }
-
-  function openTryOnModal(garmentUrl, garmentName) {
-    var existing = document.getElementById('try-on-modal');
-    if (existing) existing.remove();
-
-    var modal = document.createElement('div');
-    modal.id = 'try-on-modal';
-    modal.className = 'try-on-modal';
-    modal.setAttribute('role', 'dialog');
-    modal.setAttribute('aria-modal', 'true');
-    modal.setAttribute('aria-label', 'Virtual try-on: ' + escapeHtml(garmentName));
-
-    modal.innerHTML = '<div class="try-on-modal-inner">'
-      + '<button type="button" class="try-on-close" aria-label="Close try-on">×</button>'
-      + '<h2 class="try-on-heading">Try on: ' + escapeHtml(garmentName) + '</h2>'
-      + '<div class="try-on-upload">'
-      + '<label for="try-on-file" class="try-on-file-label">Upload your photo (JPEG or PNG, max 5 MB)</label>'
-      + '<input type="file" id="try-on-file" accept="image/jpeg,image/png" class="try-on-file">'
-      + '<div id="try-on-preview" class="try-on-preview" hidden></div>'
-      + '</div>'
-      + '<div class="try-on-consent">'
-      + '<label class="try-on-consent-label">'
-      + '<input type="checkbox" id="try-on-consent-check">'
-      + ' Your photo is processed to generate the result and is not stored or shared.'
-      + ' <a href="/privacy" target="_blank" rel="noopener noreferrer">Privacy Notice</a>'
-      + '</label>'
-      + '</div>'
-      + '<div class="try-on-category">'
-      + '<label for="try-on-category-select">Garment type:</label>'
-      + '<select id="try-on-category-select" class="try-on-category-select">'
-      + '<option value="">Auto-detect</option>'
-      + '<option value="tops">Tops</option>'
-      + '<option value="bottoms">Bottoms</option>'
-      + '<option value="one-piece">One-piece / Dress</option>'
-      + '</select>'
-      + '</div>'
-      + '<button type="button" id="try-on-generate" class="btn-primary try-on-generate" disabled>Generate try-on</button>'
-      + '<div id="try-on-loading" class="try-on-loading" hidden>'
-      + '<span class="try-on-spinner" aria-hidden="true"></span>'
-      + '<p>This may take up to 30 seconds…</p>'
-      + '</div>'
-      + '<div id="try-on-result" class="try-on-result" hidden>'
-      + '<img id="try-on-result-img" alt="Try-on result">'
-      + '<div class="try-on-result-actions">'
-      + '<button type="button" id="try-on-save" class="btn-secondary">Save result</button>'
-      + '<button type="button" id="try-on-another" class="btn-secondary">Try another item</button>'
-      + '</div>'
-      + '</div>'
-      + '<div id="try-on-error" class="try-on-error" role="alert" hidden></div>'
-      + '</div>';
-
-    document.body.appendChild(modal);
-
-    var fileInput = modal.querySelector('#try-on-file');
-    var consentCheck = modal.querySelector('#try-on-consent-check');
-    var generateBtn = modal.querySelector('#try-on-generate');
-    var closeBtn = modal.querySelector('.try-on-close');
-
-    closeBtn.focus();
-
-    function updateGenerateBtn() {
-      generateBtn.disabled = !(fileInput.files && fileInput.files[0] && consentCheck.checked);
-    }
-
-    fileInput.addEventListener('change', function () {
-      updateGenerateBtn();
-      var previewEl = modal.querySelector('#try-on-preview');
-      if (fileInput.files && fileInput.files[0]) {
-        var reader = new FileReader();
-        reader.onload = function (e) {
-          previewEl.innerHTML = '<img src="' + escapeHtml(e.target.result) + '" alt="Your photo preview">';
-          previewEl.hidden = false;
-        };
-        reader.readAsDataURL(fileInput.files[0]);
-      } else {
-        previewEl.hidden = true;
-        previewEl.innerHTML = '';
-      }
-    });
-
-    consentCheck.addEventListener('change', updateGenerateBtn);
-
-    generateBtn.addEventListener('click', function () {
-      if (!fileInput.files || !fileInput.files[0]) return;
-      modal.querySelector('#try-on-loading').hidden = false;
-      modal.querySelector('#try-on-result').hidden = true;
-      modal.querySelector('#try-on-error').hidden = true;
-      generateBtn.disabled = true;
-
-      var categorySelect = modal.querySelector('#try-on-category-select');
-      var formData = new FormData();
-      formData.append('person_image', fileInput.files[0]);
-      formData.append('garment_url', garmentUrl);
-      formData.append('garment_name', garmentName || '');
-      if (categorySelect && categorySelect.value) {
-        formData.append('category_override', categorySelect.value);
-      }
-
-      fetch('/try-on', {method: 'POST', body: formData})
-        .then(function (res) { return res.json(); })
-        .then(function (data) {
-          modal.querySelector('#try-on-loading').hidden = true;
-          if (data.result_url) {
-            var resultImg = modal.querySelector('#try-on-result-img');
-            resultImg.src = data.result_url;
-            modal.querySelector('#try-on-result').hidden = false;
-          } else {
-            var errEl = modal.querySelector('#try-on-error');
-            errEl.textContent = data.error || 'Try-on failed.';
-            errEl.hidden = false;
-            updateGenerateBtn();
-          }
-        })
-        .catch(function () {
-          modal.querySelector('#try-on-loading').hidden = true;
-          var errEl = modal.querySelector('#try-on-error');
-          errEl.textContent = 'Try-on unavailable.';
-          errEl.hidden = false;
-          updateGenerateBtn();
-        });
-    });
-
-    modal.querySelector('#try-on-save').addEventListener('click', function () {
-      var img = modal.querySelector('#try-on-result-img');
-      if (!img || !img.src) return;
-      var a = document.createElement('a');
-      a.href = img.src;
-      a.download = 'try-on-result.jpg';
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-    });
-
-    modal.querySelector('#try-on-another').addEventListener('click', function () {
-      modal.querySelector('#try-on-result').hidden = true;
-      modal.querySelector('#try-on-error').hidden = true;
-      fileInput.value = '';
-      var previewEl = modal.querySelector('#try-on-preview');
-      previewEl.hidden = true;
-      previewEl.innerHTML = '';
-      consentCheck.checked = false;
-      updateGenerateBtn();
-      fileInput.focus();
-    });
-
-    function closeModal() {
-      modal.remove();
-      document.removeEventListener('keydown', onKeyDown);
-    }
-
-    closeBtn.addEventListener('click', closeModal);
-
-    modal.addEventListener('click', function (e) {
-      if (e.target === modal) closeModal();
-    });
-
-    function onKeyDown(e) {
-      if (e.key === 'Escape') {
-        closeModal();
-        return;
-      }
-      if (e.key === 'Tab') {
-        var focusable = Array.prototype.slice.call(
-          modal.querySelectorAll('button:not([disabled]), input, a[href]')
-        );
-        if (!focusable.length) return;
-        var first = focusable[0];
-        var last = focusable[focusable.length - 1];
-        if (e.shiftKey && document.activeElement === first) {
-          e.preventDefault();
-          last.focus();
-        } else if (!e.shiftKey && document.activeElement === last) {
-          e.preventDefault();
-          first.focus();
-        }
-      }
-    }
-
-    document.addEventListener('keydown', onKeyDown);
-  }
-
-  function initTryOnButtons() {
-    document.querySelectorAll('.btn-try-on').forEach(function (btn) {
-      if (btn.dataset.tryOnBound) return;
-      btn.dataset.tryOnBound = '1';
-      if (!_TRY_ON_ENABLED) {
-        btn.style.display = 'none';
-        return;
-      }
-      btn.addEventListener('click', function () {
-        openTryOnModal(btn.dataset.garmentUrl || '', btn.dataset.garmentName || '');
       });
     });
   }
@@ -3368,7 +3142,6 @@
       }
     });
 
-    _initTryOnEnabled();
     initSearchLoadingFeedback();
     initFilterSort();
     initColorFilter();
@@ -3402,7 +3175,6 @@
 
     initAddToOutfitButtons();
     updateOutfitsCount();
-    initTryOnButtons();
     initRefineBar();
     initCompare();
     _syncCompareButtons();
@@ -3535,7 +3307,6 @@
     var selectors = [
       '.btn-save',
       '.btn-add-to-outfit',
-      '.btn-try-on',
       '.btn-find-similar',
       '.btn-style-it',
       '.btn-compare',
@@ -3860,17 +3631,28 @@
                 '" alt="' + window.ClothPure.escapeHtml(item.name) + '" loading="lazy"></div>'
               : '<div class="outfit-slot-img-wrap outfit-slot-img-placeholder"><span>' +
                 window.ClothPure.escapeHtml(item.retailer_name) + '</span></div>') +
-            '<p class="outfit-slot-name">' + window.ClothPure.escapeHtml(item.name) + '</p>' +
-            '<p class="outfit-slot-price">' + (item.price_display ? window.ClothPure.escapeHtml(item.price_display) : '') + '</p>' +
-            '<p class="outfit-slot-retailer">' + window.ClothPure.escapeHtml(item.retailer_name) + '</p>' +
-            '<a href="' + window.ClothPure.escapeHtml(item.purchase_url) + '" class="btn-view outfit-slot-view" ' +
-            'target="_blank" rel="noopener noreferrer">View item</a>';
+            '<p class=”outfit-slot-name”>' + window.ClothPure.escapeHtml(item.name) + '</p>' +
+            '<p class=”outfit-slot-price”>' + (item.price_display ? window.ClothPure.escapeHtml(item.price_display) : '') + '</p>' +
+            '<p class=”outfit-slot-retailer”>' + window.ClothPure.escapeHtml(item.retailer_name) + '</p>' +
+            '<div class=”outfit-slot-actions”>' +
+            '<a href=”' + window.ClothPure.escapeHtml(item.purchase_url) + '” class=”btn-view outfit-slot-view” ' +
+            'target=”_blank” rel=”noopener noreferrer”>View item</a>' +
+            '<button class=”btn-add-to-outfit outfit-slot-add-outfit”' +
+            ' data-id=”' + window.ClothPure.escapeHtml(item.id || item.name) + '”' +
+            ' data-name=”' + window.ClothPure.escapeHtml(item.name) + '”' +
+            ' data-price=”' + window.ClothPure.escapeHtml(item.price_display || '') + '”' +
+            ' data-retailer=”' + window.ClothPure.escapeHtml(item.retailer_name) + '”' +
+            ' data-image=”' + window.ClothPure.escapeHtml(item.image_url || '') + '”' +
+            ' data-url=”' + window.ClothPure.escapeHtml(item.purchase_url) + '”' +
+            ' aria-label=”Add ' + window.ClothPure.escapeHtml(item.name) + ' to outfit”>+ Outfit</button>' +
+            '</div>';
         }
         grid.appendChild(slot);
       });
 
-      resultsTitle.textContent = '“' + data.description + '”';
+      resultsTitle.textContent = '”' + data.description + '”';
       resultsEl.removeAttribute('hidden');
+      initAddToOutfitButtons();
     }
 
     form.addEventListener('submit', function (e) {

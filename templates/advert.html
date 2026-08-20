@@ -1,0 +1,1385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>dress.me — Your style, found.</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,400;1,700;1,900&family=Inter:wght@300;400;500;600;800&display=swap" rel="stylesheet">
+  <style>
+
+/* ── RESET ── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+
+/* ── TOKENS ── */
+:root {
+  --bg:       #060504;
+  --fg:       #EDE8E0;
+  --muted:    #7A7068;
+  --dim:      #2E2A26;
+  --accent:   #C4955A;
+  --gold:     #D4A96A;
+  --blue:     #4E78C4;
+  --blue-dim: #1A2840;
+  --surf:     #0D0B09;
+  --surf2:    #161210;
+  --border:   rgba(237,232,224,0.07);
+  --ease:     cubic-bezier(0.16,1,0.3,1);
+}
+
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: 'Inter', system-ui, sans-serif;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Grain texture — premium tactile quality */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 128px 128px;
+  opacity: 0.03;
+  pointer-events: none;
+  z-index: 9999;
+}
+
+/* ── ANIMATION SYSTEM ── */
+/* Text lines: wrap in .r (overflow:hidden), animate .ri (translateY) */
+.r  { overflow: hidden; display: block; }
+.ri { display: block; transform: translateY(110%); transition: transform 0.95s var(--ease); will-change: transform; }
+
+/* Fade-up elements */
+.fi { opacity: 0; transform: translateY(22px); transition: opacity 0.85s ease, transform 0.85s var(--ease); will-change: opacity, transform; }
+
+/* Parent gets .iv when scrolled into view → children animate */
+[data-s].iv .ri { transform: translateY(0); }
+[data-s].iv .fi { opacity: 1; transform: none; }
+
+/* Stagger delays */
+.d1 { transition-delay: 0.10s; }
+.d2 { transition-delay: 0.22s; }
+.d3 { transition-delay: 0.36s; }
+.d4 { transition-delay: 0.52s; }
+.d5 { transition-delay: 0.70s; }
+.d6 { transition-delay: 0.90s; }
+
+/* ── SHARED COMPONENTS ── */
+.eyebrow {
+  font-size: 0.6rem;
+  font-weight: 600;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: var(--accent);
+  display: block;
+}
+
+.btn-primary {
+  display: inline-block;
+  padding: 0.85rem 2rem;
+  background: var(--accent);
+  color: #060504;
+  font-weight: 700;
+  font-size: 0.8rem;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  text-decoration: none;
+  border-radius: 100px;
+  transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
+  white-space: nowrap;
+}
+.btn-primary:hover {
+  background: var(--gold);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 30px rgba(196,149,90,0.35);
+}
+
+.btn-ghost {
+  display: inline-block;
+  padding: 0.85rem 2rem;
+  border: 1px solid rgba(237,232,224,0.14);
+  color: var(--fg);
+  font-size: 0.8rem;
+  letter-spacing: 0.04em;
+  text-decoration: none;
+  border-radius: 100px;
+  transition: border-color 0.2s, transform 0.15s;
+}
+.btn-ghost:hover { border-color: rgba(237,232,224,0.38); transform: translateY(-2px); }
+
+/* ══════════════════════════════════════════════
+   STICKY NAV — appears after hero scrolls away
+   ══════════════════════════════════════════════ */
+.sticky-nav {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.85rem 5vw;
+  background: rgba(6,5,4,0.75);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border-bottom: 1px solid var(--border);
+  transform: translateY(-110%);
+  transition: transform 0.55s var(--ease);
+}
+.sticky-nav.show { transform: translateY(0); }
+.sn-logo {
+  font-size: 1rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: var(--fg);
+  text-decoration: none;
+}
+.sn-logo span { color: var(--accent); }
+.sn-cta { font-size: 0.75rem; padding: 0.55rem 1.4rem; }
+
+/* ══════════════════════════════════════════════
+   SCENE 1 — HOOK
+   Rule: Product visible + CTA above the fold.
+   Pain stated in the first line.
+   ══════════════════════════════════════════════ */
+.s-hook {
+  min-height: 100dvh;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: center;
+  position: relative;
+  overflow: hidden;
+  border-bottom: 1px solid var(--border);
+}
+
+.hook-glow {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse 60% 80% at 10% 50%, #1C1308 0%, transparent 55%);
+  pointer-events: none;
+}
+
+.hook-left {
+  padding: 8vw 4vw 8vw 8vw;
+  position: relative;
+  z-index: 1;
+}
+
+.hook-pain {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: clamp(1.2rem, 2.8vw, 2.2rem);
+  font-style: italic;
+  font-weight: 400;
+  color: var(--muted);
+  line-height: 1.4;
+  animation: riseIn 0.9s var(--ease) 0.1s both;
+}
+
+.hook-headline {
+  font-size: clamp(3.5rem, 7.5vw, 6.5rem);
+  font-weight: 800;
+  letter-spacing: -0.055em;
+  line-height: 0.9;
+  margin-top: 1.1rem;
+  animation: riseIn 1s var(--ease) 0.28s both;
+}
+.hook-dot { color: var(--accent); }
+
+.hook-tagline {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: clamp(1rem, 2vw, 1.5rem);
+  font-style: italic;
+  font-weight: 400;
+  color: var(--muted);
+  margin-top: 1rem;
+  animation: riseIn 1s var(--ease) 0.48s both;
+}
+
+.hook-actions {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  flex-wrap: wrap;
+  margin-top: 2.5rem;
+  animation: fadeUp 1s ease 0.8s both;
+}
+.hook-trust {
+  font-size: 0.68rem;
+  color: var(--dim);
+  letter-spacing: 0.05em;
+  line-height: 1.7;
+}
+
+/* Mock wrapper floats */
+.hook-right {
+  padding: 5vw 8vw 5vw 3vw;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: riseIn 1.1s var(--ease) 0.38s both;
+}
+
+.mock-float {
+  animation: float 7s ease-in-out 1.5s infinite;
+  will-change: transform;
+}
+
+/* ── Search mock UI ── */
+.search-mock {
+  width: 100%;
+  max-width: 400px;
+  background: var(--surf);
+  border-radius: 18px;
+  padding: 1.4rem;
+  border: 1px solid var(--border);
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,0.025),
+    0 30px 70px rgba(0,0,0,0.55),
+    0 60px 120px rgba(0,0,0,0.3),
+    0 0 80px rgba(196,149,90,0.04);
+}
+
+.mock-chrome {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-bottom: 1.1rem;
+}
+.mc-dot { width: 8px; height: 8px; border-radius: 50%; }
+.mc-dot:nth-child(1) { background: #FF5F57; }
+.mc-dot:nth-child(2) { background: #FEBC2E; }
+.mc-dot:nth-child(3) { background: #28C840; }
+.mc-bar { flex:1; height:17px; background:rgba(255,255,255,0.04); border-radius:100px; margin-left:0.5rem; }
+
+.mock-searchbox {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  background: var(--surf2);
+  border-radius: 10px;
+  padding: 0.75rem 1rem;
+  border: 1px solid rgba(196,149,90,0.28);
+  margin-bottom: 0.8rem;
+}
+.mock-icon {
+  width: 13px; height: 13px;
+  border-radius: 50%;
+  border: 1.5px solid var(--muted);
+  position: relative;
+  flex-shrink: 0;
+}
+.mock-icon::after {
+  content: '';
+  position: absolute;
+  right: -4px; bottom: -4px;
+  width: 5px; height: 1.5px;
+  background: var(--muted);
+  transform: rotate(45deg);
+  border-radius: 1px;
+}
+.mock-query {
+  font-size: 0.76rem;
+  color: var(--fg);
+  overflow: hidden;
+  white-space: nowrap;
+  border-right: 1.5px solid var(--accent);
+  animation: typing 5s steps(38, end) infinite, blink 0.75s step-end infinite;
+}
+.mock-chips {
+  display: flex;
+  gap: 0.3rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.9rem;
+}
+.mock-chip {
+  font-size: 0.58rem;
+  font-weight: 500;
+  padding: 0.25rem 0.55rem;
+  border-radius: 100px;
+  background: rgba(196,149,90,0.09);
+  border: 1px solid rgba(196,149,90,0.22);
+  color: var(--gold);
+}
+.mock-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.45rem;
+}
+.mock-card { border-radius: 8px; overflow: hidden; background: var(--surf2); }
+.mock-card-img { aspect-ratio: 3/4; }
+.mock-card:nth-child(1) .mock-card-img { background: linear-gradient(148deg, #2A1E0E 0%, #100B04 100%); }
+.mock-card:nth-child(2) .mock-card-img { background: linear-gradient(148deg, #0C1525 0%, #060D18 100%); }
+.mock-card:nth-child(3) .mock-card-img { background: linear-gradient(148deg, #1A1025 0%, #0C0618 100%); }
+.mock-card-meta { padding: 0.4rem 0.35rem 0.5rem; }
+.mock-card-shop { font-size: 0.5rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); display: block; }
+.mock-card-price { font-size: 0.66rem; font-weight: 600; color: var(--fg); margin-top: 0.1rem; }
+.mock-count { text-align: center; font-size: 0.62rem; color: var(--muted); margin-top: 0.8rem; }
+
+/* ══════════════════════════════════════════════
+   SCENE 2 — PROBLEM
+   "17 tabs" with watermark bg number + count-up
+   ══════════════════════════════════════════════ */
+.s-problem {
+  min-height: 88dvh;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10vh 6vw;
+  text-align: center;
+  overflow: hidden;
+  border-bottom: 1px solid var(--border);
+}
+
+/* Giant watermark number — the design element */
+.problem-watermark {
+  position: absolute;
+  font-size: clamp(14rem, 38vw, 30rem);
+  font-weight: 900;
+  color: rgba(237,232,224,0.03);
+  line-height: 1;
+  letter-spacing: -0.08em;
+  user-select: none;
+  pointer-events: none;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-family: 'Inter', sans-serif;
+  white-space: nowrap;
+}
+
+.problem-inner { position: relative; z-index: 1; max-width: 600px; }
+
+.problem-count {
+  font-family: 'Inter', sans-serif;
+  font-size: clamp(5rem, 14vw, 11rem);
+  font-weight: 900;
+  letter-spacing: -0.06em;
+  line-height: 1;
+  color: rgba(237,232,224,0.15);
+  display: block;
+  font-variant-numeric: tabular-nums;
+}
+
+.problem-headline {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: clamp(2rem, 5.5vw, 4rem);
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: -0.025em;
+}
+
+.problem-sub {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: clamp(1.1rem, 2.8vw, 2rem);
+  font-style: italic;
+  font-weight: 400;
+  color: var(--muted);
+  margin-top: 0.5rem;
+}
+
+.problem-hr {
+  width: 40px;
+  height: 1px;
+  background: var(--dim);
+  margin: 2rem auto;
+}
+
+.problem-kicker {
+  font-size: clamp(0.95rem, 2vw, 1.1rem);
+  color: var(--muted);
+  line-height: 1.75;
+}
+.problem-kicker strong { color: var(--fg); font-weight: 600; }
+
+/* ══════════════════════════════════════════════
+   SCENE 3 — WORD SLAM
+   Left-aligned editorial typography.
+   Three words. Maximum impact.
+   ══════════════════════════════════════════════ */
+.s-words {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 8vh 8vw;
+  border-bottom: 1px solid var(--border);
+  position: relative;
+  overflow: hidden;
+}
+
+.words-bg {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, #0B0906 0%, var(--bg) 100%);
+}
+
+.words-inner { position: relative; z-index: 1; }
+
+.word-row {
+  display: block;
+  overflow: hidden;
+}
+
+.word-text {
+  display: block;
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: clamp(4.5rem, 13vw, 11rem);
+  font-weight: 900;
+  font-style: italic;
+  line-height: 1.0;
+  letter-spacing: -0.04em;
+  transform: translateY(110%);
+  transition: transform 1.05s var(--ease);
+  will-change: transform;
+}
+.word-accent { color: var(--accent); }
+
+[data-s].iv .word-text { transform: translateY(0); }
+
+.words-body {
+  margin-top: 3rem;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2rem;
+  max-width: 900px;
+}
+
+.word-fact {
+  border-top: 1px solid var(--border);
+  padding-top: 1rem;
+}
+.word-fact-label {
+  font-size: 0.6rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--accent);
+  font-weight: 600;
+  display: block;
+  margin-bottom: 0.5rem;
+}
+.word-fact-text {
+  font-size: 0.88rem;
+  color: var(--muted);
+  line-height: 1.65;
+}
+
+/* ══════════════════════════════════════════════
+   SCENE 4 — TRY-ON
+   SVG figure art: before/after with proper craft.
+   ══════════════════════════════════════════════ */
+.s-tryon {
+  min-height: 100dvh;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: center;
+  border-bottom: 1px solid var(--border);
+}
+
+.tryon-vis {
+  background: #07090F;
+  min-height: 60vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 5vw;
+  position: relative;
+  overflow: hidden;
+}
+
+.tryon-vis::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse 80% 70% at 50% 60%, #0D1528 0%, #07090F 100%);
+}
+
+.tryon-stage {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.9rem;
+  position: relative;
+  z-index: 1;
+}
+
+.tryon-card {
+  width: 136px;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 24px 60px rgba(0,0,0,0.55);
+  flex-shrink: 0;
+}
+.tryon-card-b {
+  background: #10131E;
+  border: 1px solid rgba(255,255,255,0.05);
+}
+.tryon-card-a {
+  background: #0E1626;
+  border: 1px solid rgba(80,130,210,0.18);
+  box-shadow: 0 24px 60px rgba(0,0,0,0.55), 0 0 60px rgba(60,100,200,0.08);
+}
+
+.tryon-card-body {
+  aspect-ratio: 9/13;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding-bottom: 1rem;
+}
+
+/* SVG person figures */
+.person-svg { width: 68%; position: relative; z-index: 1; }
+
+.tryon-card-label {
+  padding: 0.55rem 0.6rem;
+  font-size: 0.52rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+  border-top: 1px solid rgba(255,255,255,0.05);
+  text-align: center;
+  background: rgba(0,0,0,0.25);
+}
+.tryon-card-a .tryon-card-label { color: #7AABEE; }
+
+.tryon-arrow {
+  width: 34px; height: 34px;
+  background: var(--accent);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--bg);
+  font-size: 0.85rem;
+  align-self: center;
+  flex-shrink: 0;
+  box-shadow: 0 4px 22px rgba(196,149,90,0.4);
+}
+
+.tryon-copy { padding: 6vw 8vw 6vw 6vw; }
+
+.feat-headline {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: clamp(2rem, 4vw, 3.2rem);
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  margin: 1.25rem 0 1.25rem;
+}
+.feat-headline em { font-style: italic; color: var(--accent); }
+
+.feat-body {
+  font-size: 1rem;
+  line-height: 1.82;
+  color: var(--muted);
+  max-width: 40ch;
+}
+
+.feat-note {
+  margin-top: 1.5rem;
+  font-size: 0.7rem;
+  color: var(--dim);
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  max-width: 36ch;
+  line-height: 1.55;
+}
+.feat-note-icon {
+  width: 14px; height: 14px;
+  border-radius: 50%;
+  border: 1px solid var(--dim);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.52rem;
+  flex-shrink: 0;
+  margin-top: 1px;
+  color: var(--muted);
+}
+
+/* ══════════════════════════════════════════════
+   SCENE 5 — OUTFITS
+   ══════════════════════════════════════════════ */
+.s-outfits {
+  min-height: 100dvh;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: center;
+  border-bottom: 1px solid var(--border);
+}
+
+.outfits-copy { padding: 6vw 6vw 6vw 8vw; }
+
+.outfits-vis {
+  background: #080A07;
+  min-height: 60vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 5vw;
+}
+
+.outfit-mock {
+  width: 100%;
+  max-width: 290px;
+  background: var(--surf);
+  border-radius: 16px;
+  padding: 1.15rem;
+  border: 1px solid var(--border);
+  box-shadow: 0 36px 72px rgba(0,0,0,0.45);
+}
+
+.om-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.85rem;
+}
+.om-title { font-size: 0.65rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; }
+.om-share { font-size: 0.58rem; color: var(--accent); letter-spacing: 0.06em; text-transform: uppercase; }
+
+.om-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.42rem; }
+.om-cell {
+  border-radius: 10px;
+  background: var(--surf2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.75rem;
+  position: relative;
+  overflow: hidden;
+}
+.om-cell:nth-child(1) { grid-column: 1/-1; aspect-ratio: 2/1; font-size: 2rem; }
+.om-cell:nth-child(2), .om-cell:nth-child(3) { aspect-ratio: 1; }
+.om-cell:nth-child(4) { grid-column: 1/-1; aspect-ratio: 16/5; font-size: 1.4rem; }
+
+.om-badge {
+  position: absolute;
+  bottom: 0.32rem; right: 0.32rem;
+  font-size: 0.46rem;
+  font-family: 'Inter', sans-serif;
+  background: rgba(196,149,90,0.92);
+  color: var(--bg);
+  padding: 0.14rem 0.36rem;
+  border-radius: 100px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.om-ai {
+  margin-top: 0.8rem;
+  padding: 0.58rem 0.75rem;
+  background: rgba(196,149,90,0.06);
+  border: 1px solid rgba(196,149,90,0.15);
+  border-radius: 8px;
+  font-size: 0.6rem;
+  color: var(--gold);
+  display: flex;
+  gap: 0.48rem;
+  line-height: 1.55;
+}
+.om-ai-dot {
+  width: 13px; height: 13px;
+  border-radius: 50%;
+  background: var(--accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.48rem;
+  flex-shrink: 0;
+  margin-top: 1px;
+  color: var(--bg);
+}
+
+/* ══════════════════════════════════════════════
+   SCENE 6 — PROOF
+   Numbers + retailer marquee
+   ══════════════════════════════════════════════ */
+.s-proof {
+  padding: 10vh 6vw 8vh;
+  text-align: center;
+  border-bottom: 1px solid var(--border);
+}
+
+.proof-stats {
+  display: flex;
+  justify-content: center;
+  gap: clamp(3rem, 8vw, 8rem);
+  flex-wrap: wrap;
+  margin-top: 4rem;
+  padding-bottom: 5rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.stat { text-align: center; }
+.stat-num {
+  font-size: clamp(4.5rem, 10vw, 8.5rem);
+  font-weight: 900;
+  letter-spacing: -0.055em;
+  line-height: 1;
+  font-family: 'Inter', sans-serif;
+  font-variant-numeric: tabular-nums;
+}
+.stat-num .a { color: var(--accent); }
+.stat-lbl {
+  display: block;
+  font-size: 0.68rem;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-top: 0.75rem;
+}
+
+/* ── Retailer marquee with gradient edge fade ── */
+.s-marquee {
+  overflow: hidden;
+  padding: 2.2rem 0;
+  border-bottom: 1px solid var(--border);
+  /* Fade edges out */
+  -webkit-mask-image: linear-gradient(to right, transparent 0%, black 12%, black 88%, transparent 100%);
+  mask-image: linear-gradient(to right, transparent 0%, black 12%, black 88%, transparent 100%);
+}
+.marquee-track {
+  display: flex;
+  width: max-content;
+  animation: marqueeSpin 28s linear infinite;
+}
+.marquee-group { display: flex; align-items: center; flex-shrink: 0; }
+.marquee-name {
+  font-size: 0.63rem;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: rgba(237,232,224,0.17);
+  padding: 0 2rem;
+  white-space: nowrap;
+}
+.marquee-dot {
+  width: 3px; height: 3px;
+  border-radius: 50%;
+  background: var(--accent);
+  opacity: 0.55;
+  flex-shrink: 0;
+}
+
+/* ══════════════════════════════════════════════
+   SCENE 7 — CTA
+   Rule: Clear action + urgency + consistent brand
+   ══════════════════════════════════════════════ */
+.s-cta {
+  min-height: 100dvh;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 10vh 6vw;
+  text-align: center;
+  overflow: hidden;
+}
+
+/* Animated radial glow — moves slowly for depth */
+.cta-glow {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse 80% 60% at var(--gx, 50%) var(--gy, 52%), #1E1308 0%, transparent 68%);
+  animation: glowDrift 12s ease-in-out infinite;
+  pointer-events: none;
+}
+@keyframes glowDrift {
+  0%,100% { --gx: 50%; --gy: 52%; }
+  25%      { --gx: 48%; --gy: 56%; }
+  50%      { --gx: 52%; --gy: 48%; }
+  75%      { --gx: 46%; --gy: 54%; }
+}
+
+/* Subtle constellation dots */
+.cta-dots {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+.cta-dot {
+  position: absolute;
+  width: 1px; height: 1px;
+  border-radius: 50%;
+  background: var(--accent);
+  opacity: 0;
+  animation: twinkle var(--dur, 4s) ease-in-out var(--delay, 0s) infinite;
+}
+@keyframes twinkle {
+  0%,100% { opacity: 0; transform: scale(1); }
+  50%      { opacity: 0.4; transform: scale(2); }
+}
+
+.cta-wordmark {
+  position: relative; z-index: 1;
+  font-size: 0.85rem;
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  color: rgba(237,232,224,0.2);
+  margin-bottom: 2.5rem;
+}
+.cta-wordmark span { color: rgba(196,149,90,0.4); }
+
+.cta-headline {
+  position: relative; z-index: 1;
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: clamp(4rem, 13vw, 11rem);
+  font-weight: 900;
+  line-height: 0.92;
+  letter-spacing: -0.045em;
+}
+.cta-headline em {
+  display: block;
+  font-style: italic;
+  font-weight: 700;
+  color: var(--accent);
+}
+
+.cta-sub {
+  position: relative; z-index: 1;
+  font-size: clamp(0.95rem, 2vw, 1.1rem);
+  color: var(--muted);
+  margin-top: 2rem;
+  line-height: 1.7;
+  max-width: 44ch;
+}
+
+/* Urgency pill — removes reason to delay */
+.cta-urgency {
+  position: relative; z-index: 1;
+  margin-top: 1.5rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1.2rem;
+  border-radius: 100px;
+  border: 1px solid rgba(196,149,90,0.22);
+  background: rgba(196,149,90,0.07);
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--gold);
+  letter-spacing: 0.04em;
+}
+.urgency-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+  animation: urgencyPulse 2s ease-in-out infinite;
+}
+@keyframes urgencyPulse {
+  0%,100% { opacity: 1; transform: scale(1); }
+  50%      { opacity: 0.5; transform: scale(0.7); }
+}
+
+.cta-buttons {
+  position: relative; z-index: 1;
+  display: flex;
+  gap: 0.8rem;
+  margin-top: 2rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.cta-trust {
+  position: relative; z-index: 1;
+  margin-top: 1.75rem;
+  display: flex;
+  gap: 1.5rem;
+  justify-content: center;
+  flex-wrap: wrap;
+  font-size: 0.6rem;
+  color: rgba(237,232,224,0.16);
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+}
+
+/* ── FOOTER ── */
+.s-footer {
+  padding: 1.75rem 6vw;
+  border-top: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+.footer-logo {
+  font-size: 1rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: var(--fg);
+  text-decoration: none;
+}
+.footer-logo span { color: var(--accent); }
+.footer-note { font-size: 0.6rem; color: var(--muted); letter-spacing: 0.08em; }
+
+/* ── KEYFRAMES ── */
+@keyframes riseIn {
+  from { opacity: 0; transform: translateY(44px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(18px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes float {
+  0%,100% { transform: translateY(0px) rotate(0deg); }
+  33%     { transform: translateY(-10px) rotate(0.3deg); }
+  66%     { transform: translateY(-5px) rotate(-0.2deg); }
+}
+@keyframes typing {
+  0%   { width: 0; }
+  42%  { width: 100%; }
+  72%  { width: 100%; }
+  88%  { width: 0; }
+  100% { width: 0; }
+}
+@keyframes blink {
+  from,to { border-color: transparent; }
+  50%     { border-color: var(--accent); }
+}
+@keyframes marqueeSpin {
+  to { transform: translateX(-50%); }
+}
+
+/* ── RESPONSIVE ── */
+@media (max-width: 900px) {
+  .s-hook    { grid-template-columns: 1fr; }
+  .s-tryon   { grid-template-columns: 1fr; }
+  .s-outfits { grid-template-columns: 1fr; }
+
+  .hook-left  { padding: 5rem 2rem 2rem; }
+  .hook-right { padding: 2rem 2rem 4rem; }
+
+  .tryon-vis  { min-height: 55vw; padding: 3rem 2rem; }
+  .tryon-copy { padding: 3rem 2rem; }
+  .feat-body  { max-width: 100%; }
+
+  .outfits-vis  { min-height: 55vw; padding: 3rem 2rem; order: -1; }
+  .outfits-copy { padding: 3rem 2rem; }
+
+  .words-body { grid-template-columns: 1fr; gap: 1.25rem; }
+
+  .s-words { padding: 6vh 6vw; }
+}
+
+@media (max-width: 540px) {
+  .proof-stats { gap: 2.5rem; }
+  .cta-headline { font-size: clamp(3.5rem, 16vw, 7rem); }
+}
+
+  </style>
+</head>
+<body>
+
+<!-- ── STICKY NAV ── -->
+<nav class="sticky-nav" id="sticky-nav" aria-label="Site navigation" aria-hidden="true">
+  <a href="/" class="sn-logo">dress<span>.</span>me</a>
+  <a href="/" class="btn-primary sn-cta">Find your look →</a>
+</nav>
+
+
+<!-- ════════ HOOK ════════ -->
+<!-- Rule: pain in the first line, product visible, CTA above fold -->
+<section class="s-hook" id="hook">
+  <div class="hook-glow" aria-hidden="true"></div>
+
+  <div class="hook-left">
+    <!-- Pain — first thing they read -->
+    <p class="hook-pain">"Seventeen tabs. Still nothing."</p>
+
+    <!-- Brand immediately follows the pain -->
+    <h1 class="hook-headline">dress<span class="hook-dot">.</span>me</h1>
+    <p class="hook-tagline">One search. Hundreds of retailers.</p>
+
+    <!-- CTA visible without scrolling -->
+    <div class="hook-actions">
+      <a href="/" class="btn-primary">Find your look now →</a>
+      <span class="hook-trust">Free to use<br>No account needed</span>
+    </div>
+  </div>
+
+  <!-- Product on screen immediately — Rule: show product right away -->
+  <div class="hook-right">
+    <div class="mock-float">
+      <div class="search-mock" role="img" aria-label="dress.me search showing clothing results from ASOS, John Lewis and M&S">
+        <div class="mock-chrome" aria-hidden="true">
+          <div class="mc-dot"></div><div class="mc-dot"></div><div class="mc-dot"></div>
+          <div class="mc-bar"></div>
+        </div>
+        <div class="mock-searchbox">
+          <div class="mock-icon" aria-hidden="true"></div>
+          <span class="mock-query" aria-hidden="true">oversized navy wool coat under £150</span>
+        </div>
+        <div class="mock-chips" aria-hidden="true">
+          <span class="mock-chip">Navy</span>
+          <span class="mock-chip">Wool</span>
+          <span class="mock-chip">Under £150</span>
+          <span class="mock-chip">Oversized</span>
+        </div>
+        <div class="mock-grid" aria-hidden="true">
+          <div class="mock-card">
+            <div class="mock-card-img"></div>
+            <div class="mock-card-meta">
+              <span class="mock-card-shop">ASOS</span>
+              <span class="mock-card-price">£89.99</span>
+            </div>
+          </div>
+          <div class="mock-card">
+            <div class="mock-card-img"></div>
+            <div class="mock-card-meta">
+              <span class="mock-card-shop">John Lewis</span>
+              <span class="mock-card-price">£129.00</span>
+            </div>
+          </div>
+          <div class="mock-card">
+            <div class="mock-card-img"></div>
+            <div class="mock-card-meta">
+              <span class="mock-card-shop">M&amp;S</span>
+              <span class="mock-card-price">£99.00</span>
+            </div>
+          </div>
+        </div>
+        <p class="mock-count" aria-hidden="true">248 results from 43 retailers</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ════════ PROBLEM ════════ -->
+<!-- Rule: focus on the customer's pain -->
+<section class="s-problem" data-s>
+  <!-- Giant watermark — design element, not content -->
+  <div class="problem-watermark" aria-hidden="true">17</div>
+
+  <div class="problem-inner">
+    <!-- Count-up number — engagement through animation -->
+    <span class="problem-count fi" data-countup="17">17</span>
+    <div class="r"><span class="ri problem-headline">tabs open.</span></div>
+    <div class="r"><span class="ri d1 problem-sub">Still the wrong size,<br>wrong price, wrong vibe.</span></div>
+    <div class="problem-hr fi d2" aria-hidden="true"></div>
+    <p class="problem-kicker fi d3">
+      You know <strong>exactly</strong> what you want.<br>
+      The problem isn't your taste — it's the search.
+    </p>
+  </div>
+</section>
+
+
+<!-- ════════ WORD SLAM ════════ -->
+<!-- Describe. Find. Wear. — simple words, maximum drama -->
+<section class="s-words" data-s>
+  <div class="words-bg" aria-hidden="true"></div>
+  <div class="words-inner">
+    <div class="word-row"><span class="word-text d1">Describe.</span></div>
+    <div class="word-row"><span class="word-text d2">Find.</span></div>
+    <div class="word-row"><span class="word-text word-accent d3">Wear.</span></div>
+
+    <div class="words-body" aria-label="How dress.me works">
+      <div class="word-fact fi d4">
+        <span class="word-fact-label">Plain English</span>
+        <span class="word-fact-text">Type exactly what's in your head. "Floral midi dress for a summer wedding." AI does the rest.</span>
+      </div>
+      <div class="word-fact fi d5">
+        <span class="word-fact-label">Hundreds of retailers</span>
+        <span class="word-fact-text">ASOS, Zara, M&amp;S, Farfetch, John Lewis and hundreds more — searched in seconds.</span>
+      </div>
+      <div class="word-fact fi d6">
+        <span class="word-fact-label">Free. Always.</span>
+        <span class="word-fact-text">No account. No subscription. We earn a small commission only when you buy — never from you.</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ════════ TRY-ON ════════ -->
+<section class="s-tryon" data-s>
+  <div class="tryon-vis" aria-hidden="true">
+    <div class="tryon-stage">
+
+      <!-- BEFORE: muted grey figure, no outfit -->
+      <div class="tryon-card tryon-card-b">
+        <div class="tryon-card-body">
+          <svg class="person-svg" viewBox="0 0 80 158" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="40" cy="20" r="15" fill="rgba(140,130,120,0.22)"/>
+            <rect x="34" y="34" width="12" height="8" rx="3" fill="rgba(140,130,120,0.18)"/>
+            <path d="M20 50 C18 44 40 40 40 40 C40 40 62 44 60 50 L64 98 Q40 106 16 98 Z" fill="rgba(140,130,120,0.15)"/>
+            <path d="M20 52 C13 60 10 72 9 84" stroke="rgba(140,130,120,0.18)" stroke-width="10" stroke-linecap="round"/>
+            <path d="M60 52 C67 60 70 72 71 84" stroke="rgba(140,130,120,0.18)" stroke-width="10" stroke-linecap="round"/>
+            <rect x="21" y="96" width="14" height="52" rx="7" fill="rgba(140,130,120,0.15)"/>
+            <rect x="45" y="96" width="14" height="52" rx="7" fill="rgba(140,130,120,0.15)"/>
+          </svg>
+        </div>
+        <div class="tryon-card-label">You</div>
+      </div>
+
+      <div class="tryon-arrow" aria-hidden="true">→</div>
+
+      <!-- AFTER: same figure, outfit glows in blue -->
+      <div class="tryon-card tryon-card-a">
+        <div class="tryon-card-body">
+          <svg class="person-svg" viewBox="0 0 80 158" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="coat-g" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#6890D8"/>
+                <stop offset="100%" stop-color="#3058A8"/>
+              </linearGradient>
+              <linearGradient id="trouser-g" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#284878"/>
+                <stop offset="100%" stop-color="#1A3060"/>
+              </linearGradient>
+              <filter id="item-glow" x="-30%" y="-30%" width="160%" height="160%">
+                <feGaussianBlur in="SourceGraphic" stdDeviation="3" result="blur"/>
+                <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+              </filter>
+            </defs>
+            <!-- Head + neck -->
+            <circle cx="40" cy="20" r="15" fill="rgba(160,175,215,0.5)"/>
+            <rect x="34" y="34" width="12" height="8" rx="3" fill="rgba(160,175,215,0.4)"/>
+            <!-- Coat body — glowing -->
+            <path d="M20 50 C18 44 40 40 40 40 C40 40 62 44 60 50 L64 98 Q40 106 16 98 Z"
+                  fill="url(#coat-g)" filter="url(#item-glow)" opacity="0.88"/>
+            <!-- Lapels -->
+            <path d="M40 40 L33 65 L40 70 L47 65 Z" fill="rgba(50,90,190,0.9)"/>
+            <!-- Sleeves / arms -->
+            <path d="M20 52 C13 60 10 72 9 84" stroke="url(#coat-g)" stroke-width="10" stroke-linecap="round" opacity="0.82"/>
+            <path d="M60 52 C67 60 70 72 71 84" stroke="url(#coat-g)" stroke-width="10" stroke-linecap="round" opacity="0.82"/>
+            <!-- Trousers -->
+            <rect x="21" y="96" width="14" height="52" rx="7" fill="url(#trouser-g)" opacity="0.78"/>
+            <rect x="45" y="96" width="14" height="52" rx="7" fill="url(#trouser-g)" opacity="0.78"/>
+          </svg>
+        </div>
+        <div class="tryon-card-label">Wearing it</div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="tryon-copy">
+    <span class="eyebrow fi">Virtual try-on</span>
+    <h2 class="feat-headline">
+      <div class="r"><span class="ri">See it on you</span></div>
+      <div class="r"><span class="ri d1"><em>before you buy.</em></span></div>
+    </h2>
+    <p class="feat-body fi d2">
+      Upload a photo of yourself and try on any item instantly. No more guessing how it'll look. No more ordering and sending back.
+    </p>
+    <p class="feat-note fi d3">
+      <span class="feat-note-icon">i</span>
+      Your photo is never stored — used once for the try-on, then immediately discarded.
+    </p>
+  </div>
+</section>
+
+
+<!-- ════════ OUTFITS ════════ -->
+<section class="s-outfits" data-s>
+  <div class="outfits-copy">
+    <span class="eyebrow fi">Build a look</span>
+    <h2 class="feat-headline">
+      <div class="r"><span class="ri">Complete outfit.</span></div>
+      <div class="r"><span class="ri d1"><em>One link to share.</em></span></div>
+    </h2>
+    <p class="feat-body fi d2">
+      Save items as you find them. Group them into outfit boards. Ask the AI what completes the look. Share with anyone via a single link — no account required.
+    </p>
+  </div>
+
+  <div class="outfits-vis fi d1" aria-hidden="true">
+    <div class="outfit-mock">
+      <div class="om-header">
+        <span class="om-title">Weekend look</span>
+        <span class="om-share">↗ Share link</span>
+      </div>
+      <div class="om-grid">
+        <div class="om-cell">🧥<span class="om-badge">Saved</span></div>
+        <div class="om-cell">👖<span class="om-badge">Saved</span></div>
+        <div class="om-cell">👟<span class="om-badge">Saved</span></div>
+        <div class="om-cell">👜<span class="om-badge">Saved</span></div>
+      </div>
+      <div class="om-ai">
+        <span class="om-ai-dot">✦</span>
+        AI: "A white linen shirt would complete this look"
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ════════ PROOF ════════ -->
+<section class="s-proof" data-s>
+  <span class="eyebrow fi">By the numbers</span>
+
+  <div class="proof-stats">
+    <div class="stat">
+      <div class="stat-num fi">100<span class="a">s</span></div>
+      <span class="stat-lbl fi d1">of retailers searched</span>
+    </div>
+    <div class="stat">
+      <div class="stat-num fi d1">1<span class="a">×</span></div>
+      <span class="stat-lbl fi d2">search. that's it.</span>
+    </div>
+    <div class="stat">
+      <div class="stat-num fi d2">£<span class="a">0</span></div>
+      <span class="stat-lbl fi d3">free. always.</span>
+    </div>
+  </div>
+</section>
+
+<!-- Retailer marquee — gradient-masked edges -->
+<div class="s-marquee" aria-label="Retailers available on dress.me">
+  <div class="marquee-track" aria-hidden="true">
+    <div class="marquee-group">
+      <span class="marquee-name">ASOS</span><span class="marquee-dot"></span>
+      <span class="marquee-name">Zara</span><span class="marquee-dot"></span>
+      <span class="marquee-name">John Lewis</span><span class="marquee-dot"></span>
+      <span class="marquee-name">Marks &amp; Spencer</span><span class="marquee-dot"></span>
+      <span class="marquee-name">H&amp;M</span><span class="marquee-dot"></span>
+      <span class="marquee-name">Farfetch</span><span class="marquee-dot"></span>
+      <span class="marquee-name">Next</span><span class="marquee-dot"></span>
+      <span class="marquee-name">River Island</span><span class="marquee-dot"></span>
+      <span class="marquee-name">Reiss</span><span class="marquee-dot"></span>
+      <span class="marquee-name">&amp; Other Stories</span><span class="marquee-dot"></span>
+      <span class="marquee-name">Ted Baker</span><span class="marquee-dot"></span>
+      <span class="marquee-name">Whistles</span><span class="marquee-dot"></span>
+      <span class="marquee-name">Cos</span><span class="marquee-dot"></span>
+      <span class="marquee-name">Uniqlo</span><span class="marquee-dot"></span>
+      <span class="marquee-name">Hobbs</span><span class="marquee-dot"></span>
+    </div>
+    <div class="marquee-group" aria-hidden="true">
+      <span class="marquee-name">ASOS</span><span class="marquee-dot"></span>
+      <span class="marquee-name">Zara</span><span class="marquee-dot"></span>
+      <span class="marquee-name">John Lewis</span><span class="marquee-dot"></span>
+      <span class="marquee-name">Marks &amp; Spencer</span><span class="marquee-dot"></span>
+      <span class="marquee-name">H&amp;M</span><span class="marquee-dot"></span>
+      <span class="marquee-name">Farfetch</span><span class="marquee-dot"></span>
+      <span class="marquee-name">Next</span><span class="marquee-dot"></span>
+      <span class="marquee-name">River Island</span><span class="marquee-dot"></span>
+      <span class="marquee-name">Reiss</span><span class="marquee-dot"></span>
+      <span class="marquee-name">&amp; Other Stories</span><span class="marquee-dot"></span>
+      <span class="marquee-name">Ted Baker</span><span class="marquee-dot"></span>
+      <span class="marquee-name">Whistles</span><span class="marquee-dot"></span>
+      <span class="marquee-name">Cos</span><span class="marquee-dot"></span>
+      <span class="marquee-name">Uniqlo</span><span class="marquee-dot"></span>
+      <span class="marquee-name">Hobbs</span><span class="marquee-dot"></span>
+    </div>
+  </div>
+</div>
+
+
+<!-- ════════ CTA ════════ -->
+<!-- Rule: clear action, urgency, consistent branding -->
+<section class="s-cta" data-s>
+  <div class="cta-glow" aria-hidden="true"></div>
+
+  <!-- Constellation dots for depth -->
+  <div class="cta-dots" aria-hidden="true" id="cta-dots"></div>
+
+  <!-- Brand visible at CTA = consistent branding rule -->
+  <div class="cta-wordmark fi">dress<span>.</span>me</div>
+
+  <h2 class="cta-headline">
+    <div class="r"><span class="ri">Stop browsing.</span></div>
+    <div class="r"><span class="ri d1"><em>Start wearing.</em></span></div>
+  </h2>
+
+  <p class="cta-sub fi d2">
+    Tell us what you want. We'll search hundreds of retailers and find it — in seconds.
+  </p>
+
+  <!-- Urgency: removes reason to put it off -->
+  <div class="cta-urgency fi d3">
+    <span class="urgency-dot" aria-hidden="true"></span>
+    Free forever · No account needed · Start right now
+  </div>
+
+  <div class="cta-buttons fi d4">
+    <a href="/" class="btn-primary">Find your look now →</a>
+    <a href="/how-it-works" class="btn-ghost">How it works</a>
+  </div>
+
+  <div class="cta-trust fi d5">
+    <span>Free to use</span>
+    <span>No sign-up</span>
+    <span>Your data stays yours</span>
+  </div>
+</section>
+
+
+<footer class="s-footer">
+  <a href="/" class="footer-logo">dress<span>.</span>me</a>
+  <span class="footer-note">AI-powered · Hundreds of retailers · Free forever</span>
+</footer>
+
+
+<script>
+  // ── Scroll reveal ──
+  const io = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('iv'); });
+  }, { threshold: 0.1 });
+  document.querySelectorAll('[data-s]').forEach(el => io.observe(el));
+
+  // ── Sticky nav appears when hero scrolls out ──
+  const hero = document.getElementById('hook');
+  const nav  = document.getElementById('sticky-nav');
+  new IntersectionObserver(entries => {
+    const visible = !entries[0].isIntersecting;
+    nav.classList.toggle('show', visible);
+    nav.setAttribute('aria-hidden', String(!visible));
+  }, { threshold: 0.15 }).observe(hero);
+
+  // ── Count-up animation ──
+  function countUp(el, target, duration) {
+    let start = null;
+    const step = ts => {
+      if (!start) start = ts;
+      const p = Math.min((ts - start) / duration, 1);
+      const ease = 1 - Math.pow(1 - p, 3);
+      el.textContent = Math.round(ease * target);
+      if (p < 1) requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+  }
+
+  const countEls = document.querySelectorAll('[data-countup]');
+  new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        countUp(e.target, parseInt(e.target.dataset.countup), 1400);
+        // Only fire once
+        e.target.removeAttribute('data-countup');
+      }
+    });
+  }, { threshold: 0.5 }).observe(countEls[0]);
+
+  // ── CTA constellation dots ──
+  const dotsContainer = document.getElementById('cta-dots');
+  for (let i = 0; i < 18; i++) {
+    const d = document.createElement('div');
+    d.className = 'cta-dot';
+    d.style.cssText = [
+      `left:${Math.random() * 100}%`,
+      `top:${Math.random() * 100}%`,
+      `--dur:${3 + Math.random() * 5}s`,
+      `--delay:${Math.random() * 6}s`,
+    ].join(';');
+    dotsContainer.appendChild(d);
+  }
+</script>
+
+</body>
+</html>

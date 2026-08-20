@@ -1,5 +1,5 @@
 {# card.html — single product card partial.
-   Context variables: product, position (int, 0-based), try_on_enabled (bool).
+   Context variables: product, position (int, 0-based).
    Used by results.html ({% include %}) and rendered server-side for AJAX responses. #}
 <li class="product-card"
     data-product-id="{{ product.id|e }}"
@@ -67,12 +67,6 @@
       <a href="/search?q={{ product.name|truncate(60, True, '')|urlencode }}"
          class="btn-find-similar"
          aria-label="Find items similar to {{ product.name }}">Find similar</a>
-      {% if try_on_enabled %}
-      <button class="btn-try-on"
-              data-garment-url="{{ product.image_url|default('')|e }}"
-              data-garment-name="{{ product.name|e }}"
-              aria-label="Try on {{ product.name }}">Try on</button>
-      {% endif %}
       <button class="btn-style-it"
               data-garment-url="{{ product.image_url|default('')|e }}"
               data-garment-name="{{ product.name|e }}"

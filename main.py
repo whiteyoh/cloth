@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 import asyncio
-import base64
 import hashlib
 import os
 import time
@@ -14,7 +13,7 @@ from urllib.parse import quote, urlparse
 import httpx
 
 from dotenv import load_dotenv
-from fastapi import FastAPI, File, Form, Request, UploadFile
+from fastapi import FastAPI, Form, Request
 from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse, Response
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
@@ -42,7 +41,7 @@ _STATIC_DIR = os.path.join(os.path.dirname(__file__), "static")
 templates = Jinja2Templates(directory=_TEMPLATES_DIR)
 
 
-def _render_cards_html(products: list, try_on_enabled: bool = False) -> str:
+def _render_cards_html(products: list) -> str:
     """Render a list of products as HTML card fragments using the card.html partial.
 
     Returns a single string containing concatenated <li> elements, ready to be
@@ -50,18 +49,10 @@ def _render_cards_html(products: list, try_on_enabled: bool = False) -> str:
     """
     card_template = templates.env.get_template("card.html")
     return "".join(
-        card_template.render(product=product, position=i, try_on_enabled=try_on_enabled)
+        card_template.render(product=product, position=i)
         for i, product in enumerate(products)
     )
 
-
-# Magic byte signatures for allowed image types
-_JPEG_MAGIC = b"\xff\xd8\xff"
-_PNG_MAGIC = b"\x89PNG\r\n\x1a\n"
-_MAX_IMAGE_BYTES = 5 * 1024 * 1024  # 5 MB
-_ALLOWED_CONTENT_TYPES = {"image/jpeg", "image/png"}
-
-_FASHN_AI_BASE = "https://api.fashn.ai/v1"
 
 def _get_client_ip(request: Request) -> str:
     """Return the real client IP, honouring X-Forwarded-For when TRUSTED_PROXY is set.
@@ -206,60 +197,6 @@ async def _expanded_search(
     return merged, True
 
 
-def _infer_try_on_category(garment_name: str) -> str:
-    """Infer Fashn.ai garment category from garment name keywords.
-
-    Returns "one-piece", "bottoms", or "tops" (default).
-    """
-    name_lower = garment_name.lower()
-    if any(kw in name_lower for kw in ("dress", "skirt", "jumpsuit", "romper", "playsuit", "bodycon", "pinafore")):
-        return "one-piece"
-    if any(kw in name_lower for kw in ("trouser", "jean", "pant", "short", "legging", "chino", "jogger", "culotte")):
-        return "bottoms"
-    return "tops"
-
-
-async def _call_fashn_ai(image_bytes: bytes, garment_url: str, api_key: str, category: str = "tops") -> str:
-    """Call Fashn.ai try-on API; return the result image URL.
-
-    Sends the person photo as a base64 data URI and the garment as its URL.
-    Polls up to 10 times with 3-second sleeps (30 second maximum wait).
-    """
-    mime = "image/png" if image_bytes[:8] == _PNG_MAGIC else "image/jpeg"
-    b64 = base64.b64encode(image_bytes).decode()
-    data_uri = f"data:{mime};base64,{b64}"
-
-    client = _get_http_client()
-    start_resp = await client.post(
-        f"{_FASHN_AI_BASE}/run",
-        json={"model_image": data_uri, "garment_image": garment_url, "category": category},
-        headers={"Authorization": f"Bearer {api_key}"},
-        timeout=15.0,
-    )
-    start_resp.raise_for_status()
-    job_id = start_resp.json()["id"]
-
-    for _ in range(10):
-        await asyncio.sleep(3)
-        status_resp = await client.get(
-            f"{_FASHN_AI_BASE}/status/{job_id}",
-            headers={"Authorization": f"Bearer {api_key}"},
-            timeout=10.0,
-        )
-        status_resp.raise_for_status()
-        status_data = status_resp.json()
-        current_status = status_data.get("status", "")
-        if current_status == "completed":
-            outputs = status_data.get("output", [])
-            if outputs:
-                return outputs[0]
-            raise RuntimeError("No output URL in completed response")
-        if current_status in ("failed", "error"):
-            raise RuntimeError(f"Try-on failed: {status_data.get('error', 'unknown')}")
-
-    raise TimeoutError("Try-on timed out after 30 seconds")
-
-
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Validate required environment variables at startup; clean up on shutdown."""
@@ -268,7 +205,6 @@ async def lifespan(app: FastAPI):
         raise ValueError(
             "SERPER_API_KEY environment variable is not set. Cannot start application."
         )
-    templates.env.globals["try_on_enabled"] = bool(os.environ.get("FASHN_API_KEY"))
     templates.env.globals["refine_enabled"] = bool(os.environ.get("OPENAI_API_KEY"))
     templates.env.globals["skimlinks_pub_id"] = os.environ.get("SKIMLINKS_PUB_ID", "")
 
@@ -486,12 +422,11 @@ async def get_search(request: Request, q: str = "", fresh: bool = False, format:
             pass
 
     if want_json:
-        _try_on_enabled = bool(os.environ.get("FASHN_API_KEY"))
         return JSONResponse({
             "query": q_stripped,
             "products": [p.model_dump(mode="json") for p in products],
             "product_ids": [p.id for p in products],
-            "cards_html": _render_cards_html(products, try_on_enabled=_try_on_enabled),
+            "cards_html": _render_cards_html(products),
             "result_count": result_count,
             "cache_age_minutes": cache_age_minutes,
             "error_message": None,
@@ -632,114 +567,6 @@ async def outfit_complete(body: _OutfitCompleteRequest):
     return JSONResponse({"suggestions": suggestions})
 
 
-@app.post("/try-on")
-async def try_on(
-    request: Request,
-    person_image: UploadFile | None = File(default=None),  # noqa: B008
-    garment_url: str = Form(default=""),  # noqa: B008
-    garment_name: str = Form(default=""),  # noqa: B008
-    category_override: str = Form(default=""),  # noqa: B008
-):
-    """Virtual try-on endpoint.
-
-    Accepts multipart/form-data with a person photo and garment URL.
-    Calls Fashn.ai to composite the garment onto the photo and returns
-    the result image URL.
-
-    Returns:
-        {"result_url": "..."} on success
-        {"error": "..."} on processing failure
-        {"status": "unavailable"} when FASHN_API_KEY is not configured
-        HTTP 400 for invalid input
-        HTTP 429 when rate limit exceeded
-    """
-    api_key = os.environ.get("FASHN_API_KEY", "")
-    if not api_key:
-        return JSONResponse({"status": "unavailable"})
-
-    client_ip = _get_client_ip(request)
-    if not rate_limit.check_try_on(client_ip):
-        _emit(
-            {
-                "event": "rate_limit_rejected",
-                "ip": _hash_ip(client_ip),
-                "limit_type": "try_on",
-                "timestamp_utc": datetime.now(timezone.utc).isoformat(),
-            }
-        )
-        return JSONResponse(
-            {"error": "Rate limit exceeded. Maximum 3 try-ons per day."},
-            status_code=429,
-        )
-
-    # Require a file upload
-    if person_image is None or person_image.filename is None:
-        return JSONResponse(
-            {"error": "No image file provided."},
-            status_code=400,
-        )
-
-    # Validate MIME type (client-supplied; checked first for fast rejection)
-    if person_image.content_type not in _ALLOWED_CONTENT_TYPES:
-        return JSONResponse(
-            {"error": "Invalid image format. Please upload a JPEG or PNG."},
-            status_code=400,
-        )
-
-    # Read the uploaded bytes; enforce size limit
-    content = await person_image.read()
-    if len(content) > _MAX_IMAGE_BYTES:
-        return JSONResponse(
-            {"error": "File too large. Maximum size is 5 MB."},
-            status_code=400,
-        )
-
-    # Validate magic bytes (independent of client-supplied MIME type)
-    if not (content[:3] == _JPEG_MAGIC or content[:8] == _PNG_MAGIC):
-        return JSONResponse(
-            {"error": "Invalid image format. File must be a JPEG or PNG."},
-            status_code=400,
-        )
-
-    _emit(
-        {
-            "event": "try_on_requested",
-            "ip": _hash_ip(client_ip),
-            "image_size_bytes": len(content),
-            "timestamp_utc": datetime.now(timezone.utc).isoformat(),
-        }
-    )
-
-    _valid_categories = {"tops", "bottoms", "one-piece"}
-    category = category_override if category_override in _valid_categories else _infer_try_on_category(garment_name)
-
-    start = time.monotonic()
-    try:
-        result_url = await _call_fashn_ai(content, garment_url, api_key, category=category)
-        latency_ms = round((time.monotonic() - start) * 1000)
-        _emit(
-            {
-                "event": "try_on_completed",
-                "ip": _hash_ip(client_ip),
-                "latency_ms": latency_ms,
-                "timestamp_utc": datetime.now(timezone.utc).isoformat(),
-            }
-        )
-        return JSONResponse({"result_url": result_url})
-    except Exception as exc:  # noqa: BLE001
-        latency_ms = round((time.monotonic() - start) * 1000)
-        _emit(
-            {
-                "event": "try_on_error",
-                "ip": _hash_ip(client_ip),
-                "error": str(exc),
-                "latency_ms": latency_ms,
-                "timestamp_utc": datetime.now(timezone.utc).isoformat(),
-            }
-        )
-        return JSONResponse({"error": "Try-on failed. Please try again."})
-
-
 @app.get("/image-proxy")
 async def image_proxy(url: str):
     """Proxy a remote image through the server to bypass browser CORS restrictions.
@@ -824,10 +651,7 @@ class OutfitGenerateRequest(BaseModel):
 
 @app.get("/outfit-generator", response_class=HTMLResponse)
 async def get_outfit_generator(request: Request):
-    api_key = os.environ.get("SERPER_API_KEY") or os.environ.get("SERPAPI_KEY", "")
-    try_on_enabled = bool(os.environ.get("FASHN_API_KEY"))
     return templates.TemplateResponse(request, "outfit_generator.html", {
-        "try_on_enabled": try_on_enabled,
         "llm_enabled": bool(os.environ.get("OPENAI_API_KEY")),
     })
 
