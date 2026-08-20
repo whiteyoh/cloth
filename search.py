@@ -6,6 +6,7 @@ import json
 import time
 from datetime import datetime, timezone
 from typing import Any
+from urllib.parse import parse_qs, urlparse
 
 import httpx
 
@@ -55,6 +56,52 @@ def _query_hash(normalised_key: str) -> str:
     return hashlib.sha256(normalised_key.encode()).hexdigest()[:12]
 
 
+_GOOGLE_NETLOCS = frozenset(
+    {
+        "www.google.com",
+        "google.com",
+        "www.google.co.uk",
+        "www.google.co.in",
+        "www.google.ca",
+        "www.google.com.au",
+    }
+)
+
+
+def _unwrap_google_url(url: str) -> str:
+    """Extract the real product URL from a Google redirect URL.
+
+    Serper.dev Shopping results occasionally return Google redirect URLs of
+    the form https://www.google.com/url?q=<actual_url>&... instead of the
+    direct retailer URL.  This function unwraps those redirects.  Non-Google
+    URLs are returned unchanged.
+    """
+    try:
+        parsed = urlparse(url)
+    except Exception:
+        return url
+
+    if parsed.netloc not in _GOOGLE_NETLOCS:
+        return url
+
+    # Google redirect: /url?q=<actual_url>[&sa=U&ved=...]
+    if parsed.path == "/url":
+        params = parse_qs(parsed.query)
+        for key in ("q", "url", "adurl"):
+            candidates = params.get(key, [])
+            if candidates:
+                candidate = candidates[0]
+                if candidate.startswith(("http://", "https://")):
+                    try:
+                        inner_netloc = urlparse(candidate).netloc
+                    except Exception:
+                        continue
+                    if inner_netloc not in _GOOGLE_NETLOCS:
+                        return candidate
+
+    return url
+
+
 def _normalise_result(
     item: dict[str, Any], retrieved_at: datetime, position: int = 0
 ) -> Product | None:
@@ -64,7 +111,15 @@ def _normalise_result(
     """
     title = item.get("title") or ""
     source = item.get("source") or ""
-    link = item.get("link") or item.get("productLink") or ""
+    raw_link = item.get("link") or ""
+    link = _unwrap_google_url(raw_link)
+    # If link is still a Google URL after unwrapping, prefer productLink when available
+    if link and urlparse(link).netloc in _GOOGLE_NETLOCS:
+        product_link = item.get("productLink") or ""
+        if product_link.startswith(("http://", "https://")):
+            link = product_link
+    if not link:
+        link = item.get("productLink") or ""
     thumbnail = item.get("imageUrl") or item.get("thumbnailUrl") or ""
     raw_price = item.get("price")
 

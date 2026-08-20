@@ -7,7 +7,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import pytest
 
 import cache
-from search import SearchError, _normalise_result, search_products
+from search import SearchError, _normalise_result, _unwrap_google_url, search_products
 
 _RETRIEVED_AT = datetime(2026, 8, 14, 14, 32, 0, tzinfo=timezone.utc)
 
@@ -400,3 +400,63 @@ class TestSearchProductsErrors:
         out = capsys.readouterr().out
         assert "search_error" in out
         assert "serpapi_schema_error" in out
+
+
+# ------------------------------------------------------------------ #
+# _unwrap_google_url                                                   #
+# ------------------------------------------------------------------ #
+
+
+class TestUnwrapGoogleUrl:
+    def test_non_google_url_returned_unchanged(self):
+        url = "https://www.asos.com/product/12345"
+        assert _unwrap_google_url(url) == url
+
+    def test_google_redirect_url_unwrapped(self):
+        actual = "https://www.asos.com/product/12345"
+        redirect = f"https://www.google.com/url?q={actual}&sa=U&ved=abc"
+        assert _unwrap_google_url(redirect) == actual
+
+    def test_google_redirect_url_unwrapped_co_uk(self):
+        actual = "https://www.next.co.uk/product/99"
+        redirect = f"https://www.google.co.uk/url?q={actual}&sa=U"
+        assert _unwrap_google_url(redirect) == actual
+
+    def test_google_shopping_product_page_returned_unchanged(self):
+        """Shopping product pages can't be unwrapped — return as-is."""
+        url = "https://www.google.com/shopping/product/12345/specs?q=coat"
+        assert _unwrap_google_url(url) == url
+
+    def test_non_http_q_param_not_used(self):
+        """q= param that isn't http/https must not be returned."""
+        url = "https://www.google.com/url?q=javascript:alert(1)"
+        result = _unwrap_google_url(url)
+        assert result == url  # can't unwrap, returned as-is
+
+    def test_google_redirect_to_google_not_returned(self):
+        """If q= points back to Google, don't unwrap."""
+        inner = "https://www.google.com/search?q=something"
+        redirect = f"https://www.google.com/url?q={inner}"
+        assert _unwrap_google_url(redirect) == redirect
+
+    def test_retailer_link_preferred_over_google_link_in_normalise(self):
+        """When link= is a Google URL, productLink= direct retailer is used instead."""
+        item = {
+            **_VALID_ITEM,
+            "link": "https://www.google.com/shopping/product/99",
+            "productLink": "https://www.next.co.uk/p/coat",
+        }
+        product = _normalise_result(item, _RETRIEVED_AT)
+        assert product is not None
+        assert product.purchase_url == "https://www.next.co.uk/p/coat"
+
+    def test_google_redirect_link_unwrapped_in_normalise(self):
+        """Google /url?q= redirect in link= is resolved to the real product URL."""
+        actual = "https://www.asos.com/product/99"
+        item = {
+            **_VALID_ITEM,
+            "link": f"https://www.google.com/url?q={actual}&sa=U&ved=xyz",
+        }
+        product = _normalise_result(item, _RETRIEVED_AT)
+        assert product is not None
+        assert product.purchase_url == actual
