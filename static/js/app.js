@@ -1181,11 +1181,9 @@
       }
     }
 
-    // WN-169: refresh filter summary on mobile after any filter change
-    if (window.matchMedia('(max-width: 768px)').matches) {
-      var _bar169 = document.getElementById('filter-sort-bar');
-      if (_bar169) _updateFilterSummary(_bar169, document.getElementById('mobile-filter-toggle'));
-    }
+    // WN-253: refresh "All filters" button label after any filter change
+    var _bar253 = document.getElementById('filter-sort-bar');
+    if (_bar253) _updateFilterSummary(_bar253, document.getElementById('mobile-filter-toggle'));
   }
 
   function buildRetailerChips() {
@@ -1242,7 +1240,7 @@
 
     group.appendChild(chipsDiv);
     var filterToggle = bar.querySelector('#mobile-filter-toggle');
-    bar.insertBefore(group, filterToggle ? filterToggle.nextSibling : bar.firstChild);
+    bar.insertBefore(group, filterToggle || null);
 
     chipsDiv.querySelectorAll('.retailer-chip').forEach(function (chip) {
       chip.addEventListener('click', function () {
@@ -1575,6 +1573,7 @@
   }
 
   function renderResultsRegion(data) {
+    document.body.style.overflow = ''; // restore scroll if filter drawer was open during AJAX
     var region = document.getElementById('results-region');
     if (!region) {
       // Navigating from a page with no results region (e.g. home page) — build one
@@ -1630,11 +1629,28 @@
         return '<button type="button" class="filter-chip size-chip" data-size="' + s + '" aria-pressed="false">' + s + '</button>';
       }).join('');
       bodyHtml = '<div class="filter-sort-bar" id="filter-sort-bar" aria-label="Filter and sort results">'
-        + '<button type="button" class="mobile-filter-toggle" id="mobile-filter-toggle" aria-expanded="false" aria-controls="filter-sort-bar">Filters</button>'
         + '<div class="color-filter-group" role="group" aria-label="Color filter">'
         + '<span class="filter-label">Color:</span>'
         + '<div class="filter-chips color-chips">' + colorChipsHtml + '</div>'
         + '</div>'
+        + '<div class="filter-group">'
+        + '<span class="filter-label" id="price-filter-label">Price:</span>'
+        + '<div class="filter-chips" role="group" aria-labelledby="price-filter-label">'
+        + '<button type="button" class="filter-chip active" data-min="" data-max="" aria-pressed="true">Any price</button>'
+        + '<button type="button" class="filter-chip" data-min="0" data-max="50" aria-pressed="false">Under £50</button>'
+        + '<button type="button" class="filter-chip" data-min="50" data-max="100" aria-pressed="false">£50–£100</button>'
+        + '<button type="button" class="filter-chip" data-min="100" data-max="200" aria-pressed="false">£100–£200</button>'
+        + '<button type="button" class="filter-chip" data-min="200" data-max="" aria-pressed="false">£200+</button>'
+        + '</div></div>'
+        + '<button type="button" class="mobile-filter-toggle" id="mobile-filter-toggle" aria-expanded="false" aria-controls="filter-drawer">All filters →</button>'
+        + '</div>'
+        + '<div id="filter-drawer" class="filter-drawer" role="dialog" aria-modal="true" aria-labelledby="filter-drawer-title" hidden>'
+        + '<div class="filter-drawer-inner">'
+        + '<div class="filter-drawer-header">'
+        + '<span class="filter-drawer-title" id="filter-drawer-title">All Filters</span>'
+        + '<button type="button" class="filter-drawer-close" id="filter-drawer-close" aria-label="Close filters panel">×</button>'
+        + '</div>'
+        + '<div class="filter-drawer-body">'
         + '<div class="gender-filter-group" role="group" aria-label="Gender filter">'
         + '<span class="filter-label">For:</span>'
         + '<div class="filter-chips gender-chips">' + genderChipsHtml + '</div>'
@@ -1647,15 +1663,6 @@
         + '<span class="filter-label">Size:</span>'
         + '<div class="filter-chips size-chips">' + sizeChipsHtml + '</div>'
         + '</div>'
-        + '<div class="filter-group">'
-        + '<span class="filter-label" id="price-filter-label">Price:</span>'
-        + '<div class="filter-chips" role="group" aria-labelledby="price-filter-label">'
-        + '<button type="button" class="filter-chip active" data-min="" data-max="" aria-pressed="true">Any price</button>'
-        + '<button type="button" class="filter-chip" data-min="0" data-max="50" aria-pressed="false">Under £50</button>'
-        + '<button type="button" class="filter-chip" data-min="50" data-max="100" aria-pressed="false">£50–£100</button>'
-        + '<button type="button" class="filter-chip" data-min="100" data-max="200" aria-pressed="false">£100–£200</button>'
-        + '<button type="button" class="filter-chip" data-min="200" data-max="" aria-pressed="false">£200+</button>'
-        + '</div></div>'
         + '<div class="price-slider-group" id="price-slider-group" style="display:none">'
         + '<span class="filter-label">Range:</span>'
         + '<div class="price-slider-wrap">'
@@ -1681,7 +1688,14 @@
         + '<button type="button" class="density-btn" data-density="compact" aria-label="Compact grid" title="Compact">&#9638;</button>'
         + '<button type="button" class="density-btn" data-density="comfortable" aria-label="Comfortable grid" title="Comfortable">&#9636;</button>'
         + '<button type="button" class="density-btn" data-density="large" aria-label="Large grid" title="Large">&#9634;</button>'
-        + '</div></div>';
+        + '</div>'
+        + '</div>'
+        + '<div class="filter-drawer-footer">'
+        + '<button type="button" class="btn-primary filter-drawer-apply" id="filter-drawer-apply">Apply</button>'
+        + '</div>'
+        + '</div>'
+        + '</div>'
+        + '<div id="filter-drawer-backdrop" class="filter-drawer-backdrop" aria-hidden="true"></div>';
       bodyHtml += '<ul class="product-grid" id="product-grid" aria-label="Search results">'
         + (data.cards_html || '')
         + '</ul>';
@@ -3285,32 +3299,17 @@
 
   // WN-169: build/refresh active filter summary strip below toggle button
   function _updateFilterSummary(bar, toggle) {
-    var summary = document.getElementById('mobile-filter-summary');
-    if (!summary) {
-      summary = document.createElement('div');
-      summary.id = 'mobile-filter-summary';
-      summary.className = 'mobile-filter-summary';
-      bar.insertBefore(summary, toggle ? toggle.nextSibling : bar.firstChild);
+    if (!toggle) return;
+    var drawer = document.getElementById('filter-drawer');
+    var n = 0;
+    if (drawer) {
+      drawer.querySelectorAll('.filter-chip[aria-pressed="true"]').forEach(function() { n++; });
     }
-    var labels = [];
-    bar.querySelectorAll('.filter-chip[aria-pressed="true"]').forEach(function(chip) {
-      if (chip.dataset.min === '' && chip.dataset.max === '') return;
-      var text = chip.textContent.trim();
-      if (text) labels.push(text);
-    });
-    if (labels.length === 0) {
-      summary.setAttribute('hidden', '');
-      summary.innerHTML = '';
-      return;
-    }
-    summary.removeAttribute('hidden');
-    summary.innerHTML = '';
-    labels.forEach(function(label) {
-      var span = document.createElement('span');
-      span.className = 'filter-summary-chip';
-      span.textContent = label;
-      summary.appendChild(span);
-    });
+    var sortSel = document.getElementById('sort-select');
+    if (sortSel && sortSel.value !== 'relevance') n++;
+    var kwInput = document.getElementById('keyword-filter');
+    if (kwInput && kwInput.value.trim()) n++;
+    toggle.textContent = n > 0 ? 'All filters (' + n + ')' : 'All filters →';
   }
 
   // WN-168: mobile persistent bottom search bar — shows on results page only
@@ -3395,101 +3394,115 @@
     });
   }
 
-  // WN-171: filter bar collapse — hidden by default on all screen sizes
+  // WN-253: filter drawer — slide-in panel from the right
   function initMobileFilterToggle() {
     var bar = document.getElementById('filter-sort-bar');
-    if (!bar) return;
-    var toggle = bar.querySelector('#mobile-filter-toggle');
-    if (!toggle) return;
+    var drawer = document.getElementById('filter-drawer');
+    var backdrop = document.getElementById('filter-drawer-backdrop');
+    var toggle = document.getElementById('mobile-filter-toggle');
+    var closeBtn = document.getElementById('filter-drawer-close');
+    var applyBtn = document.getElementById('filter-drawer-apply');
 
-    function countActiveFilters() {
-      var active = 0;
-      bar.querySelectorAll('.filter-chip[aria-pressed="true"]').forEach(function (el) {
-        if (!(el.dataset.min === '' && el.dataset.max === '')) active++;
+    if (!bar || !drawer || !toggle) return;
+
+    function _openDrawer() {
+      drawer.removeAttribute('hidden');
+      if (backdrop) backdrop.removeAttribute('hidden');
+      requestAnimationFrame(function() {
+        drawer.classList.add('is-open');
+        if (backdrop) backdrop.classList.add('is-visible');
       });
-      var keyword = bar.querySelector('#keyword-filter');
-      if (keyword && keyword.value && keyword.value.trim()) active++;
-      return active;
+      toggle.setAttribute('aria-expanded', 'true');
+      if (closeBtn) closeBtn.focus();
+      document.body.style.overflow = 'hidden';
     }
 
-    function updateToggleLabel() {
-      var n = countActiveFilters();
-      toggle.textContent = n > 0 ? 'Filters (' + n + ')' : 'Filters';
-      toggle.setAttribute('aria-expanded', bar.classList.contains('is-expanded') ? 'true' : 'false');
+    function _closeDrawer() {
+      drawer.classList.remove('is-open');
+      if (backdrop) backdrop.classList.remove('is-visible');
+      toggle.setAttribute('aria-expanded', 'false');
+      document.body.style.overflow = '';
+      setTimeout(function() {
+        if (!drawer.classList.contains('is-open')) {
+          drawer.setAttribute('hidden', '');
+        }
+      }, 350);
+      toggle.focus();
+      _updateFilterSummary(bar, toggle);
     }
 
-    var savedOpen = sessionStorage.getItem('dressme_filter_open') === '1';
-    if (savedOpen) {
-      bar.classList.add('is-expanded');
-      var bdRestore = document.getElementById('filter-backdrop');
-      if (bdRestore) bdRestore.classList.add('is-visible');
-    }
-
-    if (!toggle._filterBound) {
-      toggle._filterBound = true;
-      toggle.addEventListener('click', function () {
-        var open = bar.classList.toggle('is-expanded');
-        sessionStorage.setItem('dressme_filter_open', open ? '1' : '0');
-        updateToggleLabel();
-        // backdrop only shown on mobile (desktop expansion is inline, not an overlay)
-        var bd = document.getElementById('filter-backdrop');
-        if (bd && window.matchMedia('(max-width: 768px)').matches) {
-          bd.classList.toggle('is-visible', open);
+    if (!toggle._drawerBound) {
+      toggle._drawerBound = true;
+      toggle.addEventListener('click', function() {
+        if (drawer.classList.contains('is-open')) {
+          _closeDrawer();
+        } else {
+          _openDrawer();
         }
       });
     }
 
-    // WN-170: create backdrop once and wire its click to collapse the panel
-    if (!document.getElementById('filter-backdrop')) {
-      var backdrop = document.createElement('div');
-      backdrop.id = 'filter-backdrop';
-      backdrop.className = 'filter-backdrop';
-      document.body.appendChild(backdrop);
-      backdrop.addEventListener('click', function() {
-        var b = document.getElementById('filter-sort-bar');
+    if (closeBtn && !closeBtn._drawerBound) {
+      closeBtn._drawerBound = true;
+      closeBtn.addEventListener('click', _closeDrawer);
+    }
+
+    if (applyBtn && !applyBtn._drawerBound) {
+      applyBtn._drawerBound = true;
+      applyBtn.addEventListener('click', function() {
+        applyFilterSort();
+        _closeDrawer();
+      });
+    }
+
+    if (backdrop && !backdrop._drawerBound) {
+      backdrop._drawerBound = true;
+      backdrop.addEventListener('click', _closeDrawer);
+    }
+
+    // Escape key closes the drawer — re-queries DOM each call so AJAX rebuilds work
+    if (!window._drawerEscBound) {
+      window._drawerEscBound = true;
+      document.addEventListener('keydown', function(e) {
+        if (e.key !== 'Escape') return;
+        var d = document.getElementById('filter-drawer');
+        if (!d || !d.classList.contains('is-open')) return;
+        var bd = document.getElementById('filter-drawer-backdrop');
         var t = document.getElementById('mobile-filter-toggle');
-        if (!b) return;
-        b.classList.remove('is-expanded');
-        sessionStorage.setItem('dressme_filter_open', '0');
-        backdrop.classList.remove('is-visible');
-        if (t) {
-          var count = 0;
-          b.querySelectorAll('.filter-chip[aria-pressed="true"]').forEach(function(el) {
-            if (!(el.dataset.min === '' && el.dataset.max === '')) count++;
-          });
-          t.textContent = count > 0 ? 'Filters (' + count + ')' : 'Filters';
-          t.setAttribute('aria-expanded', 'false');
-        }
-        _updateFilterSummary(b, t);
-      });
-    }
-
-    updateToggleLabel();
-
-    // WN-166: auto-close filter panel after chip tap on mobile
-    if (!window._filterAutoCloseBound) {
-      window._filterAutoCloseBound = true;
-      document.addEventListener('click', function(e) {
-        if (!window.matchMedia('(max-width: 768px)').matches) return;
         var b = document.getElementById('filter-sort-bar');
-        if (!b || !b.classList.contains('is-expanded')) return;
-        if (!e.target.closest('.filter-chip')) return;
-        if (!b.contains(e.target)) return;
+        d.classList.remove('is-open');
+        if (bd) bd.classList.remove('is-visible');
+        if (t) { t.setAttribute('aria-expanded', 'false'); t.focus(); }
+        document.body.style.overflow = '';
         setTimeout(function() {
-          b.classList.remove('is-expanded');
-          sessionStorage.setItem('dressme_filter_open', '0');
-          var t = document.getElementById('mobile-filter-toggle');
-          if (t) t.setAttribute('aria-expanded', 'false');
-          var bd = document.getElementById('filter-backdrop');
-          if (bd) bd.classList.remove('is-visible');
-          var grid = document.getElementById('product-grid');
-          if (grid) grid.scrollIntoView({behavior: 'smooth', block: 'nearest'});
-          _updateFilterSummary(b, t);
-        }, 150);
+          if (!d.classList.contains('is-open')) { d.setAttribute('hidden', ''); }
+        }, 350);
+        if (b && t) _updateFilterSummary(b, t);
       });
     }
 
-    // WN-169: initial filter summary render
+    // Focus trap within the drawer
+    if (!drawer._focusTrapBound) {
+      drawer._focusTrapBound = true;
+      drawer.addEventListener('keydown', function(e) {
+        if (e.key !== 'Tab') return;
+        var focusable = Array.prototype.slice.call(
+          drawer.querySelectorAll(
+            'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])'
+          )
+        );
+        if (!focusable.length) return;
+        var first = focusable[0];
+        var last = focusable[focusable.length - 1];
+        if (e.shiftKey) {
+          if (document.activeElement === first) { e.preventDefault(); last.focus(); }
+        } else {
+          if (document.activeElement === last) { e.preventDefault(); first.focus(); }
+        }
+      });
+    }
+
+    // Initial button label
     _updateFilterSummary(bar, toggle);
   }
 

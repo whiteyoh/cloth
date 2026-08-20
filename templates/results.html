@@ -53,7 +53,6 @@
 {% endif %}
 {% if products %}
 <div class="filter-sort-bar" id="filter-sort-bar" aria-label="Filter and sort results">
-  <button type="button" class="mobile-filter-toggle" id="mobile-filter-toggle" aria-expanded="false" aria-controls="filter-sort-bar">Filters</button>
   <div class="color-filter-group" role="group" aria-label="Color filter">
     <span class="filter-label">Color:</span>
     <div class="filter-chips color-chips">
@@ -68,43 +67,6 @@
       <button type="button" class="filter-chip color-chip" data-color="Cream" aria-pressed="false"><span class="color-swatch" style="background:#f5f0e8;border:1px solid #ccc" aria-hidden="true"></span>Cream</button>
     </div>
   </div>
-  <div class="gender-filter-group" role="group" aria-label="Gender filter">
-    <span class="filter-label">For:</span>
-    <div class="filter-chips gender-chips">
-      <button type="button" class="filter-chip gender-chip" data-gender="Women's" aria-pressed="false">Women's</button>
-      <button type="button" class="filter-chip gender-chip" data-gender="Men's" aria-pressed="false">Men's</button>
-      <button type="button" class="filter-chip gender-chip" data-gender="Unisex" aria-pressed="false">Unisex</button>
-    </div>
-  </div>
-  <div class="category-filter-group" role="group" aria-label="Category filter">
-    <span class="filter-label">Category:</span>
-    <div class="filter-chips category-chips">
-      <button type="button" class="filter-chip category-chip" data-category="Tops" aria-pressed="false">Tops</button>
-      <button type="button" class="filter-chip category-chip" data-category="Bottoms" aria-pressed="false">Bottoms</button>
-      <button type="button" class="filter-chip category-chip" data-category="Outerwear" aria-pressed="false">Outerwear</button>
-      <button type="button" class="filter-chip category-chip" data-category="Footwear" aria-pressed="false">Footwear</button>
-      <button type="button" class="filter-chip category-chip" data-category="Accessories" aria-pressed="false">Accessories</button>
-    </div>
-  </div>
-  <div class="size-filter-group" role="group" aria-label="Size filter">
-    <span class="filter-label">Size:</span>
-    <div class="filter-chips size-chips">
-      <button type="button" class="filter-chip size-chip" data-size="XS" aria-pressed="false">XS</button>
-      <button type="button" class="filter-chip size-chip" data-size="S" aria-pressed="false">S</button>
-      <button type="button" class="filter-chip size-chip" data-size="M" aria-pressed="false">M</button>
-      <button type="button" class="filter-chip size-chip" data-size="L" aria-pressed="false">L</button>
-      <button type="button" class="filter-chip size-chip" data-size="XL" aria-pressed="false">XL</button>
-      <button type="button" class="filter-chip size-chip" data-size="XXL" aria-pressed="false">XXL</button>
-      <button type="button" class="filter-chip size-chip" data-size="UK 6" aria-pressed="false">UK 6</button>
-      <button type="button" class="filter-chip size-chip" data-size="UK 8" aria-pressed="false">UK 8</button>
-      <button type="button" class="filter-chip size-chip" data-size="UK 10" aria-pressed="false">UK 10</button>
-      <button type="button" class="filter-chip size-chip" data-size="UK 12" aria-pressed="false">UK 12</button>
-      <button type="button" class="filter-chip size-chip" data-size="UK 14" aria-pressed="false">UK 14</button>
-      <button type="button" class="filter-chip size-chip" data-size="UK 16" aria-pressed="false">UK 16</button>
-      <button type="button" class="filter-chip size-chip" data-size="UK 18" aria-pressed="false">UK 18</button>
-      <button type="button" class="filter-chip size-chip" data-size="UK 20" aria-pressed="false">UK 20</button>
-    </div>
-  </div>
   <div class="filter-group">
     <span class="filter-label" id="price-filter-label">Price:</span>
     <div class="filter-chips" role="group" aria-labelledby="price-filter-label">
@@ -115,34 +77,91 @@
       <button type="button" class="filter-chip" data-min="200" data-max="" aria-pressed="false">£200+</button>
     </div>
   </div>
-  <div class="price-slider-group" id="price-slider-group" style="display:none">
-    <span class="filter-label">Range:</span>
-    <div class="price-slider-wrap">
-      <input type="range" id="price-range-min" class="price-range" min="0" max="500" value="0" step="1" aria-label="Minimum price">
-      <input type="range" id="price-range-max" class="price-range" min="0" max="500" value="500" step="1" aria-label="Maximum price">
+  <!-- Retailer chips inserted here by buildRetailerChips() -->
+  <button type="button" class="mobile-filter-toggle" id="mobile-filter-toggle"
+          aria-expanded="false" aria-controls="filter-drawer">All filters &#8594;</button>
+</div>
+
+<div id="filter-drawer" class="filter-drawer" role="dialog" aria-modal="true"
+     aria-labelledby="filter-drawer-title" hidden>
+  <div class="filter-drawer-inner">
+    <div class="filter-drawer-header">
+      <span class="filter-drawer-title" id="filter-drawer-title">All Filters</span>
+      <button type="button" class="filter-drawer-close" id="filter-drawer-close"
+              aria-label="Close filters panel">&times;</button>
     </div>
-    <span class="price-slider-display" id="price-slider-display">£0 – £500</span>
-  </div>
-  <div class="sort-group">
-    <label for="sort-select" class="filter-label">Sort:</label>
-    <select id="sort-select" class="sort-select">
-      <option value="relevance">Relevance</option>
-      <option value="price_asc">Price: Low–High</option>
-      <option value="price_desc">Price: High–Low</option>
-      <option value="retailer_asc">Retailer: A–Z</option>
-      <option value="retailer_desc">Retailer: Z–A</option>
-    </select>
-  </div>
-  <div class="keyword-group">
-    <label for="keyword-filter" class="filter-label">Filter:</label>
-    <input type="text" id="keyword-filter" class="keyword-filter" placeholder="e.g. linen" aria-label="Filter results by keyword">
-  </div>
-  <div class="density-toggle" role="group" aria-label="Grid density">
-    <button type="button" class="density-btn" data-density="compact" aria-label="Compact grid" title="Compact">&#9638;</button>
-    <button type="button" class="density-btn" data-density="comfortable" aria-label="Comfortable grid" title="Comfortable">&#9636;</button>
-    <button type="button" class="density-btn" data-density="large" aria-label="Large grid" title="Large">&#9634;</button>
+    <div class="filter-drawer-body">
+      <div class="gender-filter-group" role="group" aria-label="Gender filter">
+        <span class="filter-label">For:</span>
+        <div class="filter-chips gender-chips">
+          <button type="button" class="filter-chip gender-chip" data-gender="Women's" aria-pressed="false">Women's</button>
+          <button type="button" class="filter-chip gender-chip" data-gender="Men's" aria-pressed="false">Men's</button>
+          <button type="button" class="filter-chip gender-chip" data-gender="Unisex" aria-pressed="false">Unisex</button>
+        </div>
+      </div>
+      <div class="category-filter-group" role="group" aria-label="Category filter">
+        <span class="filter-label">Category:</span>
+        <div class="filter-chips category-chips">
+          <button type="button" class="filter-chip category-chip" data-category="Tops" aria-pressed="false">Tops</button>
+          <button type="button" class="filter-chip category-chip" data-category="Bottoms" aria-pressed="false">Bottoms</button>
+          <button type="button" class="filter-chip category-chip" data-category="Outerwear" aria-pressed="false">Outerwear</button>
+          <button type="button" class="filter-chip category-chip" data-category="Footwear" aria-pressed="false">Footwear</button>
+          <button type="button" class="filter-chip category-chip" data-category="Accessories" aria-pressed="false">Accessories</button>
+        </div>
+      </div>
+      <div class="size-filter-group" role="group" aria-label="Size filter">
+        <span class="filter-label">Size:</span>
+        <div class="filter-chips size-chips">
+          <button type="button" class="filter-chip size-chip" data-size="XS" aria-pressed="false">XS</button>
+          <button type="button" class="filter-chip size-chip" data-size="S" aria-pressed="false">S</button>
+          <button type="button" class="filter-chip size-chip" data-size="M" aria-pressed="false">M</button>
+          <button type="button" class="filter-chip size-chip" data-size="L" aria-pressed="false">L</button>
+          <button type="button" class="filter-chip size-chip" data-size="XL" aria-pressed="false">XL</button>
+          <button type="button" class="filter-chip size-chip" data-size="XXL" aria-pressed="false">XXL</button>
+          <button type="button" class="filter-chip size-chip" data-size="UK 6" aria-pressed="false">UK 6</button>
+          <button type="button" class="filter-chip size-chip" data-size="UK 8" aria-pressed="false">UK 8</button>
+          <button type="button" class="filter-chip size-chip" data-size="UK 10" aria-pressed="false">UK 10</button>
+          <button type="button" class="filter-chip size-chip" data-size="UK 12" aria-pressed="false">UK 12</button>
+          <button type="button" class="filter-chip size-chip" data-size="UK 14" aria-pressed="false">UK 14</button>
+          <button type="button" class="filter-chip size-chip" data-size="UK 16" aria-pressed="false">UK 16</button>
+          <button type="button" class="filter-chip size-chip" data-size="UK 18" aria-pressed="false">UK 18</button>
+          <button type="button" class="filter-chip size-chip" data-size="UK 20" aria-pressed="false">UK 20</button>
+        </div>
+      </div>
+      <div class="price-slider-group" id="price-slider-group" style="display:none">
+        <span class="filter-label">Range:</span>
+        <div class="price-slider-wrap">
+          <input type="range" id="price-range-min" class="price-range" min="0" max="500" value="0" step="1" aria-label="Minimum price">
+          <input type="range" id="price-range-max" class="price-range" min="0" max="500" value="500" step="1" aria-label="Maximum price">
+        </div>
+        <span class="price-slider-display" id="price-slider-display">£0 – £500</span>
+      </div>
+      <div class="sort-group">
+        <label for="sort-select" class="filter-label">Sort:</label>
+        <select id="sort-select" class="sort-select">
+          <option value="relevance">Relevance</option>
+          <option value="price_asc">Price: Low–High</option>
+          <option value="price_desc">Price: High–Low</option>
+          <option value="retailer_asc">Retailer: A–Z</option>
+          <option value="retailer_desc">Retailer: Z–A</option>
+        </select>
+      </div>
+      <div class="keyword-group">
+        <label for="keyword-filter" class="filter-label">Filter:</label>
+        <input type="text" id="keyword-filter" class="keyword-filter" placeholder="e.g. linen" aria-label="Filter results by keyword">
+      </div>
+      <div class="density-toggle" role="group" aria-label="Grid density">
+        <button type="button" class="density-btn" data-density="compact" aria-label="Compact grid" title="Compact">&#9638;</button>
+        <button type="button" class="density-btn" data-density="comfortable" aria-label="Comfortable grid" title="Comfortable">&#9636;</button>
+        <button type="button" class="density-btn" data-density="large" aria-label="Large grid" title="Large">&#9634;</button>
+      </div>
+    </div>
+    <div class="filter-drawer-footer">
+      <button type="button" class="btn-primary filter-drawer-apply" id="filter-drawer-apply">Apply</button>
+    </div>
   </div>
 </div>
+<div id="filter-drawer-backdrop" class="filter-drawer-backdrop" aria-hidden="true"></div>
 <ul class="product-grid" id="product-grid" aria-label="Search results">
   {% for product in products %}
   {% set position = loop.index0 %}

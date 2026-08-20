@@ -4077,10 +4077,10 @@ h6 { font-size: var(--text-base); }
 }
 
 /* ------------------------------------------------------------------ */
-/* Filter bar collapse — hidden by default on all screen sizes (WN-171) */
+/* WN-253: Filter bar — 3 primary filters always visible, rest in drawer */
 /* ------------------------------------------------------------------ */
 
-/* Toggle button — visible on all screen sizes */
+/* "All filters →" toggle button — visible on all screen sizes */
 .mobile-filter-toggle {
   display: inline-flex;
   align-items: center;
@@ -4095,21 +4095,28 @@ h6 { font-size: var(--text-base); }
   cursor: pointer;
   min-height: 36px;
   white-space: nowrap;
+  flex-shrink: 0;
+  margin-left: auto;
 }
 
-/* Filters hidden by default on all screen sizes */
-#filter-sort-bar > *:not(.mobile-filter-toggle):not(.mobile-filter-summary) {
+/* Primary filter bar — always visible, scrolls horizontally on overflow */
+.filter-sort-bar {
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.filter-sort-bar::-webkit-scrollbar {
   display: none;
 }
 
-/* Show filters when expanded */
-#filter-sort-bar.is-expanded > *:not(.mobile-filter-toggle):not(.mobile-filter-summary) {
-  display: flex;
+/* All items in bar are inline flex */
+.filter-sort-bar > * {
+  flex-shrink: 0;
 }
 
-/* Mobile-specific: full-width toggle, sticky override, bottom-sheet expansion */
 @media (max-width: 768px) {
-  /* Override sticky — on mobile a sticky collapsing bar hogs space */
+  /* Override sticky — on mobile a sticky primary bar takes useful space */
   .filter-sort-bar {
     position: relative;
     top: auto;
@@ -4120,84 +4127,7 @@ h6 { font-size: var(--text-base); }
     position: static;
   }
 
-  .mobile-filter-toggle {
-    width: 100%;
-    min-height: 44px;
-    justify-content: center;
-    font-size: 0.9rem;
-    padding: 0.4rem 0.85rem;
-  }
-
-  /* Inline horizontal-scroll row — replaces bottom-sheet */
-  #filter-sort-bar.is-expanded {
-    position: relative;
-    display: flex;
-    flex-direction: row;
-    flex-wrap: nowrap;
-    overflow-x: auto;
-    overflow-y: hidden;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
-    gap: var(--space-sm);
-    padding: var(--space-sm) 0;
-    align-items: center;
-    max-height: 120px;
-    animation: filterExpandIn 0.2s ease-out;
-    box-shadow: inset -32px 0 16px -8px var(--colour-bg);
-  }
-
-  #filter-sort-bar.is-expanded::-webkit-scrollbar {
-    display: none;
-  }
-
-  /* Prevent individual filter controls from shrinking in the scroll row */
-  #filter-sort-bar.is-expanded > *:not(.mobile-filter-toggle):not(.mobile-filter-summary) {
-    flex-shrink: 0;
-  }
-
-  @keyframes filterExpandIn {
-    from { max-height: 0; opacity: 0.5; }
-    to   { max-height: 120px; opacity: 1; }
-  }
-
-  /* WN-169: active filter summary strip — visible when collapsed, hidden when expanded */
-  .mobile-filter-summary {
-    display: flex;
-    flex-wrap: nowrap;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    gap: 0.3rem;
-    width: 100%;
-    padding: 0.25rem 0;
-    scrollbar-width: none;
-  }
-
-  .mobile-filter-summary::-webkit-scrollbar {
-    display: none;
-  }
-
-  .mobile-filter-summary[hidden] {
-    display: none !important;
-  }
-
-  #filter-sort-bar.is-expanded > .mobile-filter-summary {
-    display: none !important;
-  }
-
-  .filter-summary-chip {
-    flex: 0 0 auto;
-    display: inline-flex;
-    align-items: center;
-    padding: 0.2rem 0.6rem;
-    background: var(--colour-accent);
-    color: #fff;
-    border-radius: 999px;
-    font-size: 0.78rem;
-    font-weight: 500;
-    white-space: nowrap;
-  }
-
-  /* 44px touch targets for all filter controls */
+  /* 44px touch targets on mobile */
   .filter-chip,
   .filter-bar select,
   .sort-select,
@@ -4206,36 +4136,151 @@ h6 { font-size: var(--text-base); }
   }
 }
 
-@media (min-width: 769px) {
-  /* Summary strip not needed on desktop — filter row is fully visible */
-  .mobile-filter-summary {
-    display: none;
-  }
-
-  /* No toggle needed on desktop — filter controls always visible */
-  .mobile-filter-toggle {
-    display: none;
-  }
-
-  /* Filter controls always visible on desktop regardless of is-expanded */
-  #filter-sort-bar > *:not(.mobile-filter-toggle):not(.mobile-filter-summary) {
-    display: flex;
-    flex-shrink: 0;
-  }
-
-  /* Desktop filter bar scrolls horizontally if controls overflow */
-  .filter-sort-bar {
-    flex-wrap: nowrap;
-    overflow-x: auto;
-    scrollbar-width: none;
-  }
-
-  .filter-sort-bar::-webkit-scrollbar {
-    display: none;
-  }
+/* ------------------------------------------------------------------ */
+/* WN-253: Filter drawer — slide-in panel from the right               */
+/* ------------------------------------------------------------------ */
+.filter-drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  height: 100%;
+  width: 360px;
+  max-width: 92vw;
+  background: var(--color-surface);
+  border-left: 1px solid var(--color-border);
+  box-shadow: var(--shadow-xl);
+  z-index: var(--z-drawer);
+  transform: translateX(100%);
+  transition: transform var(--transition-slow);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
-/* WN-170: backdrop for bottom-sheet filter panel */
+.filter-drawer.is-open {
+  transform: translateX(0);
+}
+
+.filter-drawer-inner {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+.filter-drawer-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-4) var(--space-6);
+  border-bottom: 1px solid var(--color-border-subtle);
+  flex-shrink: 0;
+}
+
+.filter-drawer-title {
+  font-size: var(--text-lg);
+  font-weight: var(--font-bold);
+  color: var(--color-text);
+  letter-spacing: var(--tracking-tight);
+}
+
+.filter-drawer-close {
+  background: none;
+  border: none;
+  font-size: 1.4rem;
+  line-height: 1;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  padding: var(--space-2);
+  border-radius: var(--radius-md);
+  min-width: 36px;
+  min-height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color var(--transition-fast), background var(--transition-fast);
+}
+
+.filter-drawer-close:hover,
+.filter-drawer-close:focus-visible {
+  color: var(--color-text);
+  background: var(--color-surface-subtle);
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+.filter-drawer-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--space-4) var(--space-6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+/* Each filter group inside the drawer stacks vertically */
+.filter-drawer-body .filter-group,
+.filter-drawer-body .gender-filter-group,
+.filter-drawer-body .category-filter-group,
+.filter-drawer-body .size-filter-group,
+.filter-drawer-body .sort-group,
+.filter-drawer-body .keyword-group,
+.filter-drawer-body .density-toggle,
+.filter-drawer-body .price-slider-group {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-2);
+  flex-wrap: nowrap;
+}
+
+/* Chips still wrap within their groups */
+.filter-drawer-body .filter-chips,
+.filter-drawer-body .color-chips,
+.filter-drawer-body .gender-chips,
+.filter-drawer-body .category-chips,
+.filter-drawer-body .size-chips {
+  flex-wrap: wrap;
+}
+
+/* Sort select and keyword fill width in drawer */
+.filter-drawer-body .sort-select,
+.filter-drawer-body .keyword-filter {
+  width: 100%;
+}
+
+/* Density toggle row */
+.filter-drawer-body .density-toggle {
+  flex-direction: row;
+}
+
+.filter-drawer-footer {
+  padding: var(--space-4) var(--space-6);
+  border-top: 1px solid var(--color-border-subtle);
+  flex-shrink: 0;
+}
+
+.filter-drawer-apply {
+  width: 100%;
+}
+
+/* Backdrop */
+.filter-drawer-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  z-index: calc(var(--z-drawer) - 1);
+  opacity: 0;
+  transition: opacity var(--transition-slow);
+  pointer-events: none;
+}
+
+.filter-drawer-backdrop.is-visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* WN-170: legacy backdrop (kept for compat) */
 .filter-backdrop {
   display: none;
   position: fixed;

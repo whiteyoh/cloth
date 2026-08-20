@@ -3,6 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="One search across hundreds of fashion retailers — ASOS, Zara, M&S, John Lewis and more. Free, no account needed.">
+  <meta property="og:title" content="dress.me — Your style, found.">
+  <meta property="og:description" content="One search across hundreds of fashion retailers. Free, no account needed.">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="dress.me — Your style, found.">
+  <meta name="twitter:description" content="One search across hundreds of fashion retailers. Free, no account needed.">
   <title>dress.me — Your style, found.</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -902,7 +909,7 @@ body::after {
   justify-content: center;
   flex-wrap: wrap;
   font-size: 0.6rem;
-  color: rgba(237,232,224,0.16);
+  color: rgba(237,232,224,0.45);
   letter-spacing: 0.15em;
   text-transform: uppercase;
 }
@@ -980,6 +987,10 @@ body::after {
 @media (max-width: 540px) {
   .proof-stats { gap: 2.5rem; }
   .cta-headline { font-size: clamp(3.5rem, 16vw, 7rem); }
+}
+
+@media (max-width: 600px) {
+  .s-footer { flex-direction: column; align-items: flex-start; gap: 1.5rem; }
 }
 
 /* ── RESULTS SECTION ── */
@@ -1192,11 +1203,6 @@ body::after {
 </section>
 
 
-<!-- Mid-scroll CTA — catches converted readers early -->
-<div class="s-midcta" data-s>
-  <a href="/start" class="btn-primary fi">Find your look now →</a>
-</div>
-
 <!-- ════════ WORD SLAM ════════ -->
 <!-- Describe. Find. Wear. — simple words, maximum drama -->
 <section class="s-words" data-s>
@@ -1225,6 +1231,11 @@ body::after {
 
 
 
+
+<!-- Mid-scroll CTA — fires after solution explained, before feature detail -->
+<div class="s-midcta" data-s>
+  <a href="/start" class="btn-primary fi">Find your look now →</a>
+</div>
 
 <!-- ════════ RESULTS ════════ -->
 <section class="s-results" data-s>
@@ -1426,7 +1437,7 @@ body::after {
     </nav>
     <p class="footer-legal">We earn a small commission on purchases made through links on dress.me, at no cost to you.</p>
   </div>
-  <span class="footer-note">AI-powered · Hundreds of retailers · Free forever</span>
+  <p class="footer-note">AI-powered · Hundreds of retailers · Free forever</p>
 </footer>
 
 
