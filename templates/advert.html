@@ -340,12 +340,37 @@ body::after {
   text-align: center;
 }
 
+.brand-row {
+  display: flex;
+  gap: 0.45rem;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin: 1.75rem auto 0;
+  max-width: 660px;
+}
+.brand-chip {
+  padding: 0.38rem 0.85rem;
+  border: 1px solid var(--border);
+  border-radius: 100px;
+  font-size: 0.68rem;
+  font-weight: 500;
+  color: rgba(237,232,224,0.45);
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+.brand-chip--more {
+  color: var(--accent);
+  border-color: rgba(196,149,90,0.22);
+}
+
 .proof-stats {
   display: flex;
   justify-content: center;
   gap: clamp(3rem, 8vw, 8rem);
   flex-wrap: wrap;
   margin-top: 4rem;
+  padding-top: 3rem;
+  border-top: 1px solid var(--border);
 }
 
 .stat { text-align: center; }
@@ -360,9 +385,9 @@ body::after {
 .stat-num .a { color: var(--accent); }
 .stat-lbl {
   display: block;
-  font-size: 0.68rem;
+  font-size: 0.65rem;
   font-weight: 500;
-  letter-spacing: 0.16em;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--muted);
   margin-top: 0.75rem;
@@ -403,25 +428,24 @@ body::after {
 .cta-headline {
   position: relative; z-index: 1;
   font-family: 'Playfair Display', Georgia, serif;
-  font-size: clamp(2.8rem, 7vw, 5.5rem);
+  font-size: clamp(3.5rem, 9vw, 8rem);
   font-weight: 900;
-  line-height: 1.05;
-  letter-spacing: -0.03em;
+  line-height: 1.0;
+  letter-spacing: -0.04em;
 }
 .cta-headline em {
-  display: block;
   font-style: italic;
   font-weight: 700;
   color: var(--accent);
 }
 
-.cta-buttons {
+.cta-btn {
   position: relative; z-index: 1;
-  display: flex;
-  gap: 0.8rem;
-  margin-top: 2rem;
-  flex-wrap: wrap;
-  justify-content: center;
+  margin-top: 2.5rem;
+  font-size: 0.88rem;
+  padding: 1rem 2.75rem;
+  letter-spacing: 0.06em;
+  box-shadow: 0 0 40px rgba(196,149,90,0.22);
 }
 
 .cta-trust {
@@ -503,6 +527,14 @@ body::after {
   .s-footer { flex-direction: column; align-items: flex-start; gap: 1.5rem; }
 }
 
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
 /* ── FOOTER NAV ── */
 .footer-nav {
   display: flex;
@@ -530,7 +562,7 @@ body::after {
 
 <!-- ── STICKY NAV ── -->
 <nav class="sticky-nav" id="sticky-nav" aria-label="Site navigation">
-  <a href="/" class="sn-logo">dress<span>.</span>me</a>
+  <a href="/start" class="sn-logo">dress<span>.</span>me</a>
   <a href="/start" class="btn-primary sn-cta">Find your look →</a>
 </nav>
 
@@ -605,21 +637,37 @@ body::after {
 
 
 <!-- ════════ PROOF ════════ -->
-<section class="s-proof">
-  <span class="eyebrow">By the numbers</span>
+<section class="s-proof" aria-label="Where dress.me searches">
+  <span class="eyebrow">Where you already shop</span>
+
+  <div class="brand-row" aria-hidden="true">
+    <span class="brand-chip">ASOS</span>
+    <span class="brand-chip">Zara</span>
+    <span class="brand-chip">M&amp;S</span>
+    <span class="brand-chip">John Lewis</span>
+    <span class="brand-chip">Next</span>
+    <span class="brand-chip">H&amp;M</span>
+    <span class="brand-chip">Reiss</span>
+    <span class="brand-chip">ARKET</span>
+    <span class="brand-chip">&amp; Other Stories</span>
+    <span class="brand-chip">River Island</span>
+    <span class="brand-chip">Whistles</span>
+    <span class="brand-chip">Ted Baker</span>
+    <span class="brand-chip brand-chip--more">+ hundreds more</span>
+  </div>
 
   <div class="proof-stats">
     <div class="stat">
       <div class="stat-num">100<span class="a">s</span></div>
-      <span class="stat-lbl">of retailers searched</span>
+      <span class="stat-lbl">of retailers</span>
     </div>
     <div class="stat">
-      <div class="stat-num">1<span class="a">×</span></div>
-      <span class="stat-lbl">search. that's it.</span>
+      <div class="stat-num"><span class="a">1</span></div>
+      <span class="stat-lbl">search</span>
     </div>
     <div class="stat">
       <div class="stat-num">£<span class="a">0</span></div>
-      <span class="stat-lbl">free. always.</span>
+      <span class="stat-lbl">free, forever</span>
     </div>
   </div>
 </section>
@@ -627,16 +675,14 @@ body::after {
 
 
 <!-- ════════ CTA ════════ -->
-<section class="s-cta">
+<section class="s-cta" data-s aria-label="Get started">
   <div class="cta-glow" aria-hidden="true"></div>
   <h2 class="cta-headline">
-    Stop browsing.<br><em>Start wearing.</em>
+    <div class="r"><span class="ri">Stop browsing.</span></div>
+    <div class="r"><span class="ri d1"><em>Start wearing.</em></span></div>
   </h2>
-  <div class="cta-buttons">
-    <a href="/start" class="btn-primary">Find your look now →</a>
-    <a href="/how-it-works" class="btn-ghost">How it works</a>
-  </div>
-  <div class="cta-trust">
+  <a href="/start" class="btn-primary cta-btn fi d2">Find your look now →</a>
+  <div class="cta-trust fi d3">
     <span>Free to use</span>
     <span>No sign-up</span>
     <span>Your data stays yours</span>
