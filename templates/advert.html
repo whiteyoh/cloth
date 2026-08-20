@@ -636,7 +636,7 @@ body::after {
 
 /* ══════════════════════════════════════════════
    SCENE 6 — PROOF
-   Numbers + retailer marquee
+   Numbers
    ══════════════════════════════════════════════ */
 .s-proof {
   padding: 10vh 6vw 8vh;
@@ -674,37 +674,6 @@ body::after {
   margin-top: 0.75rem;
 }
 
-/* ── Retailer marquee with gradient edge fade ── */
-.s-marquee {
-  overflow: hidden;
-  padding: 2.2rem 0;
-  border-bottom: 1px solid var(--border);
-  /* Fade edges out */
-  -webkit-mask-image: linear-gradient(to right, transparent 0%, black 12%, black 88%, transparent 100%);
-  mask-image: linear-gradient(to right, transparent 0%, black 12%, black 88%, transparent 100%);
-}
-.marquee-track {
-  display: flex;
-  width: max-content;
-  animation: marqueeSpin 28s linear infinite;
-}
-.marquee-group { display: flex; align-items: center; flex-shrink: 0; }
-.marquee-name {
-  font-size: 0.63rem;
-  font-weight: 600;
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
-  color: rgba(237,232,224,0.17);
-  padding: 0 2rem;
-  white-space: nowrap;
-}
-.marquee-dot {
-  width: 3px; height: 3px;
-  border-radius: 50%;
-  background: var(--accent);
-  opacity: 0.55;
-  flex-shrink: 0;
-}
 
 /* ══════════════════════════════════════════════
    SCENE 7 — CTA
@@ -884,9 +853,6 @@ body::after {
 @keyframes blink {
   from,to { border-color: transparent; }
   50%     { border-color: var(--accent); }
-}
-@keyframes marqueeSpin {
-  to { transform: translateX(-50%); }
 }
 
 /* ── RESPONSIVE ── */
@@ -1373,45 +1339,6 @@ body::after {
   </div>
 </section>
 
-<!-- Retailer marquee — gradient-masked edges -->
-<div class="s-marquee" aria-label="Retailers available on dress.me">
-  <div class="marquee-track" aria-hidden="true">
-    <div class="marquee-group">
-      <span class="marquee-name">ASOS</span><span class="marquee-dot"></span>
-      <span class="marquee-name">Zara</span><span class="marquee-dot"></span>
-      <span class="marquee-name">John Lewis</span><span class="marquee-dot"></span>
-      <span class="marquee-name">Marks &amp; Spencer</span><span class="marquee-dot"></span>
-      <span class="marquee-name">H&amp;M</span><span class="marquee-dot"></span>
-      <span class="marquee-name">Farfetch</span><span class="marquee-dot"></span>
-      <span class="marquee-name">Next</span><span class="marquee-dot"></span>
-      <span class="marquee-name">River Island</span><span class="marquee-dot"></span>
-      <span class="marquee-name">Reiss</span><span class="marquee-dot"></span>
-      <span class="marquee-name">&amp; Other Stories</span><span class="marquee-dot"></span>
-      <span class="marquee-name">Ted Baker</span><span class="marquee-dot"></span>
-      <span class="marquee-name">Whistles</span><span class="marquee-dot"></span>
-      <span class="marquee-name">Cos</span><span class="marquee-dot"></span>
-      <span class="marquee-name">Uniqlo</span><span class="marquee-dot"></span>
-      <span class="marquee-name">Hobbs</span><span class="marquee-dot"></span>
-    </div>
-    <div class="marquee-group" aria-hidden="true">
-      <span class="marquee-name">ASOS</span><span class="marquee-dot"></span>
-      <span class="marquee-name">Zara</span><span class="marquee-dot"></span>
-      <span class="marquee-name">John Lewis</span><span class="marquee-dot"></span>
-      <span class="marquee-name">Marks &amp; Spencer</span><span class="marquee-dot"></span>
-      <span class="marquee-name">H&amp;M</span><span class="marquee-dot"></span>
-      <span class="marquee-name">Farfetch</span><span class="marquee-dot"></span>
-      <span class="marquee-name">Next</span><span class="marquee-dot"></span>
-      <span class="marquee-name">River Island</span><span class="marquee-dot"></span>
-      <span class="marquee-name">Reiss</span><span class="marquee-dot"></span>
-      <span class="marquee-name">&amp; Other Stories</span><span class="marquee-dot"></span>
-      <span class="marquee-name">Ted Baker</span><span class="marquee-dot"></span>
-      <span class="marquee-name">Whistles</span><span class="marquee-dot"></span>
-      <span class="marquee-name">Cos</span><span class="marquee-dot"></span>
-      <span class="marquee-name">Uniqlo</span><span class="marquee-dot"></span>
-      <span class="marquee-name">Hobbs</span><span class="marquee-dot"></span>
-    </div>
-  </div>
-</div>
 
 
 <!-- ════════ CTA ════════ -->
