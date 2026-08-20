@@ -55,8 +55,18 @@ class TestHome:
         r = client.get("/")
         assert r.status_code == 200
 
-    def test_contains_search_form(self, client):
+    def test_contains_dress_me_branding(self, client):
         r = client.get("/")
+        assert "dress.me" in r.text
+
+
+class TestStart:
+    def test_returns_200(self, client):
+        r = client.get("/start")
+        assert r.status_code == 200
+
+    def test_contains_search_form(self, client):
+        r = client.get("/start")
         assert "<form" in r.text
 
 

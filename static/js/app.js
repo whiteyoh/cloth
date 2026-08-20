@@ -732,7 +732,7 @@
     var clearBtn = document.getElementById('clear-saved-btn');
 
     if (!items.length) {
-      container.innerHTML = '<p class="saved-empty">Start building your wardrobe.</p>';
+      container.innerHTML = '<p class="saved-empty">Start building your wardrobe.</p><a href="/start" class="btn-primary" style="margin-top:var(--space-4);display:inline-block">Search now →</a>';
       if (clearBtn) clearBtn.style.display = 'none';
       return;
     }
@@ -804,7 +804,7 @@
           capturedLi.remove();
           updateSavedCount();
           if (!remaining.length) {
-            container.innerHTML = '<p class="saved-empty">Start building your wardrobe.</p>';
+            container.innerHTML = '<p class="saved-empty">Start building your wardrobe.</p><a href="/start" class="btn-primary" style="margin-top:var(--space-4);display:inline-block">Search now →</a>';
             if (clearBtn) clearBtn.style.display = 'none';
           }
         });
@@ -875,7 +875,7 @@
       clearBtn.style.display = '';
       clearBtn.addEventListener('click', function () {
         setSavedItems([]);
-        container.innerHTML = '<p class="saved-empty">Start building your wardrobe.</p>';
+        container.innerHTML = '<p class="saved-empty">Start building your wardrobe.</p><a href="/start" class="btn-primary" style="margin-top:var(--space-4);display:inline-block">Search now →</a>';
         clearBtn.style.display = 'none';
         updateSavedCount();
       });
@@ -2036,8 +2036,14 @@
       + '<div class="outfit-board-header">'
       + '<h2 class="outfit-board-name">' + escapeHtml(outfit.name) + '</h2>'
       + '<div class="outfit-board-controls">'
-      + '<button class="btn-outfit-move-up" data-outfit-id="' + escapeHtml(outfit.id) + '" aria-label="Move ' + escapeHtml(outfit.name) + ' up"' + (isFirst ? ' disabled' : '') + '>↑</button>'
-      + '<button class="btn-outfit-move-down" data-outfit-id="' + escapeHtml(outfit.id) + '" aria-label="Move ' + escapeHtml(outfit.name) + ' down"' + (isLast ? ' disabled' : '') + '>↓</button>'
+      + '<button class="btn-shop-all-outfit" data-outfit-id="' + escapeHtml(outfit.id) + '" aria-label="Shop the outfit ' + escapeHtml(outfit.name) + ' — open all items"'
+      + (outfit.items.length === 0 ? ' disabled' : '') + '>Shop all</button>'
+      + '<button class="btn-delete-outfit" data-outfit-id="' + escapeHtml(outfit.id) + '" aria-label="Delete outfit ' + escapeHtml(outfit.name) + '">Delete</button>'
+      + '<div class="outfit-overflow-wrap">'
+      + '<button class="btn-outfit-overflow" aria-label="More options for ' + escapeHtml(outfit.name) + '" aria-expanded="false">···</button>'
+      + '<div class="outfit-overflow-menu" hidden>'
+      + '<button class="btn-outfit-move-up" data-outfit-id="' + escapeHtml(outfit.id) + '" aria-label="Move ' + escapeHtml(outfit.name) + ' up"' + (isFirst ? ' disabled' : '') + '>↑ Move up</button>'
+      + '<button class="btn-outfit-move-down" data-outfit-id="' + escapeHtml(outfit.id) + '" aria-label="Move ' + escapeHtml(outfit.name) + ' down"' + (isLast ? ' disabled' : '') + '>↓ Move down</button>'
       + '<button class="btn-rename-outfit" data-outfit-id="' + escapeHtml(outfit.id) + '" aria-label="Rename outfit ' + escapeHtml(outfit.name) + '">Rename</button>'
       + '<button class="btn-share-outfit" data-outfit-id="' + escapeHtml(outfit.id) + '" aria-label="Share outfit ' + escapeHtml(outfit.name) + '">Share</button>'
       + '<button class="btn-complete-outfit" data-outfit-id="' + escapeHtml(outfit.id) + '" aria-label="Complete look ' + escapeHtml(outfit.name) + '"'
@@ -2045,9 +2051,8 @@
       + '<button class="btn-open-canvas" data-outfit-id="' + escapeHtml(outfit.id) + '" '
       + 'aria-label="Open ' + escapeHtml(outfit.name) + ' in style canvas"'
       + (outfit.items.length === 0 ? ' disabled' : '') + '>Mood board</button>'
-      + '<button class="btn-delete-outfit" data-outfit-id="' + escapeHtml(outfit.id) + '" aria-label="Delete outfit ' + escapeHtml(outfit.name) + '">Delete</button>'
-      + '<button class="btn-shop-all-outfit" data-outfit-id="' + escapeHtml(outfit.id) + '" aria-label="Shop the outfit ' + escapeHtml(outfit.name) + ' — open all items"'
-      + (outfit.items.length === 0 ? ' disabled' : '') + '>Shop all</button>'
+      + '</div>'
+      + '</div>'
       + '</div>'
       + '</div>'
       + itemsHtml
@@ -2062,7 +2067,7 @@
     var outfits = getOutfits();
 
     if (!outfits.length) {
-      container.innerHTML = '<p class="outfits-empty">Your first look is waiting.</p>';
+      container.innerHTML = '<p class="outfits-empty">Your first look is waiting.</p><a href="/start" class="btn-primary outfits-empty-cta">Start searching →</a>';
       return;
     }
 
@@ -2071,6 +2076,26 @@
       html += buildOutfitBoardHtml(outfit, idx === 0, idx === outfits.length - 1);
     });
     container.innerHTML = html;
+
+    // Overflow menu toggle (WN-254)
+    container.querySelectorAll('.btn-outfit-overflow').forEach(function(btn) {
+      btn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        var menu = btn.nextElementSibling;
+        var isOpen = !menu.hidden;
+        document.querySelectorAll('.outfit-overflow-menu').forEach(function(m) { m.hidden = true; });
+        document.querySelectorAll('.btn-outfit-overflow').forEach(function(b) { b.setAttribute('aria-expanded', 'false'); });
+        menu.hidden = isOpen;
+        btn.setAttribute('aria-expanded', String(!isOpen));
+      });
+    });
+    if (!window._outfitOverflowBound) {
+      window._outfitOverflowBound = true;
+      document.addEventListener('click', function() {
+        document.querySelectorAll('.outfit-overflow-menu').forEach(function(m) { m.hidden = true; });
+        document.querySelectorAll('.btn-outfit-overflow').forEach(function(b) { b.setAttribute('aria-expanded', 'false'); });
+      });
+    }
 
     // Wire up move-up/move-down buttons (WN-139)
     container.querySelectorAll('.btn-outfit-move-up').forEach(function (btn) {
@@ -3188,6 +3213,18 @@
     if (document.getElementById('outfit-gen-form')) {
       initOutfitGeneratorPage();
     }
+
+    // Active nav state
+    var path = window.location.pathname;
+    var outfitsLink = document.querySelector('.outfits-link');
+    var savedLink = document.querySelector('.saved-link');
+    if (outfitsLink) outfitsLink.setAttribute('aria-current', path === '/outfits' ? 'page' : 'false');
+    if (savedLink) savedLink.setAttribute('aria-current', path === '/saved' ? 'page' : 'false');
+    // Mobile bottom nav
+    document.querySelectorAll('.mobile-nav-tab').forEach(function(tab) {
+      var tabPath = tab.getAttribute('href');
+      tab.setAttribute('aria-current', (path === tabPath || (tabPath !== '/' && path.startsWith(tabPath))) ? 'page' : 'false');
+    });
 
     // One-time document-level setup
     _initSpaNavigation();

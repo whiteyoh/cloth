@@ -210,7 +210,8 @@ body::after {
 }
 .hook-trust {
   font-size: 0.68rem;
-  color: var(--dim);
+  color: var(--muted);
+  opacity: 0.85;
   letter-spacing: 0.05em;
   line-height: 1.7;
 }
@@ -651,13 +652,14 @@ body::after {
   border-radius: 10px;
   background: var(--surf2);
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  font-size: 1.75rem;
   position: relative;
   overflow: hidden;
+  padding: 0.4rem;
 }
-.om-cell:nth-child(1) { grid-column: 1/-1; aspect-ratio: 2/1; font-size: 2rem; }
+.om-cell:nth-child(1) { grid-column: 1/-1; aspect-ratio: 2/1; }
 .om-cell:nth-child(2), .om-cell:nth-child(3) { aspect-ratio: 1; }
 .om-cell:nth-child(4) { grid-column: 1/-1; aspect-ratio: 16/5; font-size: 1.4rem; }
 
@@ -980,14 +982,125 @@ body::after {
   .cta-headline { font-size: clamp(3.5rem, 16vw, 7rem); }
 }
 
+/* ── RESULTS SECTION ── */
+.s-results {
+  display: flex;
+  align-items: center;
+  gap: 5rem;
+  padding: 9rem 6vw;
+  max-width: 1100px;
+  margin: 0 auto;
+  flex-direction: row-reverse;
+}
+.results-copy { flex: 1; min-width: 0; }
+.results-vis { flex: 1; min-width: 0; display: flex; justify-content: center; }
+
+.results-mock {
+  background: var(--surf2);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 1.25rem;
+  width: 100%;
+  max-width: 340px;
+}
+.rm-filter-bar {
+  display: flex;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+}
+.rm-chip {
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  padding: 0.25rem 0.6rem;
+  border-radius: 99px;
+  border: 1px solid var(--border);
+  color: var(--muted);
+}
+.rm-chip--active { border-color: var(--accent); color: var(--accent); }
+.rm-chip--more { color: var(--muted); }
+.rm-grid { display: flex; flex-direction: column; gap: 0.5rem; }
+.rm-card {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: var(--surf);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 0.6rem 0.75rem;
+  position: relative;
+}
+.rm-card--saved { border-color: rgba(196,149,90,0.4); }
+.rm-card-img {
+  width: 42px;
+  height: 52px;
+  border-radius: 6px;
+  flex-shrink: 0;
+}
+.rm-card-img--1 { background: linear-gradient(135deg, #2A3A5A, #1A2840); }
+.rm-card-img--2 { background: linear-gradient(135deg, #3A2A1A, #2A1A0A); }
+.rm-card-img--3 { background: linear-gradient(135deg, #1A3A2A, #0A2A1A); }
+.rm-card-info { display: flex; flex-direction: column; gap: 0.15rem; flex: 1; }
+.rm-card-name { font-size: 0.72rem; font-weight: 600; color: var(--fg); }
+.rm-card-shop { font-size: 0.62rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; }
+.rm-card-price { font-size: 0.72rem; font-weight: 700; color: var(--gold); }
+.rm-card-save { font-size: 0.9rem; color: var(--dim); cursor: default; }
+.rm-card-save--active { color: var(--accent); }
+.rm-count { font-size: 0.62rem; color: var(--muted); text-align: center; margin-top: 0.75rem; }
+
+@media (max-width: 768px) {
+  .s-results { flex-direction: column; gap: 3rem; padding: 5rem 6vw; }
+}
+
+/* ── OUTFIT MOCK IMAGES ── */
+.om-img {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 10px;
+}
+.om-img--1 { background: linear-gradient(160deg, #2A4060 0%, #1A2840 100%); }
+.om-img--2 { background: linear-gradient(160deg, #3A3030 0%, #201818 100%); }
+.om-img--3 { background: linear-gradient(160deg, #2A3A28 0%, #182218 100%); }
+.om-img--4 { background: linear-gradient(160deg, #3A2A18 0%, #221608 100%); }
+
+/* ── MID-SCROLL CTA ── */
+.s-midcta {
+  text-align: center;
+  padding: 1rem 6vw 4rem;
+}
+
+/* ── FOOTER NAV ── */
+.footer-nav {
+  display: flex;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+  margin-top: 1rem;
+}
+.footer-nav a {
+  font-size: 0.78rem;
+  color: var(--muted);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+.footer-nav a:hover { color: var(--fg); }
+.footer-legal {
+  font-size: 0.68rem;
+  color: var(--dim);
+  margin-top: 1rem;
+  max-width: 480px;
+}
+
   </style>
 </head>
 <body>
 
 <!-- ── STICKY NAV ── -->
-<nav class="sticky-nav" id="sticky-nav" aria-label="Site navigation" aria-hidden="true">
+<nav class="sticky-nav" id="sticky-nav" aria-label="Site navigation">
   <a href="/" class="sn-logo">dress<span>.</span>me</a>
-  <a href="/find" class="btn-primary sn-cta">Find your look →</a>
+  <a href="/start" class="btn-primary sn-cta">Find your look →</a>
 </nav>
 
 
@@ -1006,7 +1119,7 @@ body::after {
 
     <!-- CTA visible without scrolling -->
     <div class="hook-actions">
-      <a href="/find" class="btn-primary">Find your look now →</a>
+      <a href="/start" class="btn-primary">Find your look now →</a>
       <span class="hook-trust">Free to use<br>No account needed</span>
     </div>
   </div>
@@ -1079,6 +1192,11 @@ body::after {
 </section>
 
 
+<!-- Mid-scroll CTA — catches converted readers early -->
+<div class="s-midcta" data-s>
+  <a href="/start" class="btn-primary fi">Find your look now →</a>
+</div>
+
 <!-- ════════ WORD SLAM ════════ -->
 <!-- Describe. Find. Wear. — simple words, maximum drama -->
 <section class="s-words" data-s>
@@ -1106,85 +1224,62 @@ body::after {
 </section>
 
 
-<!-- ════════ TRY-ON ════════ -->
-<section class="s-tryon" data-s>
-  <div class="tryon-vis" aria-hidden="true">
-    <div class="tryon-stage">
 
-      <!-- BEFORE: muted grey figure, no outfit -->
-      <div class="tryon-card tryon-card-b">
-        <div class="tryon-card-body">
-          <svg class="person-svg" viewBox="0 0 80 158" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <circle cx="40" cy="20" r="15" fill="rgba(140,130,120,0.22)"/>
-            <rect x="34" y="34" width="12" height="8" rx="3" fill="rgba(140,130,120,0.18)"/>
-            <path d="M20 50 C18 44 40 40 40 40 C40 40 62 44 60 50 L64 98 Q40 106 16 98 Z" fill="rgba(140,130,120,0.15)"/>
-            <path d="M20 52 C13 60 10 72 9 84" stroke="rgba(140,130,120,0.18)" stroke-width="10" stroke-linecap="round"/>
-            <path d="M60 52 C67 60 70 72 71 84" stroke="rgba(140,130,120,0.18)" stroke-width="10" stroke-linecap="round"/>
-            <rect x="21" y="96" width="14" height="52" rx="7" fill="rgba(140,130,120,0.15)"/>
-            <rect x="45" y="96" width="14" height="52" rx="7" fill="rgba(140,130,120,0.15)"/>
-          </svg>
-        </div>
-        <div class="tryon-card-label">You</div>
-      </div>
 
-      <div class="tryon-arrow" aria-hidden="true">→</div>
-
-      <!-- AFTER: same figure, outfit glows in blue -->
-      <div class="tryon-card tryon-card-a">
-        <div class="tryon-card-body">
-          <svg class="person-svg" viewBox="0 0 80 158" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-              <linearGradient id="coat-g" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stop-color="#6890D8"/>
-                <stop offset="100%" stop-color="#3058A8"/>
-              </linearGradient>
-              <linearGradient id="trouser-g" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stop-color="#284878"/>
-                <stop offset="100%" stop-color="#1A3060"/>
-              </linearGradient>
-              <filter id="item-glow" x="-30%" y="-30%" width="160%" height="160%">
-                <feGaussianBlur in="SourceGraphic" stdDeviation="3" result="blur"/>
-                <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
-              </filter>
-            </defs>
-            <!-- Head + neck -->
-            <circle cx="40" cy="20" r="15" fill="rgba(160,175,215,0.5)"/>
-            <rect x="34" y="34" width="12" height="8" rx="3" fill="rgba(160,175,215,0.4)"/>
-            <!-- Coat body — glowing -->
-            <path d="M20 50 C18 44 40 40 40 40 C40 40 62 44 60 50 L64 98 Q40 106 16 98 Z"
-                  fill="url(#coat-g)" filter="url(#item-glow)" opacity="0.88"/>
-            <!-- Lapels -->
-            <path d="M40 40 L33 65 L40 70 L47 65 Z" fill="rgba(50,90,190,0.9)"/>
-            <!-- Sleeves / arms -->
-            <path d="M20 52 C13 60 10 72 9 84" stroke="url(#coat-g)" stroke-width="10" stroke-linecap="round" opacity="0.82"/>
-            <path d="M60 52 C67 60 70 72 71 84" stroke="url(#coat-g)" stroke-width="10" stroke-linecap="round" opacity="0.82"/>
-            <!-- Trousers -->
-            <rect x="21" y="96" width="14" height="52" rx="7" fill="url(#trouser-g)" opacity="0.78"/>
-            <rect x="45" y="96" width="14" height="52" rx="7" fill="url(#trouser-g)" opacity="0.78"/>
-          </svg>
-        </div>
-        <div class="tryon-card-label">Wearing it</div>
-      </div>
-
-    </div>
-  </div>
-
-  <div class="tryon-copy">
-    <span class="eyebrow fi">Virtual try-on</span>
+<!-- ════════ RESULTS ════════ -->
+<section class="s-results" data-s>
+  <div class="results-copy">
+    <span class="eyebrow fi">What you get</span>
     <h2 class="feat-headline">
-      <div class="r"><span class="ri">See it on you</span></div>
-      <div class="r"><span class="ri d1"><em>before you buy.</em></span></div>
+      <div class="r"><span class="ri">Filtered.</span></div>
+      <div class="r"><span class="ri d1"><em>Ranked. Ready.</em></span></div>
     </h2>
     <p class="feat-body fi d2">
-      Upload a photo of yourself and try on any item instantly. No more guessing how it'll look. No more ordering and sending back.
-    </p>
-    <p class="feat-note fi d3">
-      <span class="feat-note-icon">i</span>
-      Your photo is never stored — used once for the try-on, then immediately discarded.
+      Filter by colour, price, size, and retailer. Save anything you like with one tap. The AI refines your results as you go.
     </p>
   </div>
-</section>
 
+  <div class="results-vis fi d1" aria-hidden="true">
+    <div class="results-mock">
+      <div class="rm-filter-bar">
+        <span class="rm-chip rm-chip--active">Navy</span>
+        <span class="rm-chip">Under £100</span>
+        <span class="rm-chip">Size 12</span>
+        <span class="rm-chip rm-chip--more">+ More</span>
+      </div>
+      <div class="rm-grid">
+        <div class="rm-card">
+          <div class="rm-card-img rm-card-img--1"></div>
+          <div class="rm-card-info">
+            <span class="rm-card-name">Wool Blend Coat</span>
+            <span class="rm-card-shop">John Lewis</span>
+            <span class="rm-card-price">£89</span>
+          </div>
+          <div class="rm-card-save">♥</div>
+        </div>
+        <div class="rm-card">
+          <div class="rm-card-img rm-card-img--2"></div>
+          <div class="rm-card-info">
+            <span class="rm-card-name">Oversized Trench</span>
+            <span class="rm-card-shop">ASOS</span>
+            <span class="rm-card-price">£65</span>
+          </div>
+          <div class="rm-card-save">♥</div>
+        </div>
+        <div class="rm-card rm-card--saved">
+          <div class="rm-card-img rm-card-img--3"></div>
+          <div class="rm-card-info">
+            <span class="rm-card-name">Belted Midi Coat</span>
+            <span class="rm-card-shop">M&amp;S</span>
+            <span class="rm-card-price">£79</span>
+          </div>
+          <div class="rm-card-save rm-card-save--active">♥</div>
+        </div>
+      </div>
+      <p class="rm-count">248 results from 43 retailers</p>
+    </div>
+  </div>
+</section>
 
 <!-- ════════ OUTFITS ════════ -->
 <section class="s-outfits" data-s>
@@ -1206,10 +1301,10 @@ body::after {
         <span class="om-share">↗ Share link</span>
       </div>
       <div class="om-grid">
-        <div class="om-cell">🧥<span class="om-badge">Saved</span></div>
-        <div class="om-cell">👖<span class="om-badge">Saved</span></div>
-        <div class="om-cell">👟<span class="om-badge">Saved</span></div>
-        <div class="om-cell">👜<span class="om-badge">Saved</span></div>
+        <div class="om-cell"><div class="om-img om-img--1"></div><span class="om-badge">Saved</span></div>
+        <div class="om-cell"><div class="om-img om-img--2"></div><span class="om-badge">Saved</span></div>
+        <div class="om-cell"><div class="om-img om-img--3"></div><span class="om-badge">Saved</span></div>
+        <div class="om-cell"><div class="om-img om-img--4"></div><span class="om-badge">Saved</span></div>
       </div>
       <div class="om-ai">
         <span class="om-ai-dot">✦</span>
@@ -1308,7 +1403,7 @@ body::after {
   </div>
 
   <div class="cta-buttons fi d4">
-    <a href="/find" class="btn-primary">Find your look now →</a>
+    <a href="/start" class="btn-primary">Find your look now →</a>
     <a href="/how-it-works" class="btn-ghost">How it works</a>
   </div>
 
@@ -1321,7 +1416,16 @@ body::after {
 
 
 <footer class="s-footer">
-  <a href="/" class="footer-logo">dress<span>.</span>me</a>
+  <div>
+    <a href="/" class="footer-logo">dress<span>.</span>me</a>
+    <nav class="footer-nav" aria-label="Footer navigation">
+      <a href="/start">Search</a>
+      <a href="/how-it-works">How it works</a>
+      <a href="/outfits">Your looks</a>
+      <a href="/privacy">Privacy</a>
+    </nav>
+    <p class="footer-legal">We earn a small commission on purchases made through links on dress.me, at no cost to you.</p>
+  </div>
   <span class="footer-note">AI-powered · Hundreds of retailers · Free forever</span>
 </footer>
 
@@ -1339,7 +1443,6 @@ body::after {
   new IntersectionObserver(entries => {
     const visible = !entries[0].isIntersecting;
     nav.classList.toggle('show', visible);
-    nav.setAttribute('aria-hidden', String(!visible));
   }, { threshold: 0.15 }).observe(hero);
 
   // ── Count-up animation ──

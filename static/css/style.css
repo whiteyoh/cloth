@@ -1489,6 +1489,13 @@ h6 { font-size: var(--text-base); }
   text-decoration: none;
 }
 
+.outfits-link[aria-current="page"],
+.saved-link[aria-current="page"] {
+  color: #fff;
+  border-bottom: 2px solid var(--color-accent);
+  padding-bottom: 2px;
+}
+
 /* ------------------------------------------------------------------ */
 /* Saved items page                                                     */
 /* ------------------------------------------------------------------ */
@@ -2232,6 +2239,8 @@ h6 { font-size: var(--text-base); }
   font-style: italic;
 }
 
+.outfits-empty-cta { margin-top: var(--space-4); display: inline-block; }
+
 /* ------------------------------------------------------------------ */
 /* Outfit board card                                                    */
 /* ------------------------------------------------------------------ */
@@ -2304,6 +2313,54 @@ h6 { font-size: var(--text-base); }
   opacity: 0.45;
   cursor: not-allowed;
 }
+
+.outfit-overflow-wrap {
+  position: relative;
+}
+
+.btn-outfit-overflow {
+  padding: 0.35rem 0.75rem;
+  border-radius: var(--radius);
+  font-size: 1rem;
+  letter-spacing: 0.05em;
+  border: 1.5px solid var(--colour-border);
+  background: none;
+  color: var(--colour-text-muted);
+  cursor: pointer;
+  min-height: 36px;
+}
+
+.outfit-overflow-menu {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 4px);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-md);
+  min-width: 160px;
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  padding: var(--space-1) 0;
+}
+
+.outfit-overflow-menu[hidden] { display: none; }
+
+.outfit-overflow-menu button,
+.outfit-overflow-menu a {
+  display: block;
+  width: 100%;
+  padding: 0.5rem 1rem;
+  text-align: left;
+  background: none;
+  border: none;
+  font-size: 0.85rem;
+  color: var(--color-text);
+  cursor: pointer;
+}
+
+.outfit-overflow-menu button:hover { background: var(--color-surface-subtle); }
 
 .btn-complete-outfit {
   background: var(--colour-accent);
@@ -3800,6 +3857,11 @@ h6 { font-size: var(--text-base); }
   .mobile-nav-tab[aria-current="page"] {
     background: rgba(255, 255, 255, 0.06);
     border-top: 2px solid var(--color-accent);
+    color: var(--color-accent);
+  }
+
+  .mobile-nav-tab[aria-current="page"] svg {
+    stroke: var(--color-accent);
   }
 
   /* Add padding so content is not hidden behind bottom nav */
