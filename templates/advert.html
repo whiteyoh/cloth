@@ -21,23 +21,25 @@
 
 /* ── RESET ── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-html { scroll-behavior: smooth; overflow-x: clip; }
+html { overflow-x: clip; }
 
 /* ── TOKENS ── */
 :root {
-  --bg:       #060504;
-  --fg:       #EDE8E0;
-  --muted:    #7A7068;
-  --dim:      #2E2A26;
-  --accent:   #C4955A;
-  --gold:     #D4A96A;
-  --blue:     #4E78C4;
-  --blue-dim: #1A2840;
-  --surf:     #0D0B09;
-  --surf2:    #161210;
-  --border:   rgba(237,232,224,0.07);
-  --ease:     cubic-bezier(0.16,1,0.3,1);
+  --bg:     #060504;
+  --fg:     #EDE8E0;
+  --muted:  #7A7068;
+  --dim:    #2E2A26;
+  --accent: #C4955A;
+  --gold:   #D4A96A;
+  --surf:   #0D0B09;
+  --surf2:  #161210;
+  --border: rgba(237,232,224,0.07);
+  --ease:   cubic-bezier(0.16,1,0.3,1);
 }
+
+/* Register custom properties so glowDrift can interpolate them */
+@property --gx { syntax: '<percentage>'; initial-value: 50%; inherits: false; }
+@property --gy { syntax: '<percentage>'; initial-value: 52%; inherits: false; }
 
 body {
   background: var(--bg);
@@ -59,26 +61,6 @@ body::after {
   pointer-events: none;
   z-index: 9999;
 }
-
-/* ── ANIMATION SYSTEM ── */
-/* Text lines: wrap in .r (overflow:hidden), animate .ri (translateY) */
-.r  { overflow: hidden; display: block; }
-.ri { display: block; transform: translateY(110%); transition: transform 0.95s var(--ease); will-change: transform; }
-
-/* Fade-up elements */
-.fi { opacity: 0; transform: translateY(22px); transition: opacity 0.85s ease, transform 0.85s var(--ease); will-change: opacity, transform; }
-
-/* Parent gets .iv when scrolled into view → children animate */
-[data-s].iv .ri { transform: translateY(0); }
-[data-s].iv .fi { opacity: 1; transform: none; }
-
-/* Stagger delays */
-.d1 { transition-delay: 0.10s; }
-.d2 { transition-delay: 0.22s; }
-.d3 { transition-delay: 0.36s; }
-.d4 { transition-delay: 0.52s; }
-.d5 { transition-delay: 0.70s; }
-.d6 { transition-delay: 0.90s; }
 
 /* ── SHARED COMPONENTS ── */
 .eyebrow {
@@ -110,10 +92,16 @@ body::after {
   box-shadow: 0 8px 30px rgba(196,149,90,0.35);
 }
 
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: 3px;
+}
+
 .btn-ghost {
   display: inline-block;
   padding: 0.85rem 2rem;
-  border: 1px solid rgba(237,232,224,0.14);
+  border: 1px solid rgba(237,232,224,0.28);
   color: var(--fg);
   font-size: 0.8rem;
   letter-spacing: 0.04em;
@@ -219,6 +207,8 @@ body::after {
   animation: fadeUp 1s ease 0.8s both;
 }
 .hook-trust {
+  display: flex;
+  flex-direction: column;
   font-size: 0.68rem;
   color: var(--muted);
   opacity: 0.85;
@@ -354,7 +344,7 @@ body::after {
   border-radius: 100px;
   font-size: 0.68rem;
   font-weight: 500;
-  color: rgba(237,232,224,0.45);
+  color: rgba(237,232,224,0.62);
   letter-spacing: 0.02em;
   white-space: nowrap;
 }
@@ -395,8 +385,7 @@ body::after {
 
 
 /* ══════════════════════════════════════════════
-   SCENE 7 — CTA
-   Rule: Clear action + urgency + consistent brand
+   CTA
    ══════════════════════════════════════════════ */
 .s-cta {
   position: relative;
@@ -527,12 +516,18 @@ body::after {
   .s-footer { flex-direction: column; align-items: flex-start; gap: 1.5rem; }
 }
 
+@media (prefers-reduced-motion: no-preference) {
+  html { scroll-behavior: smooth; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
+  /* Prevent typing animation ending at width:0 and hiding the query text */
+  .mock-query { width: 100% !important; animation: none !important; }
 }
 
 /* ── FOOTER NAV ── */
@@ -551,7 +546,7 @@ body::after {
 .footer-nav a:hover { color: var(--fg); }
 .footer-legal {
   font-size: 0.68rem;
-  color: var(--dim);
+  color: var(--muted);
   margin-top: 1rem;
   max-width: 480px;
 }
@@ -563,9 +558,11 @@ body::after {
 <!-- ── STICKY NAV ── -->
 <nav class="sticky-nav" id="sticky-nav" aria-label="Site navigation">
   <a href="/start" class="sn-logo">dress<span>.</span>me</a>
-  <a href="/start" class="btn-primary sn-cta">Find your look →</a>
+  <a href="/start" class="btn-primary sn-cta">Find your look now →</a>
 </nav>
 
+
+<main>
 
 <!-- ════════ HOOK ════════ -->
 <!-- Rule: pain in the first line, product visible, CTA above fold -->
@@ -583,7 +580,7 @@ body::after {
     <!-- CTA visible without scrolling -->
     <div class="hook-actions">
       <a href="/start" class="btn-primary">Find your look now →</a>
-      <span class="hook-trust">Free to use<br>No account needed</span>
+      <span class="hook-trust"><span>Free to use</span><span>No account needed</span></span>
     </div>
   </div>
 
@@ -628,7 +625,7 @@ body::after {
             </div>
           </div>
         </div>
-        <p class="mock-count" aria-hidden="true">248 results from 43 retailers</p>
+        <p class="mock-count" aria-hidden="true">Hundreds of results, one search</p>
       </div>
     </div>
   </div>
@@ -637,7 +634,7 @@ body::after {
 
 
 <!-- ════════ PROOF ════════ -->
-<section class="s-proof" aria-label="Where dress.me searches">
+<section class="s-proof" aria-label="Where you already shop">
   <span class="eyebrow">Where you already shop</span>
 
   <div class="brand-row" aria-hidden="true">
@@ -688,6 +685,7 @@ body::after {
   </div>
 </section>
 
+</main>
 
 <footer class="s-footer">
   <div>
@@ -705,12 +703,6 @@ body::after {
 
 
 <script>
-  // ── Scroll reveal ──
-  const io = new IntersectionObserver(entries => {
-    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('iv'); });
-  }, { threshold: 0.1 });
-  document.querySelectorAll('[data-s]').forEach(el => io.observe(el));
-
   // ── Sticky nav appears when hero scrolls out ──
   const hero = document.getElementById('hook');
   const nav  = document.getElementById('sticky-nav');
