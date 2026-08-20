@@ -1,0 +1,14 @@
+<svg width="1200" height="630" viewBox="0 0 1200 630" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="bg" cx="18%" cy="50%" r="72%" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#1C1308"/>
+      <stop offset="65%" stop-color="#060504"/>
+    </radialGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <rect x="80" y="155" width="2" height="320" fill="#C4955A" opacity="0.35"/>
+  <text x="104" y="196" font-family="Georgia,serif" font-size="15" letter-spacing="5" fill="#7A7068">ONE SEARCH. HUNDREDS OF RETAILERS.</text>
+  <text x="100" y="368" font-family="Georgia,serif" font-size="148" font-weight="700" letter-spacing="-5" fill="#EDE8E0">dress<tspan fill="#C4955A">.</tspan>me</text>
+  <text x="104" y="436" font-family="Georgia,serif" font-size="26" font-style="italic" fill="#514840">Find anything to wear. Free. No account needed.</text>
+  <rect x="0" y="618" width="1200" height="12" fill="#C4955A" opacity="0.22"/>
+</svg>

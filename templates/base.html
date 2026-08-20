@@ -8,7 +8,9 @@
   <meta property="og:title" content="{% block og_title %}{{ self.title() }}{% endblock %}">
   <meta property="og:description" content="{% block og_description %}Search across the web for any clothing item using plain English. AI-powered results from hundreds of retailers.{% endblock %}">
   <meta property="og:type" content="website">
-  <meta name="twitter:card" content="summary">
+  {% if site_url %}<meta property="og:image" content="{{ site_url }}/static/img/og-image.svg">{% endif %}
+  <meta name="twitter:card" content="{% if site_url %}summary_large_image{% else %}summary{% endif %}">
+  {% if site_url %}<meta name="twitter:image" content="{{ site_url }}/static/img/og-image.svg">{% endif %}
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='6' fill='%23C4955A'/><text x='16' y='24' font-family='Georgia,serif' font-size='22' font-weight='700' fill='%23060504' text-anchor='middle'>d</text></svg>">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>

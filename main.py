@@ -207,6 +207,7 @@ async def lifespan(app: FastAPI):
         )
     templates.env.globals["refine_enabled"] = bool(os.environ.get("OPENAI_API_KEY"))
     templates.env.globals["skimlinks_pub_id"] = os.environ.get("SKIMLINKS_PUB_ID", "")
+    templates.env.globals["site_url"] = os.environ.get("SITE_URL", "").rstrip("/")
 
     web_concurrency_str = os.environ.get("WEB_CONCURRENCY", "")
     if web_concurrency_str:
