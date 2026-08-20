@@ -297,6 +297,13 @@ async def global_exception_handler(request: Request, exc: Exception):
 
 @app.get("/", response_class=HTMLResponse)
 async def home(request: Request):
+    """Render the dress.me commercial / landing page."""
+    from fastapi.responses import FileResponse as _FR
+    return _FR(os.path.join(_TEMPLATES_DIR, "advert.html"), media_type="text/html")
+
+
+@app.get("/find", response_class=HTMLResponse)
+async def find(request: Request):
     """Render the search home page."""
     return templates.TemplateResponse(request, "index.html")
 
