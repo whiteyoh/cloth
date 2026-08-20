@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% block title %}Saved items — dress.me{% endblock %}
+{% block meta_description %}Your saved fashion items — build a wardrobe, create collections, and share your wishlist. Free to use on dress.me.{% endblock %}
 {% block content %}
 <section class="saved-page">
   <div class="saved-page-header">
@@ -14,7 +15,10 @@
     <button type="button" class="btn-new-collection" id="btn-new-collection" aria-label="Create new collection">+ New collection</button>
   </div>
   <div id="saved-items-container">
-    <p class="saved-empty">Start building your wardrobe.</p>
+    <div class="saved-empty-state">
+      <p class="saved-empty">Nothing saved yet.</p>
+      <a href="/start" class="btn-primary saved-empty-cta">Search for items →</a>
+    </div>
   </div>
   <button id="clear-saved-btn" class="btn-clear-saved" style="display:none">Clear all</button>
 </section>

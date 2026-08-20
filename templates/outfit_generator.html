@@ -20,14 +20,21 @@
         id="outfit-desc"
         name="description"
         class="outfit-gen-textarea"
-        maxlength="100"
+        maxlength="200"
         rows="2"
         placeholder="e.g. relaxed weekend look, summer wedding, dark academia"
         aria-describedby="outfit-desc-hint outfit-desc-count"
         required></textarea>
       <div class="outfit-gen-meta">
-        <span id="outfit-desc-hint" class="outfit-gen-hint">Up to 100 characters — be specific about style, occasion, season or colour.</span>
-        <span id="outfit-desc-count" class="outfit-gen-count" aria-live="polite">100 left</span>
+        <span id="outfit-desc-hint" class="outfit-gen-hint">Up to 200 characters — try a style, occasion, season or mood.</span>
+        <span id="outfit-desc-count" class="outfit-gen-count" aria-live="polite">200 left</span>
+      </div>
+      <div class="outfit-gen-examples" aria-label="Example prompts">
+        <span class="outfit-gen-examples-label">Try:</span>
+        <button type="button" class="outfit-gen-example-chip" data-prompt="relaxed weekend look, earth tones, autumn">Weekend · earth tones</button>
+        <button type="button" class="outfit-gen-example-chip" data-prompt="smart casual summer wedding guest outfit">Summer wedding guest</button>
+        <button type="button" class="outfit-gen-example-chip" data-prompt="dark academia, layered, warm and cosy">Dark academia</button>
+        <button type="button" class="outfit-gen-example-chip" data-prompt="minimalist workwear, neutral palette">Minimal workwear</button>
       </div>
     </div>
     <button type="submit" class="btn-primary outfit-gen-submit" id="outfit-gen-submit">Build this look</button>

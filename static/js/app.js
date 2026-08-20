@@ -3630,12 +3630,22 @@
     };
 
     function updateCounter() {
-      var remaining = 100 - (textarea.value.length);
+      var remaining = 200 - (textarea.value.length);
       counter.textContent = remaining + ' left';
       counter.style.color = remaining < 15 ? 'var(--colour-error)' : '';
     }
 
     textarea.addEventListener('input', updateCounter);
+
+    document.querySelectorAll('.outfit-gen-example-chip').forEach(function(chip) {
+      chip.addEventListener('click', function() {
+        if (textarea) {
+          textarea.value = chip.dataset.prompt;
+          textarea.focus();
+          if (counter) counter.textContent = (200 - textarea.value.length) + ' left';
+        }
+      });
+    });
 
     function showError(msg) {
       errorEl.textContent = msg;

@@ -1,21 +1,24 @@
 {% extends "base.html" %}
 {% block title %}Outfit boards — dress.me{% endblock %}
+{% block meta_description %}Your outfit boards on dress.me — save looks, build complete outfits from any retailer, and share them with one link.{% endblock %}
 {% block content %}
 <section class="outfits-page">
   <div class="outfits-page-header">
     <h1>Your looks</h1>
     <div class="outfits-header-actions">
-      <label class="btn-secondary outfit-import-label" title="Restore outfits from a backup file" aria-label="Import outfits from backup file">
-        Import
-        <input type="file" id="outfit-import-input" accept=".json,application/json" style="display:none">
-      </label>
-      <button id="outfit-export-btn" class="btn-secondary" title="Save all outfits to a backup file">Export</button>
+      <div class="outfits-header-secondary">
+        <label class="btn-secondary outfit-import-label" title="Restore outfits from a backup file" aria-label="Import outfits from backup file">
+          Import
+          <input type="file" id="outfit-import-input" accept=".json,application/json" style="display:none">
+        </label>
+        <button id="outfit-export-btn" class="btn-secondary" title="Save all outfits to a backup file">Export</button>
+      </div>
       <a href="/outfit-generator" class="btn-secondary">Generate with AI</a>
       <button id="new-outfit-btn" class="btn-new-outfit">+ New look</button>
     </div>
   </div>
   <div id="outfits-container">
-    <p class="outfits-empty">Your first look is waiting.</p>
+    <p class="outfits-empty">Build your first look — save items from search results and group them here.</p>
     <a href="/start" class="btn-primary outfits-empty-cta">Start searching →</a>
   </div>
   <section class="canvas-saves-section" aria-label="Saved mood boards">

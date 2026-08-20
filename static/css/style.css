@@ -1733,6 +1733,15 @@ h6 { font-size: var(--text-base); }
   font-style: italic;
 }
 
+.saved-empty-state {
+  text-align: center;
+  padding: var(--space-12) var(--space-4);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-4);
+}
+
 .btn-remove-saved {
   display: block;
   width: 100%;
@@ -2265,6 +2274,14 @@ h6 { font-size: var(--text-base); }
 }
 
 .outfits-empty-cta { margin-top: var(--space-4); display: inline-block; }
+
+.outfits-header-secondary {
+  display: flex;
+  gap: var(--space-2);
+}
+@media (max-width: 600px) {
+  .outfits-header-secondary { display: none; }
+}
 
 /* ------------------------------------------------------------------ */
 /* Outfit board card                                                    */
@@ -4898,6 +4915,35 @@ main {
   color: var(--colour-text-muted);
   white-space: nowrap;
   flex-shrink: 0;
+}
+
+.outfit-gen-examples {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+}
+.outfit-gen-examples-label {
+  font-size: var(--text-xs);
+  color: var(--color-text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.outfit-gen-example-chip {
+  font-size: var(--text-xs);
+  padding: var(--space-1) var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-full);
+  background: transparent;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: border-color var(--transition-fast), color var(--transition-fast);
+  font-family: inherit;
+}
+.outfit-gen-example-chip:hover {
+  border-color: var(--color-accent);
+  color: var(--color-text);
 }
 
 .outfit-gen-submit {
