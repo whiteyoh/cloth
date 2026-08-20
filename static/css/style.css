@@ -4633,10 +4633,15 @@ main {
   padding: var(--space-lg);
 }
 
-.hiw-step-icon {
-  font-size: 2rem;
+.hiw-step-num {
+  font-size: 2.2rem;
+  font-weight: 800;
+  color: var(--colour-primary);
+  opacity: 0.22;
   margin-bottom: var(--space-sm);
   display: block;
+  letter-spacing: -0.03em;
+  line-height: 1;
 }
 
 .hiw-step h2 {

@@ -1,5 +1,6 @@
 {% extends "base.html" %}
-{% block title %}Curated list — dress.me{% endblock %}
+{% block title %}Shared look — dress.me{% endblock %}
+{% block meta_description %}A curated selection of clothing items shared via dress.me — search hundreds of retailers with AI, free and no account needed.{% endblock %}
 {% block content %}
 <section class="curated-list-page">
   <h1 class="curated-list-title">Curated list</h1>
@@ -7,7 +8,7 @@
   <div id="curated-list-container" aria-label="Curated items"></div>
   <p class="curated-list-empty" id="curated-list-empty" hidden>
     This list is empty or the link is invalid.
-    <a href="/" class="example-chip">Start searching</a>
+    <a href="/start" class="example-chip">Start searching</a>
   </p>
 </section>
 <script>
@@ -37,9 +38,9 @@
     var img = item.image
       ? '<img src="' + (item.image || '').replace(/&/g, '&amp;').replace(/"/g, '&quot;') + '" alt="' + (item.name || '').replace(/&/g, '&amp;').replace(/"/g, '&quot;') + '" loading="lazy">'
       : '<div class="image-fallback"><span>' + (item.retailer || '').replace(/&/g, '&amp;') + '</span></div>';
-    var name = (item.name || '').replace(/&/g, '&amp;').replace(/</g, '&lt;');
-    var price = (item.price || '').replace(/&/g, '&amp;');
-    var retailer = (item.retailer || '').replace(/&/g, '&amp;');
+    var name = (item.name || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    var price = (item.price || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    var retailer = (item.retailer || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
     var url = (item.url || '#').replace(/&/g, '&amp;').replace(/"/g, '&quot;');
     html += '<li class="product-card">'
       + '<div class="product-image-wrap">' + img + '</div>'
