@@ -339,6 +339,8 @@ h6 { font-size: var(--text-base); }
   max-width: 600px;
 }
 
+.page-start .header-search { display: none; }
+
 .header-search input[type="text"] {
   flex: 1;
   padding: 0.5rem var(--space-4);
@@ -5302,6 +5304,7 @@ main {
   .outfit-board {
     margin-bottom: var(--space-6);
   }
+  .home-sections { padding-bottom: 72px; }
 }
 
 @media (max-width: 480px) {

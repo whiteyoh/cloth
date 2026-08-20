@@ -1,13 +1,15 @@
 {% extends "base.html" %}
 {% block title %}dress.me — Find anything to wear{% endblock %}
+{% block body_class %}page-start{% endblock %}
+{% block meta_description %}dress.me — describe any clothing item in plain English and search hundreds of retailers at once. Free, no account needed.{% endblock %}
 {% block content %}
 <div id="onboarding-banner" class="onboarding-banner" role="region" aria-label="Feature discovery" hidden>
   <div class="onboarding-banner-inner">
-    <h2 class="onboarding-banner-title">Welcome</h2>
+    <h2 class="onboarding-banner-title">Find anything to wear</h2>
     <ul class="onboarding-feature-list" aria-label="Key features">
-      <li>Search across the web for any clothing item using plain English</li>
-      <li>Save favourites and organise them into outfit boards</li>
-      <li>Build outfit collages on the style canvas</li>
+      <li>Describe what you want in plain English — AI searches hundreds of retailers instantly</li>
+      <li>Save items you love and build outfit boards to share</li>
+      <li>Free to use · No account needed · Results from ASOS, Zara, M&amp;S and more</li>
     </ul>
     <button type="button" id="onboarding-dismiss" class="btn-primary onboarding-dismiss-btn" aria-label="Dismiss welcome banner">Got it</button>
   </div>
@@ -74,7 +76,7 @@
   </section>
 
   <section class="popular-strip-section" aria-label="Popular searches">
-    <p class="popular-strip-label">Try searching for</p>
+    <p class="popular-strip-label">Popular right now</p>
     <div class="popular-strip-wrap">
       <div class="popular-strip">
         <a href="/search?q=wool+coat+under+%C2%A3150" class="popular-pill">Wool coat under £150</a>

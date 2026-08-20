@@ -15,11 +15,11 @@
   <link rel="stylesheet" href="/static/css/style.css">
   <script src="/static/js/theme-init.js"></script>
 </head>
-<body>
+<body class="{% block body_class %}{% endblock %}">
   <header class="site-header">
     <div class="container">
       <div class="site-header-top">
-        <a href="/" class="logo" aria-label="dress.me — home">
+        <a href="/start" class="logo" aria-label="dress.me — home">
           <span class="logo-wordmark">dress.me</span>
         </a>
         <a href="/outfits" class="outfits-link" aria-label="Your outfit boards" style="white-space:nowrap">Build a look</a>
@@ -61,7 +61,7 @@
 
   <!-- Mobile bottom navigation (WN-157, simplified WN-238) -->
   <nav class="mobile-bottom-nav" aria-label="Mobile navigation">
-    <a href="/" class="mobile-nav-tab" data-nav="home" aria-label="Home">
+    <a href="/start" class="mobile-nav-tab" data-nav="home" aria-label="Home">
       <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" width="20" height="20"><path d="M3 9.5L10 3l7 6.5V17a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z"/><path d="M7 18V12h6v6"/></svg>
       <span>Home</span>
     </a>
