@@ -332,84 +332,7 @@ body::after {
 .mock-count { text-align: center; font-size: 0.62rem; color: var(--muted); margin-top: 0.8rem; }
 
 /* ══════════════════════════════════════════════
-   SCENE 2 — PROBLEM
-   "17 tabs" with watermark bg number + count-up
-   ══════════════════════════════════════════════ */
-.s-problem {
-  min-height: 88dvh;
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 10vh 6vw;
-  text-align: center;
-  overflow: hidden;
-  border-bottom: 1px solid var(--border);
-}
-
-/* Giant watermark number — the design element */
-.problem-watermark {
-  position: absolute;
-  font-size: clamp(14rem, 38vw, 30rem);
-  font-weight: 900;
-  color: rgba(237,232,224,0.03);
-  line-height: 1;
-  letter-spacing: -0.08em;
-  user-select: none;
-  pointer-events: none;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  font-family: 'Inter', sans-serif;
-  white-space: nowrap;
-}
-
-.problem-inner { position: relative; z-index: 1; max-width: 600px; }
-
-.problem-count {
-  font-family: 'Inter', sans-serif;
-  font-size: clamp(5rem, 14vw, 11rem);
-  font-weight: 900;
-  letter-spacing: -0.06em;
-  line-height: 1;
-  color: rgba(237,232,224,0.15);
-  display: block;
-  font-variant-numeric: tabular-nums;
-}
-
-.problem-headline {
-  font-family: 'Playfair Display', Georgia, serif;
-  font-size: clamp(2rem, 5.5vw, 4rem);
-  font-weight: 700;
-  line-height: 1.2;
-  letter-spacing: -0.025em;
-}
-
-.problem-sub {
-  font-family: 'Playfair Display', Georgia, serif;
-  font-size: clamp(1.1rem, 2.8vw, 2rem);
-  font-style: italic;
-  font-weight: 400;
-  color: var(--muted);
-  margin-top: 0.5rem;
-}
-
-.problem-hr {
-  width: 40px;
-  height: 1px;
-  background: var(--dim);
-  margin: 2rem auto;
-}
-
-.problem-kicker {
-  font-size: clamp(0.95rem, 2vw, 1.1rem);
-  color: var(--muted);
-  line-height: 1.75;
-}
-.problem-kicker strong { color: var(--fg); font-weight: 600; }
-
-/* ══════════════════════════════════════════════
-   SCENE 3 — WORD SLAM
+   SCENE 2 — WORD SLAM
    Left-aligned editorial typography.
    Three words. Maximum impact.
    ══════════════════════════════════════════════ */
@@ -1265,25 +1188,6 @@ body::after {
 </section>
 
 
-<!-- ════════ PROBLEM ════════ -->
-<!-- Rule: focus on the customer's pain -->
-<section class="s-problem" data-s>
-  <!-- Giant watermark — design element, not content -->
-  <div class="problem-watermark" aria-hidden="true">17</div>
-
-  <div class="problem-inner">
-    <!-- Count-up number — engagement through animation -->
-    <span class="problem-count fi" data-countup="17">17</span>
-    <div class="r"><span class="ri problem-headline">tabs open.</span></div>
-    <div class="r"><span class="ri d1 problem-sub">Still the wrong size,<br>wrong price, wrong vibe.</span></div>
-    <div class="problem-hr fi d2" aria-hidden="true"></div>
-    <p class="problem-kicker fi d3">
-      You know <strong>exactly</strong> what you want.<br>
-      The problem isn't your taste — it's the search.
-    </p>
-  </div>
-</section>
-
 
 <!-- ════════ WORD SLAM ════════ -->
 <!-- Describe. Find. Wear. — simple words, maximum drama -->
@@ -1579,31 +1483,7 @@ body::after {
     nav.classList.toggle('show', visible);
   }, { threshold: 0.15 }).observe(hero);
 
-  // ── Count-up animation ──
-  function countUp(el, target, duration) {
-    let start = null;
-    const step = ts => {
-      if (!start) start = ts;
-      const p = Math.min((ts - start) / duration, 1);
-      const ease = 1 - Math.pow(1 - p, 3);
-      el.textContent = Math.round(ease * target);
-      if (p < 1) requestAnimationFrame(step);
-    };
-    requestAnimationFrame(step);
-  }
-
-  const countEls = document.querySelectorAll('[data-countup]');
-  new IntersectionObserver(entries => {
-    entries.forEach(e => {
-      if (e.isIntersecting) {
-        countUp(e.target, parseInt(e.target.dataset.countup), 1400);
-        // Only fire once
-        e.target.removeAttribute('data-countup');
-      }
-    });
-  }, { threshold: 0.5 }).observe(countEls[0]);
-
-  // ── CTA constellation dots ──
+// ── CTA constellation dots ──
   const dotsContainer = document.getElementById('cta-dots');
   for (let i = 0; i < 18; i++) {
     const d = document.createElement('div');
