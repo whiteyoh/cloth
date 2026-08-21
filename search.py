@@ -118,6 +118,13 @@ def _normalise_result(
         product_link = item.get("productLink") or ""
         if product_link.startswith(("http://", "https://")):
             link = product_link
+        else:
+            # Upgrade from a Google Search URL to a Google Shopping product page
+            # using the productId, so the user lands on a specific product view
+            # with a "Go to store" button rather than a generic search results page.
+            product_id = item.get("productId") or ""
+            if product_id:
+                link = f"https://www.google.com/shopping/product/{product_id}"
     if not link:
         link = item.get("productLink") or ""
     thumbnail = item.get("imageUrl") or item.get("thumbnailUrl") or ""

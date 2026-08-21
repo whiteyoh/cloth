@@ -450,6 +450,25 @@ class TestUnwrapGoogleUrl:
         assert product is not None
         assert product.purchase_url == "https://www.next.co.uk/p/coat"
 
+    def test_google_shopping_url_upgraded_to_product_page_via_product_id(self):
+        """Google Shopping search URL is upgraded to a product page URL when productId present."""
+        item = {
+            **_VALID_ITEM,
+            "link": "https://www.google.com/search?ibp=oshop&q=shirt&prds=catalogid:12345",
+            "productId": "12345",
+        }
+        product = _normalise_result(item, _RETRIEVED_AT)
+        assert product is not None
+        assert product.purchase_url == "https://www.google.com/shopping/product/12345"
+
+    def test_google_url_without_product_id_kept_as_is(self):
+        """When no productId and no productLink, the Google URL is kept unchanged."""
+        google_url = "https://www.google.com/search?ibp=oshop&q=shirt"
+        item = {**_VALID_ITEM, "link": google_url}
+        product = _normalise_result(item, _RETRIEVED_AT)
+        assert product is not None
+        assert product.purchase_url == google_url
+
     def test_google_redirect_link_unwrapped_in_normalise(self):
         """Google /url?q= redirect in link= is resolved to the real product URL."""
         actual = "https://www.asos.com/product/99"
